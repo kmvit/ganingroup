@@ -2,6 +2,7 @@
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.templatetags.static import static
+from django.utils.html import strip_tags
 from django.utils.text import slugify
 
 
@@ -407,7 +408,12 @@ class Page(models.Model):
 
     @property
     def title_tag(self):
-        return self.seo_title or self.h1 or self.admin_title
+        """Заголовок вкладки и поисковой выдачи.
+
+        h1 хранится с разметкой (<br>, <em>) ради дизайна, но в <title>
+        теги не рендерятся — поэтому здесь их убираем.
+        """
+        return self.seo_title or strip_tags(self.h1) or self.admin_title
 
 
 class Card(Ordered):

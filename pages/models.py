@@ -2,6 +2,7 @@
 import re
 
 from django.core.exceptions import ValidationError
+from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.templatetags.static import static
 from django.utils.html import strip_tags
@@ -50,6 +51,10 @@ class HaulerLead(models.Model):
 
 # ============================================================ ОБЩИЕ ДАННЫЕ САЙТА
 
+LOGO_EXT = FileExtensionValidator(
+    allowed_extensions=['svg', 'png', 'jpg', 'jpeg', 'webp'],
+    message='Логотип принимаем в SVG, PNG, JPG или WEBP.')
+
 class SiteSettings(models.Model):
     """Общие данные сайта: логотипы, телефоны, почты, адреса, реквизиты.
 
@@ -59,15 +64,23 @@ class SiteSettings(models.Model):
     """
 
     # --- логотипы ---
-    logo_full = models.ImageField('Логотип полный (для подвала, тёмный фон)',
-                                  upload_to='logo/', blank=True)
-    logo_full_light = models.ImageField('Логотип полный для светлой темы',
-                                        upload_to='logo/', blank=True)
-    logo_compact = models.ImageField('Логотип компактный (шапка, тёмный фон)',
-                                     upload_to='logo/', blank=True)
-    logo_compact_light = models.ImageField('Логотип компактный для светлой темы',
-                                           upload_to='logo/', blank=True)
-    logo_mark = models.ImageField('Знак (иконка вкладки)', upload_to='logo/', blank=True)
+    # FileField, а не ImageField: логотипы векторные (SVG), а проверка картинок
+    # через Pillow такие файлы отклоняет. Расширения ограничены валидатором.
+    logo_full = models.FileField('Логотип полный (для подвала, тёмный фон)',
+                            upload_to='logo/', blank=True,
+                            validators=[LOGO_EXT])
+    logo_full_light = models.FileField('Логотип полный для светлой темы',
+                            upload_to='logo/', blank=True,
+                            validators=[LOGO_EXT])
+    logo_compact = models.FileField('Логотип компактный (шапка, тёмный фон)',
+                            upload_to='logo/', blank=True,
+                            validators=[LOGO_EXT])
+    logo_compact_light = models.FileField('Логотип компактный для светлой темы',
+                            upload_to='logo/', blank=True,
+                            validators=[LOGO_EXT])
+    logo_mark = models.FileField('Знак (иконка вкладки)',
+                            upload_to='logo/', blank=True,
+                            validators=[LOGO_EXT])
 
     # --- телефоны ---
     phone_main = models.CharField('Телефон основной', max_length=40, default='+7 800 000-00-00')

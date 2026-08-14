@@ -5,6 +5,10 @@
 Повторный запуск ничего не ломает: записи ищутся по ключевым полям (get_or_create).
 Флаг --reset очищает контентные таблицы перед заливкой (заявки не трогает).
 """
+from pathlib import Path
+
+from django.conf import settings
+from django.core.files import File
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
@@ -109,6 +113,35 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def handle(self, *args, **opts):
+        # Общие данные и логотипы обновляем всегда: это безопасно —
+        # уже загруженные заказчиком файлы не перезаписываются.
+        s = SiteSettings.get()
+        if not s.phone_main:
+            s.phone_main = '+7 800 000-00-00'
+        s.save()
+        # логотипы из вёрстки — в админку, чтобы заказчик их видел и мог заменить
+        logos = [
+            ('logo_compact', 'logo-compact.svg'),
+            ('logo_compact_light', 'logo-compact-dark.svg'),
+            ('logo_full', 'logo.svg'),
+            ('logo_full_light', 'logo-dark.svg'),
+            ('logo_mark', 'logo-mark.svg'),
+        ]
+        src_dir = Path(settings.BASE_DIR) / 'static' / 'assets'
+        loaded = 0
+        for field, filename in logos:
+            if getattr(s, field):
+                continue                     # заказчик уже загрузил свой — не трогаем
+            src = src_dir / filename
+            if not src.exists():
+                continue
+            with src.open('rb') as fh:
+                getattr(s, field).save(filename, File(fh), save=False)
+            loaded += 1
+        if loaded:
+            s.save()
+        self.stdout.write(f'  • общие данные сайта готовы (логотипов загружено: {loaded})')
+
         if opts['if_empty'] and Page.objects.exists():
             self.stdout.write('Контент уже есть — заливка пропущена.')
             return
@@ -121,12 +154,6 @@ class Command(BaseCommand):
             Page.objects.all().delete()
             self.stdout.write(self.style.WARNING('Контентные таблицы очищены'))
 
-        # --- общие данные ---
-        s = SiteSettings.get()
-        if not s.phone_main:
-            s.phone_main = '+7 800 000-00-00'
-        s.save()
-        self.stdout.write('  • общие данные сайта готовы (телефон, логотипы, реквизиты)')
 
         # --- меню ---
         for i, (key, label, url_name, children, ftitle) in enumerate(NAV_MAIN, 1):

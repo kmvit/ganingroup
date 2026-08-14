@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import re
+
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.templatetags.static import static
@@ -413,7 +415,11 @@ class Page(models.Model):
         h1 хранится с разметкой (<br>, <em>) ради дизайна, но в <title>
         теги не рендерятся — поэтому здесь их убираем.
         """
-        return self.seo_title or strip_tags(self.h1) or self.admin_title
+        if self.seo_title:
+            return self.seo_title
+        # <br> заменяем пробелом, иначе слова склеиваются
+        text = re.sub(r'<br\s*/?>', ' ', self.h1 or '')
+        return re.sub(r'\s+', ' ', strip_tags(text)).strip() or self.admin_title
 
 
 class Card(Ordered):

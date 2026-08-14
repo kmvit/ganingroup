@@ -1,0 +1,103 @@
+{% extends "base_bare.html" %}
+{% load static %}
+
+{% block title %}Айдентика{% endblock %}
+
+{% block content %}
+<section style="padding:clamp(56px,7vw,110px) 0 0">
+  <div class="wrap">
+    <p class="eyebrow">ГАНИН ГРУПП · айдентика · как это работает на сайте</p>
+    <div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:32px;margin-top:26px">
+      <img src="{{ site.logo_full_url }}" alt="ГАНИН ГРУПП" style="height:clamp(96px,12vw,150px);width:auto" />
+      <p style="max-width:44ch;color:var(--silver);font-size:15.5px;line-height:1.75">Знак — куб в изометрии 30° с монограммой «ГГ»: две буквы Г собираются в объём, как элементы опалубки. Оранжевая грань — единственный цветовой акцент. Слоган: <b style="color:var(--white)">«Строим основы будущего»</b>.</p>
+    </div>
+  </div>
+</section>
+
+<section class="bt" style="margin-top:clamp(48px,6vw,80px)">
+  <div class="wrap">
+    <div class="sec-head"><h2>Логотип</h2><span class="num">01 / 04</span></div>
+    <div class="grid c3">
+      <div class="icard" style="gap:0;padding:0">
+        <div style="display:grid;place-items:center;min-height:220px;background:var(--ink-2)"><img src="{{ site.logo_full_url }}" alt="" style="height:96px" /></div>
+        <div style="padding:16px 20px;border-top:1px solid var(--line-d)"><span class="eyebrow" style="font-size:10.5px">Основная версия · тёмный фон</span></div>
+      </div>
+      <div class="icard" style="gap:0;padding:0">
+        <div style="display:grid;place-items:center;min-height:220px;background:var(--paper)"><img src="{{ site.logo_full_light_url }}" alt="" style="height:96px" /></div>
+        <div style="padding:16px 20px;border-top:1px solid var(--line-d)"><span class="eyebrow" style="font-size:10.5px">Версия для светлого фона</span></div>
+      </div>
+      <div class="icard" style="gap:0;padding:0">
+        <div style="display:grid;place-items:center;min-height:220px;background:var(--ink-2);gap:18px">
+          <img src="{{ site.logo_compact_url }}" alt="" style="height:64px" />
+          <img src="{{ site.logo_mark_url }}" alt="" style="height:64px" />
+        </div>
+        <div style="padding:16px 20px;border-top:1px solid var(--line-d)"><span class="eyebrow" style="font-size:10.5px">Компакт (шапка) · знак (favicon, метки)</span></div>
+      </div>
+    </div>
+    <p style="margin-top:16px;font-family:var(--font-m);font-size:11.5px;color:var(--concrete);letter-spacing:.06em">Компактная версия — без слогана: на малых размерах (шапка сайта) подпись нечитаема. Полная версия — в подвале и на носителях от 60 px высоты.</p>
+  </div>
+</section>
+
+<section class="bt">
+  <div class="wrap">
+    <div class="sec-head"><h2>Палитра</h2><span class="num">02 / 04</span></div>
+    <div class="grid c4">
+      <div class="icard" style="padding:0;gap:0"><div style="height:110px;background:#111111"></div><div style="padding:14px 18px;border-top:1px solid var(--line-d)"><b style="font-family:var(--font-m);font-size:12px;color:var(--white)">#111111</b><p style="font-size:12.5px;margin-top:2px">Графит — основной фон</p></div></div>
+      <div class="icard" style="padding:0;gap:0"><div style="height:110px;background:#55575A"></div><div style="padding:14px 18px;border-top:1px solid var(--line-d)"><b style="font-family:var(--font-m);font-size:12px;color:var(--white)">#55575A</b><p style="font-size:12.5px;margin-top:2px">Бетон — вторичные поверхности</p></div></div>
+      <div class="icard" style="padding:0;gap:0"><div style="height:110px;background:#BEBFC1"></div><div style="padding:14px 18px;border-top:1px solid var(--line-d)"><b style="font-family:var(--font-m);font-size:12px;color:var(--white)">#BEBFC1</b><p style="font-size:12.5px;margin-top:2px">Светло-серый — текст на тёмном</p></div></div>
+      <div class="icard" style="padding:0;gap:0"><div style="height:110px;background:#F2F2F0"></div><div style="padding:14px 18px;border-top:1px solid var(--line-d)"><b style="font-family:var(--font-m);font-size:12px;color:var(--white)">#F2F2F0</b><p style="font-size:12.5px;margin-top:2px">Бумага — светлые зоны</p></div></div>
+      <div class="icard" style="padding:0;gap:0"><div style="height:110px;background:#FF6A00"></div><div style="padding:14px 18px;border-top:1px solid var(--line-d)"><b style="font-family:var(--font-m);font-size:12px;color:var(--accent)">#FF6A00</b><p style="font-size:12.5px;margin-top:2px">Оранжевый — акцент, CTA</p></div></div>
+      <div class="icard" style="padding:0;gap:0"><div style="height:110px;background:#FF8A3D"></div><div style="padding:14px 18px;border-top:1px solid var(--line-d)"><b style="font-family:var(--font-m);font-size:12px;color:var(--white)">#FF8A3D</b><p style="font-size:12.5px;margin-top:2px">Оранжевый светлый — hover</p></div></div>
+      <div class="icard" style="padding:0;gap:0"><div style="height:110px;background:#16171A;border-bottom:1px solid var(--line-d)"></div><div style="padding:14px 18px;border-top:1px solid var(--line-d)"><b style="font-family:var(--font-m);font-size:12px;color:var(--white)">#16171A</b><p style="font-size:12.5px;margin-top:2px">Уголь — карточки, панели</p></div></div>
+      <div class="icard" style="padding:0;gap:0"><div style="height:110px;background:#FFFFFF"></div><div style="padding:14px 18px;border-top:1px solid var(--line-d)"><b style="font-family:var(--font-m);font-size:12px;color:var(--white)">#FFFFFF</b><p style="font-size:12.5px;margin-top:2px">Белый — заголовки, карточки</p></div></div>
+    </div>
+    <p style="margin-top:16px;font-family:var(--font-m);font-size:11.5px;color:var(--concrete);letter-spacing:.06em">Правило: один оранжевый акцент на экран — кнопка, маркер или ключевое слово. Не заливка по умолчанию.</p>
+  </div>
+</section>
+
+<section class="bt">
+  <div class="wrap">
+    <div class="sec-head"><h2>Типографика</h2><span class="num">03 / 04</span></div>
+    <div class="grid c3">
+      <div class="icard">
+        <span class="ic">Aa</span>
+        <h3 style="font-size:clamp(28px,3vw,44px)">Oswald</h3>
+        <p>Заголовки — конденсированный индустриальный гротеск, капс. Плотный, как маркировка на бетоне.</p>
+        <p style="font-family:var(--font-h);font-size:20px;text-transform:uppercase;color:var(--paper);letter-spacing:.03em">Строим основу будущего</p>
+      </div>
+      <div class="icard">
+        <span class="ic" style="font-family:var(--font-t)">Aa</span>
+        <h3 style="font-family:var(--font-t);text-transform:none;letter-spacing:0;font-size:clamp(28px,3vw,44px);font-weight:600">Inter</h3>
+        <p>Основной текст и интерфейс. Нейтральный, читается в любых размерах.</p>
+        <p style="font-size:15px;color:var(--paper)">Свой карьер, свой завод, своя лаборатория и автопарк.</p>
+      </div>
+      <div class="icard">
+        <span class="ic" style="font-family:var(--font-m)">01</span>
+        <h3 style="font-family:var(--font-m);text-transform:none;letter-spacing:0;font-size:clamp(24px,2.6vw,36px);font-weight:500">JetBrains Mono</h3>
+        <p>Инженерный слой: индексы, координаты, аннотации, маркировки — как выноски на чертеже.</p>
+        <p style="font-family:var(--font-m);font-size:13px;color:var(--accent);letter-spacing:.1em">S-01 · R-200 KM · 150 000 М³</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="bt">
+  <div class="wrap">
+    <div class="sec-head"><h2>Принципы стиля</h2><span class="num">04 / 04</span></div>
+    <div class="grid c2">
+      <div class="icard"><span class="ic">01</span><h3>Изометрия 30°</h3><p>Одна проекция во всём: знак, пиктограммы, иллюстрации. Куб «ГГ» задаёт геометрию всей графики.</p></div>
+      <div class="icard"><span class="ic">02</span><h3>Прямые углы</h3><p>Без скруглений: карточки, кнопки и поля — как опалубочные щиты. Монолитность в буквальном смысле.</p></div>
+      <div class="icard"><span class="ic">03</span><h3>Модульная сетка — кладка</h3><p>Карточки и колонки собираются рядами, как блоки ФБС: тонкие линии швов вместо теней.</p></div>
+      <div class="icard"><span class="ic">04</span><h3>Тёмное ↔ светлое</h3><p>Тёмный графит — каркас сайта; светлые «бетонные» зоны — люди, отзывы, объекты. Контраст как заливка и опалубка.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="final" style="margin-top:clamp(48px,6vw,80px)">
+  <div class="wrap" style="position:relative">
+    <p class="eyebrow" style="justify-content:center">ГАНИН ГРУПП · дизайн сайта · 2026</p>
+    <h2 style="margin-top:22px">Далее — <em>28 страниц</em> дизайна</h2>
+    <p>Главная и все внутренние разделы по утверждённому прототипу. Фото — плейсхолдеры до фирменной съёмки.</p>
+  </div>
+</section>
+{% endblock %}

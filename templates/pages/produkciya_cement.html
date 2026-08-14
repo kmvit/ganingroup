@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Фасованный цемент{% endblock %}
+
+{% block content %}
+<nav class="bc"><div class="wrap"><a href="{% url 'home' %}">Главная</a><i>/</i><a href="{% url 'produkciya' %}">Продукция</a><i>/</i><span>Фасованный цемент</span></div></nav>
+<section class="phero"><div class="wrap"><h1>{{ page.h1|default:"Фасованный цемент"|safe }}</h1><p class="sub">{{ page.subtitle|default:"Направление группы для розничных и мелкооптовых запросов: цемент в мешках с завода группы. Оставьте запрос — менеджер направления свяжется и подберёт объём."|safe }}</p></div></section>
+<section style="padding-top:0"><div class="wrap"><div class="grid c2" style="align-items:start"><div class="grid c2">{% for c in cards_by_section.grid1 %}<div class="icard">{% if c.icon %}<span class="ic">{{ c.icon }}</span>{% endif %}<h3 style="font-size:16px">{{ c.title }}</h3><p>{{ c.text }}</p></div>{% endfor %}</div>
+      <div class="form-card">
+        <h3>Запрос по цементу</h3>
+        <label class="f-label">Имя *</label><input class="f-input" />
+        <label class="f-label">Телефон *</label><input class="f-input" placeholder="+7 ___ ___-__-__" />
+        <label class="f-label">Объём / марка</label><input class="f-input" placeholder="Например: 40 мешков М500" />
+        <label class="f-agree"><input type="checkbox" checked /> <span>Согласен на обработку персональных данных — <a href="{% url 'consent' %}">текст</a></span></label>
+        <a class="btn btn--solid" href="#tkp-ok" style="width:100%;margin-top:22px">Отправить запрос</a>
+      </div>
+    </div>
+    <p style="margin-top:18px;font-family:var(--font-m);font-size:11.5px;color:var(--concrete);letter-spacing:.06em">* Информационная страница направления: без онлайн-каталога (раздел 10.3 ТЗ).</p>
+  </div></section>
+<section class="final">
+  <div class="wrap" style="position:relative">
+    <p class="eyebrow" style="justify-content:center">Один партнёр — весь монолит</p>
+    <h2 style="margin-top:22px">Нужен объём <em>побольше</em>?</h2>
+    <p>Для строительных объёмов запросите ТКП — предложим цену от завода.</p>
+    <div class="cta-row">
+      <a class="btn btn--solid" href="#tkp">Запросить ТКП</a>
+      <a class="btn btn--line" href="tel:{{ site.phone_link }}">Заказать звонок</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

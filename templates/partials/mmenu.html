@@ -1,0 +1,13 @@
+{% load static %}
+<div class="mmenu" id="menu">
+  <div class="head">
+    <a class="brand" href="{% url 'home' %}"><img class="lg-dark" src="{{ site.logo_compact_url }}" alt="ГАНИН ГРУПП" /><img class="lg-light" src="{{ site.logo_compact_light_url }}" alt="ГАНИН ГРУПП" /></a>
+    <a class="burger" style="display:grid" href="#top">✕</a>
+  </div>
+  <nav>
+    {% for item in nav_main %}{% if item.children %}<div class="grp"><b>{{ item.label }}</b>{% for c in item.children %}<a href="{% if c.url_name %}{% url c.url_name %}{% else %}{{ c.external }}{% endif %}">{{ c.label }}</a>{% endfor %}</div>
+    {% else %}<a class="top" href="{% url item.url_name %}">{{ item.label }}</a>
+    {% endif %}{% endfor %}
+    <div style="display:flex;gap:12px;padding-top:22px"><a class="btn btn--solid" href="#tkp" style="flex:1">Запросить ТКП</a></div>
+  </nav>
+</div>

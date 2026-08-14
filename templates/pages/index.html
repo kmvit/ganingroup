@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Строим основу будущего{% endblock %}
+
+{% block content %}
+<section class="hero" id="top">
+  <div class="hero-bg"></div>
+  <svg class="hero-draft" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <g stroke="#2E3134" stroke-width="1" fill="none">
+      <line x1="0" y1="180" x2="1440" y2="180"/><line x1="0" y1="640" x2="1440" y2="640"/>
+      <line x1="1088" y1="0" x2="1088" y2="900"/><line x1="320" y1="0" x2="320" y2="900"/>
+    </g>
+    <g stroke="rgba(255,106,0,.4)" stroke-width="1" fill="none">
+      <path d="M1088 180 L1260 80 L1440 140"/><circle cx="1088" cy="180" r="5"/>
+      <line x1="1088" y1="180" x2="1188" y2="180"/><line x1="1188" y1="172" x2="1188" y2="188"/>
+      <path d="M320 640 L200 730"/><circle cx="320" cy="640" r="5"/>
+    </g>
+    <g fill="#5A5D60" font-family="JetBrains Mono, monospace" font-size="11" letter-spacing="2">
+      <text x="1200" y="168">70.4</text><text x="336" y="628">R-200 KM</text><text x="24" y="172">A–A</text>
+    </g>
+    <g transform="translate(1050,260) scale(3.2)" opacity=".16">
+      <polygon points="89.8,73 50,96 10.2,73 10.2,27 50,4 89.8,27" fill="none" stroke="#BEBFC1" stroke-width="1"/>
+      <path d="M34 30 H68 V42 H46 V72 H34 Z" fill="none" stroke="#BEBFC1" stroke-width="1"/>
+      <rect x="58" y="42" width="10" height="11" fill="none" stroke="#BEBFC1" stroke-width="1"/>
+      <rect x="34" y="77" width="9" height="9" fill="#FF6A00" opacity=".8"/>
+    </g>
+  </svg>
+  <span class="hero-media-tag">[ фоновое видео: завод · миксеры · заливка / mobile — фото ]</span>
+  <div class="wrap hero-inner">
+    <p class="eyebrow">Группа компаний · Кавказские Минеральные Воды</p>
+    <h1 style="margin-top:22px">{{ page.h1|default:"Строим основу<br>будущего<em>.</em>"|safe }}</h1>
+    <p class="sub">{{ page.subtitle|default:"С 19XX года поставляем бетон по всему Северному Кавказу — свой карьер, свой завод, свой автопарк. Опалубочные системы UPEX отгружаем по всей России."|safe }}</p>
+    <div class="cta-row">
+      <a class="btn btn--solid" href="#tkp">Запросить ТКП</a>
+      <a class="btn btn--line" href="#tkp">Менеджер направления</a>
+    </div>
+    <div class="hero-geo">
+      <div><span>База · производство</span><b>КМВ</b></div>
+      <div><span>Бетон · ритмичная поставка</span><b>Весь СКФО</b></div>
+      <div><span>Опалубка UPEX · отгрузка</span><b>Вся Россия</b></div>
+    </div>
+  </div>
+  <span class="scroll-hint">Листайте</span>
+</section>
+
+<section class="about" id="about">
+  <div class="wrap">
+    <div class="sec-head"><p class="eyebrow">О группе</p><span class="num">02 / 12</span></div>
+    <div class="about-grid">
+      <div>
+        <p class="big">Одна сильная компания с несколькими направлениями под брендом <b>ГАНИН ГРУПП</b>: бетон, ЖБИ, асфальт, опалубка, карьер и транспорт — единая ответственность за качество и график.</p>
+        <a class="link-more" href="{% url 'o_gruppe' %}" style="margin-top:28px">Подробнее о группе →</a>
+      </div>
+      <div class="about-side">
+        <div class="row"><i>01</i><span>Свой карьер, завод, лаборатория и автопарк — вертикальная интеграция</span></div>
+        <div class="row"><i>02</i><span>60+ лет производственной истории на Кавказских Минеральных Водах</span></div>
+        <div class="row"><i>03</i><span>Партнёр, который держит график монолитных работ на пике сезона</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="scenarios">
+  <div class="wrap">
+    <div class="sec-head"><h2>Ваш сценарий</h2><span class="num">03 / 12</span></div>
+    <div class="scen-grid">
+      <a class="scen" href="{% url 'reshenie_zastroyshchikam' %}"><i>S-01</i><b>Застройщик ЖК</b><span>Ритм поставок и удержание графика монолита при больших объёмах</span><span class="go">→ решение</span></a>
+      <a class="scen" href="{% url 'reshenie_kommercheskoe' %}"><i>S-02</i><b>Коммерческая стройка</b><span>Сжатые сроки, объёмные заливки, координация на площадке</span><span class="go">→ решение</span></a>
+      <a class="scen" href="{% url 'reshenie_dorozhnikam' %}"><i>S-03</i><b>Дорожники</b><span>Асфальтобетон, инертные и дорожный бетон — ритмично и по ГОСТ</span><span class="go">→ решение</span></a>
+      <a class="scen" href="{% url 'reshenie_promyshlennost' %}"><i>S-04</i><b>Промышленность</b><span>Спецмарки, фундаменты под оборудование, лабораторное сопровождение</span><span class="go">→ решение</span></a>
+      <a class="scen" href="{% url 'reshenie_chastnaya_zastroyka' %}"><i>S-05</i><b>Частная застройка</b><span>Точный объём, доставка миксером, простой заказ</span><span class="go">→ решение</span></a>
+      <a class="scen" href="#"><i>S-06</i><b>Опалубка по РФ</b><span>Системы UPEX: расчёт, отгрузка в любой регион, шеф-монтаж</span><span class="go">→ upex.pro ↗</span></a>
+    </div>
+  </div>
+</section>
+
+<section id="triad">
+  <div class="wrap">
+    <div class="sec-head"><h2>Как мы работаем</h2><span class="num">04 / 12</span></div>
+    <div class="triad">
+      <div class="tri">
+        <span class="n">01 — Продукция</span>
+        <h3>Что производим</h3>
+        <p>Собственные заводы и карьер. Паспорт качества на каждую партию.</p>
+        <ul><li><a href="{% url 'produkciya_beton' %}">Бетон</a></li><li><a href="{% url 'produkciya_zhbi' %}">ЖБИ</a></li><li><a href="{% url 'produkciya_asfalt' %}">Асфальт</a></li><li><a href="{% url 'produkciya_inertnye' %}">Инертные</a></li></ul>
+      </div>
+      <div class="tri">
+        <span class="n">02 — Решения</span>
+        <h3>Под кого работаем</h3>
+        <p>Сценарии под тип стройки — от ЖК до промышленных площадок.</p>
+        <ul><li><a href="{% url 'reshenie_zastroyshchikam' %}">Застройщикам ЖК</a></li><li><a href="{% url 'reshenie_dorozhnikam' %}">Дорожникам</a></li><li><a href="{% url 'reshenie_promyshlennost' %}">Промышленность</a></li></ul>
+      </div>
+      <div class="tri">
+        <span class="n">03 — Сервисы</span>
+        <h3>Как доставляем ценность</h3>
+        <p>Логистика 24/7, инженерная поддержка, контроль качества.</p>
+        <ul><li><a href="{% url 'logistika' %}">Логистика</a></li><li><a href="{% url 'raschet_opalubki' %}">Расчёт опалубки</a></li><li><a href="{% url 'shef_montazh' %}">Шеф-монтаж</a></li><li><a href="{% url 'laboratoriya' %}">Лаборатория</a></li></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="directions">
+  <div class="wrap">
+    <div class="sec-head"><h2>Направления группы</h2><span class="num">05 / 12</span></div>
+    <div class="mosaic">
+      <a class="mz big" href="{% url 'produkciya_beton' %}">
+        <span class="ph-tag">[ фото: миксер на заливке ]</span>
+        <span class="cap"><h3>Бетон <em>→</em></h3><p>Товарный бетон М100–М1000, спецмарки и растворы. До 150 000 м³ в год. Доставка миксерами, подача насосами.</p></span>
+      </a>
+      <a class="mz" href="{% url 'produkciya_zhbi' %}">
+        <span class="ph-tag">[ фото: склад ЖБИ ]</span>
+        <span class="cap"><h3>ЖБИ <em>→</em></h3><p>293 вида: ФБС, кольца, плиты, бордюры</p></span>
+      </a>
+      <a class="mz" href="{% url 'produkciya_asfalt' %}">
+        <span class="ph-tag">[ фото: укладка ]</span>
+        <span class="cap"><h3>Асфальт <em>→</em></h3><p>Смеси по ГОСТ 9128-2009</p></span>
+      </a>
+      <a class="mz tall upex" href="#">
+        <span class="glow"></span>
+        <span class="cap"><h3>Опалубка UPEX <em>→</em></h3><p>Системы собственного производства. Расчёт комплекта, отгрузка в любой регион, шеф-монтаж.</p><span class="ext">upex.pro ↗</span></span>
+      </a>
+      <a class="mz" href="{% url 'produkciya_inertnye' %}">
+        <span class="ph-tag">[ фото: карьер ]</span>
+        <span class="cap"><h3>Карьер <em>→</em></h3><p>Щебень, песок природный, отсев</p></span>
+      </a>
+      <a class="mz" href="{% url 'logistika' %}">
+        <span class="ph-tag">[ фото: автопарк ]</span>
+        <span class="cap"><h3>Транспорт <em>→</em></h3><p>25 миксеров · 8 насосов · самосвалы</p></span>
+      </a>
+      <a class="mz" href="{% url 'produkciya_cement' %}">
+        <span class="ph-tag">[ фото: фасовка ]</span>
+        <span class="cap"><h3>Цемент <em>→</em></h3><p>Фасованный — для мелкого опта</p></span>
+      </a>
+      <a class="mz" href="{% url 'laboratoriya' %}">
+        <span class="ph-tag">[ фото: лаборатория ]</span>
+        <span class="cap"><h3>Лаборатория <em>→</em></h3><p>Паспорт качества на каждую партию</p></span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="stats">
+  <div class="wrap">
+    <div class="sec-head"><h2>Цифры говорят сами</h2><span class="num">06 / 12</span></div>
+  </div>
+  <div class="wrap"><div class="stats-grid">
+    {% for s in stats %}<div class="stat"><div class="v">{{ s.value }}{% if s.sup %}<sup>{{ s.sup }}</sup>{% endif %}</div><div class="l">{{ s.label }}</div>{% if s.note %}<div class="b">{{ s.note }}</div>{% endif %}</div>
+    {% endfor %}
+  </div></div>
+    <div class="stat"><div class="v">25</div><div class="l">собственных автомиксеров</div><div class="b">+ 8 бетононасосов</div></div>
+    <div class="stat"><div class="v">293</div><div class="l">вида изделий ЖБИ</div><div class="b">до 3 млн блоков в год</div></div>
+    <div class="stat"><div class="v">60<sup>+</sup></div><div class="l">лет на рынке</div><div class="b">база — КМВ</div></div>
+  </div></div>
+</section>
+
+<section class="light" id="review">
+  <div class="wrap">
+    <div class="sec-head"><p class="eyebrow">Слово заказчика</p><span class="num">07 / 12</span></div>
+    <div class="quote-big">
+      {% if review %}<p class="q">{{ review.text|safe }}</p>
+      <div class="quote-who"><span class="ava">{% if review.photo %}<img src="{{ review.photo.url }}" alt="{{ review.author }}" style="width:100%;height:100%;object-fit:cover" />{% else %}фото{% endif %}</span><span><b>{{ review.author }}</b><span>{{ review.author_role }}</span></span></div>{% endif %}
+    </div>
+  </div>
+</section>
+
+<section class="light" id="map" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head"><h2>География работы</h2><span class="num">08 / 12</span></div>
+    <div class="map-shell">
+      <div class="map-tabs">
+        <button class="act">СКФО · бетон</button>
+        <button>Россия · опалубка UPEX</button>
+      </div>
+      <div class="map-canvas">
+        <span class="map-zone"></span>
+        {% for pt in map_points %}<span class="map-pt{% if pt.is_own %} f{% endif %}" style="left:{{ pt.left }}%;top:{{ pt.top }}%">{{ pt.title }}</span>{% endfor %}
+        <span class="map-note">[ интерактивная карта · Яндекс.Карты · 2 слоя: активы + зона ритмичной доставки 200 км / отгрузки UPEX по РФ ]</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="light" id="objects" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head"><h2>Свежие объекты</h2><a class="btn btn--line on-light btn--sm" href="{% url 'obekty' %}">Все объекты</a></div>
+    <div class="obj-grid">
+      <a class="obj" href="{% url 'obekt' %}"><span class="ph"><i>[ фото объекта ]</i></span><span class="body"><span class="meta">Ставрополь · бетон</span><h3>ЖК «Название»</h3><p>12 000 м³ за сезон — без срыва графика монолитных работ</p></span></a>
+      <a class="obj" href="{% url 'obekt' %}"><span class="ph"><i>[ фото объекта ]</i></span><span class="body"><span class="meta">Махачкала · опалубка</span><h3>Комплекс 24 этажа</h3><p>Комплект стеновой опалубки UPEX с шеф-монтажом</p></span></a>
+      <a class="obj" href="{% url 'obekt' %}"><span class="ph"><i>[ фото объекта ]</i></span><span class="body"><span class="meta">КМВ · ЖБИ + бетон</span><h3>Объект «Название»</h3><p>Поставка ЖБИ и бетона из одних рук — единая ответственность</p></span></a>
+    </div>
+  </div>
+</section>
+
+<section class="light" id="team" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head"><h2>Команда</h2><span class="num">10 / 12</span></div>
+    <div class="team-grid">
+      {% for p in team %}<div class="tm"><span class="ph">{% if p.photo %}<img src="{{ p.photo.url }}" alt="{{ p.name }}" style="width:100%;height:100%;object-fit:cover" />{% else %}<i>[ фото ]</i>{% endif %}</span><div class="body"><b>{{ p.name }}</b><span>{{ p.position }}</span></div></div>
+      {% endfor %}
+    
+    </div>
+  </div>
+</section>
+
+<section class="final" id="cta">
+  <svg class="bgmark" viewBox="0 0 100 100" aria-hidden="true">
+    <polygon points="89.8,73 50,96 10.2,73 10.2,27 50,4 89.8,27" fill="none" stroke="#fff" stroke-width=".8"/>
+    <path d="M34 30 H68 V42 H46 V72 H34 Z" fill="none" stroke="#fff" stroke-width=".8"/>
+  </svg>
+  <div class="wrap" style="position:relative">
+    <p class="eyebrow" style="justify-content:center">Один партнёр — весь монолит</p>
+    <h2 style="margin-top:22px">Бетон, опалубка, ЖБИ и логистика — <em>из одних рук</em></h2>
+    <p>Пришлите параметры объекта — вернёмся с технико-коммерческим предложением и графиком поставок.</p>
+    <div class="cta-row">
+      <a class="btn btn--solid" href="#tkp">Запросить ТКП</a>
+      <a class="btn btn--line" href="tel:{{ site.phone_link }}">Заказать звонок</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

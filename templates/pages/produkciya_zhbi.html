@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}ЖБИ{% endblock %}
+
+{% block content %}
+<nav class="bc"><div class="wrap"><a href="{% url 'home' %}">Главная</a><i>/</i><a href="{% url 'produkciya' %}">Продукция</a><i>/</i><span>ЖБИ</span></div></nav>
+<section class="phero"><div class="wrap"><h1>{{ page.h1|default:"Железобетонные изделия"|safe }}</h1><p class="sub">{{ page.subtitle|default:"293 вида изделий: ФБС, кольца, плиты, перемычки, тротуарная плитка и бордюры. До 3 млн стеновых блоков в год на линиях ZENITH."|safe }}</p></div></section>
+<section><div class="wrap"><div class="cat-grid">
+  <aside class="filter"><h3>Фильтр</h3><div class="f-label" style="margin-top:0">Тип изделия</div><div class="opts"><a class="chip act" href="#">Все</a><a class="chip" href="#">ФБС и блоки</a><a class="chip" href="#">Кольца и крышки</a><a class="chip" href="#">Плиты</a><a class="chip" href="#">Перемычки</a><a class="chip" href="#">Плитка и бордюры</a></div><div class="f-label" style="margin-top:20px">Размер</div><div class="opts"><a class="chip" href="#">стандарт</a><a class="chip" href="#">по чертежам</a></div>
+    <a class="btn btn--line btn--sm" href="#" style="margin-top:24px;width:100%">Сбросить фильтр</a>
+    <p style="margin-top:14px;font-family:var(--font-m);font-size:10.5px;color:var(--concrete);letter-spacing:.06em">HTMX · без перезагрузки · состояние в URL</p>
+  </aside>
+  <div><div class="grid c3"><a class="pcard" href="{% url 'produkciya_kartochka' %}" style="position:relative"><span class="ph"><i>[ фото ]</i></span><span class="body"><h3>Блоки ФБС</h3><span class="row"><span class="chip">24.4.6</span><span class="chip">12.4.6</span></span></span></a><a class="pcard" href="{% url 'produkciya_kartochka' %}" style="position:relative"><span class="ph"><i>[ фото ]</i></span><span class="body"><h3>Кольца колодезные КС</h3><span class="row"><span class="chip">КС10</span><span class="chip">КС15</span><span class="chip">КС20</span></span></span></a><a class="pcard" href="{% url 'produkciya_kartochka' %}" style="position:relative"><span class="ph"><i>[ фото ]</i></span><span class="body"><h3>Плиты перекрытия</h3><span class="row"><span class="chip">ПК</span><span class="chip">ПБ</span></span></span></a><a class="pcard" href="{% url 'produkciya_kartochka' %}" style="position:relative"><span class="ph"><i>[ фото ]</i></span><span class="body"><h3>Перемычки</h3><span class="row"><span class="chip">ПБ</span><span class="chip">ПП</span></span></span></a><a class="pcard" href="{% url 'produkciya_kartochka' %}" style="position:relative"><span class="ph"><i>[ фото ]</i></span><span class="body"><h3>Тротуарная плитка</h3><span class="row"><span class="chip">вибропресс</span></span></span></a><a class="pcard" href="{% url 'produkciya_kartochka' %}" style="position:relative"><span class="ph"><i>[ фото ]</i></span><span class="body"><h3>Бордюры</h3><span class="row"><span class="chip">БР100</span><span class="chip">БР300</span></span></span></a></div>
+    <div style="display:flex;justify-content:center;margin-top:32px"><a class="btn btn--line" href="#">Показать ещё</a></div>
+  </div>
+</div></div></section><section class="final">
+  <div class="wrap" style="position:relative">
+    <p class="eyebrow" style="justify-content:center">Один партнёр — весь монолит</p>
+    <h2 style="margin-top:22px">Нужна помощь с <em>подбором</em>?</h2>
+    <p>Технолог подберёт марку и состав под конструкцию и условия на площадке.</p>
+    <div class="cta-row">
+      <a class="btn btn--solid" href="#tkp">Запросить ТКП</a>
+      <a class="btn btn--line" href="tel:{{ site.phone_link }}">Заказать звонок</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

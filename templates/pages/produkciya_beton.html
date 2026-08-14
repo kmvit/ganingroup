@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Бетон{% endblock %}
+
+{% block content %}
+<nav class="bc"><div class="wrap"><a href="{% url 'home' %}">Главная</a><i>/</i><a href="{% url 'produkciya' %}">Продукция</a><i>/</i><span>Бетон</span></div></nav>
+<section class="phero"><div class="wrap"><h1>{{ page.h1|default:"Товарный бетон и растворы"|safe }}</h1><p class="sub">{{ page.subtitle|default:"М100–М1000, спецмарки и растворы. До 150 000 м³ в год, собственная лаборатория, паспорт качества на каждую партию."|safe }}</p></div></section>
+<section><div class="wrap"><div class="cat-grid">
+  <aside class="filter"><h3>Фильтр</h3><div class="f-label" style="margin-top:0">Марка</div><div class="opts"><a class="chip act" href="#">Все</a><a class="chip" href="#">М100–М200</a><a class="chip" href="#">М300–М400</a><a class="chip" href="#">М500+</a><a class="chip" href="#">растворы</a></div><div class="f-label" style="margin-top:20px">Характеристики</div><div class="opts"><a class="chip" href="#">F (морозостойкость)</a><a class="chip" href="#">W (водонепроницаемость)</a><a class="chip" href="#">П (подвижность)</a></div>
+    <a class="btn btn--line btn--sm" href="#" style="margin-top:24px;width:100%">Сбросить фильтр</a>
+    <p style="margin-top:14px;font-family:var(--font-m);font-size:10.5px;color:var(--concrete);letter-spacing:.06em">HTMX · без перезагрузки · состояние в URL</p>
+  </aside>
+  <div><div class="grid c3"><a class="pcard" href="{% url 'produkciya_kartochka' %}" style="position:relative"><span class="ph"><i>[ фото ]</i></span><span class="body"><h3>Бетон М200 (B15)</h3><span class="row"><span class="chip">F100</span><span class="chip">W4</span></span></span></a><a class="pcard" href="{% url 'produkciya_kartochka' %}" style="position:relative"><span class="ph"><i>[ фото ]</i></span><span class="body"><h3>Бетон М300 (B22,5)</h3><span class="row"><span class="chip">F150</span><span class="chip">W4</span></span></span></a><a class="pcard" href="{% url 'produkciya_kartochka' %}" style="position:relative"><span class="ph"><i>[ фото ]</i></span><span class="body"><h3>Бетон М350 (B25)</h3><span class="row"><span class="chip">F200</span><span class="chip">W4</span></span></span></a><a class="pcard" href="{% url 'produkciya_kartochka' %}" style="position:relative"><span class="ph"><i>[ фото ]</i></span><span class="body"><h3>Бетон М400 (B30)</h3><span class="row"><span class="chip">F250</span><span class="chip">W6–8</span></span></span></a><a class="pcard" href="{% url 'produkciya_kartochka' %}" style="position:relative"><span class="ph"><i>[ фото ]</i></span><span class="body"><h3>Бетон М500 (B40)</h3><span class="row"><span class="chip">F500</span><span class="chip">W6–8</span></span></span></a><a class="pcard" href="{% url 'produkciya_kartochka' %}" style="position:relative"><span class="ph"><i>[ фото ]</i></span><span class="body"><h3>Высокопрочный М800 (B60)</h3><span class="row"><span class="chip">F1000</span></span></span></a><a class="pcard" href="{% url 'produkciya_kartochka' %}" style="position:relative"><span class="ph"><i>[ фото ]</i></span><span class="body"><h3>Самоуплотняющийся М350</h3><span class="row"><span class="chip">B25</span></span></span></a><a class="pcard" href="{% url 'produkciya_kartochka' %}" style="position:relative"><span class="ph"><i>[ фото ]</i></span><span class="body"><h3>Керамзитобетон М200</h3><span class="row"><span class="chip">теплоизоляция</span></span></span></a><a class="pcard" href="{% url 'produkciya_kartochka' %}" style="position:relative"><span class="ph"><i>[ фото ]</i></span><span class="body"><h3>Раствор цементно-песчаный</h3><span class="row"><span class="chip">М100</span></span></span></a></div>
+    <div style="display:flex;justify-content:center;margin-top:32px"><a class="btn btn--line" href="#">Показать ещё</a></div>
+  </div>
+</div></div></section><section class="final">
+  <div class="wrap" style="position:relative">
+    <p class="eyebrow" style="justify-content:center">Один партнёр — весь монолит</p>
+    <h2 style="margin-top:22px">Не знаете нужный <em>объём</em>?</h2>
+    <p>Калькулятор посчитает объём по размерам конструкции и перенесёт результат в заявку.</p>
+    <div class="cta-row">
+      <a class="btn btn--solid" href="{% url 'kalkulyator' %}">Калькулятор бетона</a>
+      <a class="btn btn--line" href="#tkp">Запросить ТКП</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

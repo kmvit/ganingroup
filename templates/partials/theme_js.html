@@ -1,0 +1,14 @@
+<script>
+(function(){
+  var b=document.querySelector('.theme-tgl');if(!b)return;
+  function isLight(){return document.documentElement.getAttribute('data-theme')==='light';}
+  b.setAttribute('aria-pressed',isLight());
+  b.addEventListener('click',function(){
+    var toLight=!isLight();
+    if(toLight){document.documentElement.setAttribute('data-theme','light');}
+    else{document.documentElement.removeAttribute('data-theme');}
+    try{localStorage.setItem('gg-theme',toLight?'light':'dark');}catch(e){}
+    b.setAttribute('aria-pressed',toLight);
+  });
+})();
+</script>

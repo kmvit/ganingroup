@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Страница не найдена{% endblock %}
+
+{% block content %}
+<section class="nf">
+  <div class="wrap">
+    <div class="code">4<em>0</em>4</div>
+    <h2 style="font-size:clamp(24px,3vw,40px);color:var(--white);margin-top:18px">Страница не найдена</h2>
+    <p style="color:var(--muted);margin-top:14px;max-width:52ch;margin-inline:auto">Возможно, страница переехала при обновлении сайта. Вот ключевые разделы:</p>
+    <div class="cta-row" style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:30px">
+      <a class="btn btn--solid" href="{% url 'home' %}">На главную</a>
+      <a class="btn btn--line" href="{% url 'produkciya' %}">Продукция</a>
+      <a class="btn btn--line" href="{% url 'resheniya' %}">Решения</a>
+      <a class="btn btn--line" href="{% url 'obekty' %}">Объекты</a>
+      <a class="btn btn--line" href="{% url 'kontakty' %}">Контакты</a>
+    </div>
+    <div style="max-width:440px;margin:36px auto 0;text-align:left">
+      <label class="f-label">Поиск по сайту</label>
+      <input class="f-input" placeholder="Например: бетон М350, опалубка, вакансии" />
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Калькулятор бетона{% endblock %}
+
+{% block content %}
+<nav class="bc"><div class="wrap"><a href="{% url 'home' %}">Главная</a><i>/</i><a href="{% url 'produkciya_beton' %}">Бетон</a><i>/</i><span>Калькулятор</span></div></nav>
+<section class="phero"><div class="wrap"><h1>{{ page.h1|default:"Калькулятор объёма бетона"|safe }}</h1><p class="sub">{{ page.subtitle|default:"Предварительная оценка объёма и марки — мгновенно, на странице. Результат переносится в заявку на ТКП. Запас +5% и округление до 0,1 м³ учтены."|safe }}</p></div></section>
+
+<section style="padding-top:0">
+  <div class="wrap">
+<div class="sec-head"><h2>Шаг 1 — Тип конструкции</h2><span class="num">01 / 04</span></div>
+    <div class="calc-type">
+      <button class="act"><span class="pic">▭</span>Плита / стяжка</button>
+      <button><span class="pic">▯</span>Лента</button>
+      <button><span class="pic">▮</span>Стена</button>
+      <button><span class="pic">◫</span>Колонна</button>
+      <button><span class="pic">◎</span>Свая</button>
+      <button><span class="pic">◺</span>Лестница</button>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="grid c2" style="align-items:start">
+      <div class="form-card">
+        <span class="eyebrow">Шаг 2 — Размеры, м</span>
+        <div class="grid c3" style="gap:14px;margin-top:16px">
+          <div><label class="f-label" style="margin-top:0">Длина</label><input id="c-l" class="f-input" value="10" /></div>
+          <div><label class="f-label" style="margin-top:0">Ширина</label><input id="c-w" class="f-input" value="8" /></div>
+          <div><label class="f-label" style="margin-top:0">Толщина</label><input id="c-h" class="f-input" value="0.2" /></div>
+        </div>
+        <div class="dmap" style="min-height:150px;margin-top:18px;display:grid;place-items:center"><span style="font-family:var(--font-m);font-size:11px;color:var(--concrete);letter-spacing:.1em">[ СХЕМА КОНСТРУКЦИИ С ПОДСКАЗКАМИ ]</span></div>
+        <span class="eyebrow" style="margin-top:26px">Шаг 3 — Марка / класс</span>
+        <div class="opts" style="display:flex;flex-wrap:wrap;gap:7px;margin-top:12px">
+          <a class="chip" href="#">М200</a><a class="chip act" href="#">М300</a><a class="chip" href="#">М350</a><a class="chip" href="#">М400</a><a class="chip" href="#">спецмарка</a>
+        </div>
+        <p style="margin-top:12px;font-size:12.5px;color:var(--muted)">+ дополнительные требования: морозостойкость, водонепроницаемость — уточнит технолог.</p>
+      </div>
+      <div>
+        <div class="calc-res">
+          <span class="eyebrow">Шаг 4 — Результат</span>
+          <div class="v" style="margin-top:14px"><span id="c-res">16.8</span><small> м³</small></div>
+          <p class="note">С запасом +5% · округление до 0,1 м³ · марка М300</p>
+          <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:24px">
+            <a class="btn btn--solid" href="#tkp">Перенести в заявку на ТКП</a>
+            <a class="btn btn--line" href="{% url 'produkciya_beton' %}">К маркам бетона</a>
+          </div>
+        </div>
+        <p style="margin-top:16px;font-family:var(--font-m);font-size:10.5px;color:var(--concrete);letter-spacing:.06em;line-height:1.8">Расчёт выполняется на клиенте, мгновенно. Результат и выбранная марка подставляются в форму ТКП. Точный объём подтверждает технолог по проекту.</p>
+      </div>
+    </div>
+  </div>
+</section>
+<script>
+(function(){
+  var f = ['c-l','c-w','c-h'].map(function(id){return document.getElementById(id)});
+  var out = document.getElementById('c-res');
+  function calc(){
+    var v = f.reduce(function(a,el){return a*(parseFloat(String(el.value).replace(',','.'))||0)},1);
+    out.textContent = (Math.ceil(v*1.05*10)/10).toFixed(1).replace('.',',');
+  }
+  f.forEach(function(el){el.addEventListener('input',calc)});
+  calc();
+})();
+</script>
+<section class="final">
+  <div class="wrap" style="position:relative">
+    <p class="eyebrow" style="justify-content:center">Один партнёр — весь монолит</p>
+    <h2 style="margin-top:22px">Объём посчитан — <em>дальше мы</em></h2>
+    <p>Отправьте результат с контактами: подтвердим объём по проекту и вернёмся с ТКП.</p>
+    <div class="cta-row">
+      <a class="btn btn--solid" href="#tkp">Запросить ТКП</a>
+      <a class="btn btn--line" href="tel:{{ site.phone_link }}">Заказать звонок</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

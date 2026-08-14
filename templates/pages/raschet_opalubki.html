@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Расчёт и проектирование опалубки{% endblock %}
+
+{% block content %}
+<nav class="bc"><div class="wrap"><a href="{% url 'home' %}">Главная</a><i>/</i><a href="{% url 'uslugi' %}">Сервисы</a><i>/</i><span>Расчёт и проектирование опалубки</span></div></nav>
+<section class="phero"><div class="wrap"><h1>{{ page.h1|default:"Расчёт и проектирование опалубки"|safe }}</h1><p class="sub">{{ page.subtitle|default:"Инженеры UPEX рассчитывают комплект опалубки под ваш проект: схема раскладки, спецификация, график оборота. Для клиентов группы — бесплатно."|safe }}</p><div class="tags"><a class="chip hot" href="#tkp">бесплатно для клиента</a></div></div></section>
+<section><div class="wrap"><div class="sec-head"><h2>Что вы получаете</h2><span class="num">02 / 03</span></div><div class="grid c2" style="align-items:stretch">
+      <div class="pcard" style="pointer-events:none"><span class="ph" style="aspect-ratio:4/3.4;height:100%"><i>[ фото: инженер за расчётом ]</i></span></div>
+      <div class="grid c2">{% for c in cards_by_section.grid1 %}<div class="icard">{% if c.icon %}<span class="ic">{{ c.icon }}</span>{% endif %}<h3 style="font-size:16px">{{ c.title }}</h3><p>{{ c.text }}</p></div>{% endfor %}</div></div></div></section><section class="bt"><div class="wrap"><div class="sec-head"><h2>Как заказать</h2><span class="num">03 / 03</span></div><div class="steps"><div class="step"><i>Шаг 1</i><b>Оставляете заявку</b><span>Контакты и общие параметры объекта</span></div><div class="step"><i>Шаг 2</i><b>Передаёте проект / чертежи</b><span>КЖ-раздел или обмерные схемы</span></div><div class="step"><i>Шаг 3</i><b>Получаете расчёт и ТКП</b><span>Комплект, спецификация, цена и сроки отгрузки</span></div></div></div></section><section class="final">
+  <div class="wrap" style="position:relative">
+    <p class="eyebrow" style="justify-content:center">Один партнёр — весь монолит</p>
+    <h2 style="margin-top:22px">Нужен <em>этот сервис</em>?</h2>
+    <p>Оставьте заявку — включим сервис в поставку или посчитаем отдельно.</p>
+    <div class="cta-row">
+      <a class="btn btn--solid" href="#tkp">Оставить заявку</a>
+      <a class="btn btn--line" href="tel:{{ site.phone_link }}">Заказать звонок</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

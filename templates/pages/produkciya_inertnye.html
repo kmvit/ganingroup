@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Инертные материалы{% endblock %}
+
+{% block content %}
+<nav class="bc"><div class="wrap"><a href="{% url 'home' %}">Главная</a><i>/</i><a href="{% url 'produkciya' %}">Продукция</a><i>/</i><span>Инертные материалы</span></div></nav>
+<section class="phero"><div class="wrap"><h1>{{ page.h1|default:"Инертные материалы с карьера"|safe }}</h1><p class="sub">{{ page.subtitle|default:"Собственный карьер группы: щебень из плотных пород, природный крупный песок, отсев. Отгрузка самосвалами группы."|safe }}</p></div></section>
+<section><div class="wrap"><div class="cat-grid">
+  <aside class="filter"><h3>Фильтр</h3><div class="f-label" style="margin-top:0">Материал</div><div class="opts"><a class="chip act" href="#">Все</a><a class="chip" href="#">Щебень</a><a class="chip" href="#">Песок</a><a class="chip" href="#">Отсев</a></div><div class="f-label" style="margin-top:20px">Фракция</div><div class="opts"><a class="chip" href="#">5–20</a><a class="chip" href="#">20–40</a><a class="chip" href="#">40–70</a></div>
+    <a class="btn btn--line btn--sm" href="#" style="margin-top:24px;width:100%">Сбросить фильтр</a>
+    <p style="margin-top:14px;font-family:var(--font-m);font-size:10.5px;color:var(--concrete);letter-spacing:.06em">HTMX · без перезагрузки · состояние в URL</p>
+  </aside>
+  <div><div class="grid c3"><a class="pcard" href="{% url 'produkciya_kartochka' %}" style="position:relative"><span class="ph"><i>[ фото ]</i></span><span class="body"><h3>Щебень фр. 5–20</h3><span class="row"><span class="chip">М1000</span></span></span></a><a class="pcard" href="{% url 'produkciya_kartochka' %}" style="position:relative"><span class="ph"><i>[ фото ]</i></span><span class="body"><h3>Щебень фр. 20–40</h3><span class="row"><span class="chip">М1000</span></span></span></a><a class="pcard" href="{% url 'produkciya_kartochka' %}" style="position:relative"><span class="ph"><i>[ фото ]</i></span><span class="body"><h3>Щебень фр. 40–70</h3><span class="row"><span class="chip">М800</span></span></span></a><a class="pcard" href="{% url 'produkciya_kartochka' %}" style="position:relative"><span class="ph"><i>[ фото ]</i></span><span class="body"><h3>Песок природный крупный</h3><span class="row"><span class="chip">Мк 2.5+</span></span></span></a><a class="pcard" href="{% url 'produkciya_kartochka' %}" style="position:relative"><span class="ph"><i>[ фото ]</i></span><span class="body"><h3>Отсев дробления</h3><span class="row"><span class="chip">0–5</span></span></span></a></div>
+    <div style="display:flex;justify-content:center;margin-top:32px"><a class="btn btn--line" href="#">Показать ещё</a></div>
+  </div>
+</div></div></section><section class="final">
+  <div class="wrap" style="position:relative">
+    <p class="eyebrow" style="justify-content:center">Один партнёр — весь монолит</p>
+    <h2 style="margin-top:22px">Нужна помощь с <em>подбором</em>?</h2>
+    <p>Технолог подберёт марку и состав под конструкцию и условия на площадке.</p>
+    <div class="cta-row">
+      <a class="btn btn--solid" href="#tkp">Запросить ТКП</a>
+      <a class="btn btn--line" href="tel:{{ site.phone_link }}">Заказать звонок</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

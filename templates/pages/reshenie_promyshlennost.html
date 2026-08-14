@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Промышленность{% endblock %}
+
+{% block content %}
+<nav class="bc"><div class="wrap"><a href="{% url 'home' %}">Главная</a><i>/</i><a href="{% url 'resheniya' %}">Решения</a><i>/</i><span>Промышленность</span></div></nav>
+<section class="phero-photo" style="margin-top:16px">
+  <span class="ph-note">[ фото: промышленная площадка ]</span>
+  <div class="wrap inner"><p class="meta">Решение</p><h1>{{ page.h1|default:"Спецмарки и фундаменты под оборудование"|safe }}</h1><p class="sub">{{ page.subtitle|default:"Промышленным площадкам: высокопрочные и специальные бетоны, нестандартные конструкции, лабораторное сопровождение всего цикла."|safe }}</p><div class="cta-row"><a class="btn btn--solid" href="#tkp">Связаться с менеджером направления</a><a class="btn btn--line" href="#tkp">Запросить ТКП</a></div></div>
+</section>
+<section><div class="wrap"><div class="sec-head"><h2>Что важно для вашего сегмента</h2><span class="num">02 / 07</span></div><div class="grid c3">{% for c in cards_by_section.grid1 %}<div class="icard">{% if c.icon %}<span class="ic">{{ c.icon }}</span>{% endif %}<h3>{{ c.title }}</h3><p>{{ c.text }}</p></div>{% endfor %}</div></div></section><section class="light"><div class="wrap"><div class="sec-head"><h2>Объекты сегмента</h2><a class="btn btn--line btn--sm" href="{% url 'obekty' %}">Все объекты</a></div><div class="obj-grid"><a class="obj" href="{% url 'obekt' %}"><span class="ph"><i>[ фото объекта ]</i></span><span class="body"><span class="meta">Пятигорск · промышленность</span><h3>Производственный корпус</h3><p>Фундаменты под оборудование</p></span></a><a class="obj" href="{% url 'obekt' %}"><span class="ph"><i>[ фото объекта ]</i></span><span class="body"><span class="meta">Невинномысск · бетон</span><h3>Цех переработки</h3><p>Спецмарки с сопровождением</p></span></a><a class="obj" href="{% url 'obekt' %}"><span class="ph"><i>[ фото объекта ]</i></span><span class="body"><span class="meta">КМВ · ЖБИ</span><h3>Энергообъект</h3><p>Нестандартные ЖБИ по чертежам</p></span></a></div></div></section><section class="light" style="padding-top:0"><div class="wrap">
+    <div class="quote-big"><p class="q">«Фундамент под пресс — 900 м³ непрерывной заливки. Лаборатория вела температуру твердения каждые два часа»</p>
+    <div class="quote-who"><span class="ava">фото</span><span><b>Имя Фамилия</b><span>технический директор · промышленное предприятие</span></span></div></div></div></section><section class="bt"><div class="wrap"><div class="sec-head"><h2>Продукция под сегмент</h2><span class="num">05 / 07</span></div><div class="grid c4"><a class="pcard" href="{% url 'produkciya_beton' %}" style="position:relative"><span class="ph"><i>[ фото: бетон ]</i></span><span class="body"><h3>Товарный бетон</h3></span></a><a class="pcard" href="#" style="position:relative"><span class="ph"><i>[ фото: опалубка ]</i></span><span class="body"><h3>Опалубка UPEX</h3></span></a><a class="pcard" href="{% url 'produkciya_zhbi' %}" style="position:relative"><span class="ph"><i>[ фото: ЖБИ ]</i></span><span class="body"><h3>ЖБИ</h3></span></a><a class="pcard" href="{% url 'produkciya_inertnye' %}" style="position:relative"><span class="ph"><i>[ фото: щебень ]</i></span><span class="body"><h3>Инертные материалы</h3></span></a></div></div></section><section><div class="wrap"><div class="sec-head"><h2>Связанные сервисы</h2><span class="num">06 / 07</span></div><div class="grid c3">{% for c in cards_by_section.links %}<a class="icard" {% if c.url_name %}href="{% url c.url_name %}"{% endif %}>{% if c.icon %}<span class="ic">{{ c.icon }}</span>{% endif %}<h3>{{ c.title }}</h3><p>{{ c.text }}</p>{% if c.link_label %}<span class="go">{{ c.link_label }}</span>{% endif %}</a>{% endfor %}</div></div></section><section class="final">
+  <div class="wrap" style="position:relative">
+    <p class="eyebrow" style="justify-content:center">Один партнёр — весь монолит</p>
+    <h2 style="margin-top:22px">Обсудим <em>ваш объект</em>?</h2>
+    <p>Менеджер направления вернётся с комплектацией, графиком и ТКП под ваш сегмент.</p>
+    <div class="cta-row">
+      <a class="btn btn--solid" href="#tkp">Связаться с менеджером</a>
+      <a class="btn btn--line" href="{% url 'kalkulyator' %}">Рассчитать объём бетона</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

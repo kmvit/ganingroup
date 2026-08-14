@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Товарный бетон М350{% endblock %}
+
+{% block content %}
+<nav class="bc"><div class="wrap"><a href="{% url 'home' %}">Главная</a><i>/</i><a href="{% url 'produkciya' %}">Продукция</a><i>/</i><a href="{% url 'produkciya_beton' %}">Бетон</a><i>/</i><span>Товарный бетон М350</span></div></nav>
+<section class="phero"><div class="wrap"><h1>{{ page.h1|default:"Товарный бетон М350 <span style=&quot;color:var(--concrete)&quot;>(B25)</span>"|safe }}</h1></div></section>
+
+<section style="padding-top:0">
+  <div class="wrap">
+    <div class="grid c2" style="align-items:start">
+      <div>
+        <div class="pcard" style="pointer-events:none"><span class="ph" style="aspect-ratio:4/3"><i>[ главное фото продукта ]</i></span></div>
+        <div class="gal" style="margin-top:14px"><span class="ph"><i>[ 1 ]</i></span><span class="ph"><i>[ 2 ]</i></span><span class="ph"><i>[ 3 ]</i></span><span class="ph"><i>[ 4 ]</i></span></div>
+      </div>
+      <div>
+        <div class="tags" style="display:flex;flex-wrap:wrap;gap:8px"><span class="chip">F200</span><span class="chip">W4</span><span class="chip">П4</span><span class="chip hot">ГОСT 7473</span></div>
+        <p class="sub" style="margin-top:20px;color:var(--silver);font-size:15.5px;line-height:1.7;max-width:56ch">{{ page.subtitle|default:"Конструкционный бетон для монолитных каркасов жилых и коммерческих зданий: колонны, ригели, перекрытия. Подбор состава и паспорт качества — собственная лаборатория."|safe }}</p>
+        <div class="form-card" style="margin-top:26px">
+          <span class="eyebrow">Цена</span>
+          <div style="font-family:var(--font-h);font-weight:600;font-size:38px;text-transform:uppercase;color:var(--white);margin-top:10px">По запросу</div>
+          <p style="font-size:13px;color:var(--muted);margin-top:6px">Зависит от объёма, графика и способа подачи. Поле цены скрываемое — управляется из CMS.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:20px">
+            <a class="btn btn--solid" href="#tkp">Запросить цену</a>
+            <a class="btn btn--line" href="{% url 'kalkulyator' %}">Рассчитать объём</a>
+          </div>
+          <p style="margin-top:12px;font-family:var(--font-m);font-size:10.5px;color:var(--concrete);letter-spacing:.06em">Наименование позиции подставится в форму автоматически</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="bt">
+  <div class="wrap">
+<div class="sec-head"><h2>Характеристики</h2><span class="num">02 / 04</span></div>
+    <div style="overflow-x:auto"><table class="spec">
+      <tr><th>Параметр</th><th>Значение</th><th>Норматив</th></tr>
+      <tr><td>Класс прочности</td><td>B25 (М350)</td><td>ГОСТ 26633</td></tr>
+      <tr><td>Морозостойкость</td><td>F200</td><td>ГОСТ 10060</td></tr>
+      <tr><td>Водонепроницаемость</td><td>W4</td><td>ГОСТ 12730.5</td></tr>
+      <tr><td>Подвижность</td><td>П3–П4</td><td>ГОСТ 7473</td></tr>
+      <tr><td>Заполнитель</td><td>щебень фр. 5–20, собственный карьер</td><td>ГОСТ 8267</td></tr>
+    </table></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+<div class="sec-head"><h2>Преимущества и применение</h2><span class="num">03 / 04</span></div><div class="grid c3">{% for c in cards_by_section.grid1 %}<div class="icard">{% if c.icon %}<span class="ic">{{ c.icon }}</span>{% endif %}<h3>{{ c.title }}</h3><p>{{ c.text }}</p></div>{% endfor %}</div>
+  </div>
+</section>
+<section class="final">
+  <div class="wrap" style="position:relative">
+    <p class="eyebrow" style="justify-content:center">Один партнёр — весь монолит</p>
+    <h2 style="margin-top:22px">Нужна <em>цена</em> на объём?</h2>
+    <p>Запросите цену — наименование позиции подставится в заявку автоматически.</p>
+    <div class="cta-row">
+      <a class="btn btn--solid" href="#tkp">Запросить ТКП</a>
+      <a class="btn btn--line" href="tel:{{ site.phone_link }}">Заказать звонок</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

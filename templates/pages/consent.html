@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Согласие на обработку ПДн{% endblock %}
+
+{% block content %}
+<nav class="bc"><div class="wrap"><a href="{% url 'home' %}">Главная</a><i>/</i><span>Согласие на обработку</span></div></nav>
+<section class="phero"><div class="wrap"><h1>{{ page.h1|default:"Согласие на обработку персональных данных"|safe }}</h1></div></section>
+<section style="padding-top:0"><div class="wrap"><div class="prose"><p>Отправляя форму на сайте ГАНИН ГРУПП, я даю согласие ЗАО «Стройдеталь-2» на обработку моих персональных данных: имя, телефон, компания, адрес электронной почты, содержание обращения.</p><p>Согласие даётся на совершение действий, предусмотренных ФЗ-152: сбор, запись, систематизацию, хранение, уточнение, использование, передачу лицам, обеспечивающим обработку заявки, удаление.</p><p>Цель обработки — связь по моему обращению, подготовка технико-коммерческого предложения, приём отклика на вакансию.</p><p>Согласие действует до его отзыва. Отозвать согласие можно письмом на info@ganin.group.</p><p>[ Текст финализируется юристом на этапе наполнения. ]</p></div></div></section><section class="final">
+  <div class="wrap" style="position:relative">
+    <p class="eyebrow" style="justify-content:center">Один партнёр — весь монолит</p>
+    <h2 style="margin-top:22px">Обсудим <em>ваш объект</em>?</h2>
+    <p>Пришлите параметры объекта — вернёмся с технико-коммерческим предложением и графиком поставок.</p>
+    <div class="cta-row">
+      <a class="btn btn--solid" href="#tkp">Запросить ТКП</a>
+      <a class="btn btn--line" href="tel:{{ site.phone_link }}">Заказать звонок</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

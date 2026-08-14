@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Сервисы{% endblock %}
+
+{% block content %}
+<nav class="bc"><div class="wrap"><a href="{% url 'home' %}">Главная</a><i>/</i><span>Сервисы</span></div></nav>
+<section class="phero"><div class="wrap"><h1>{{ page.h1|default:"Сервисы"|safe }}</h1><p class="sub">{{ page.subtitle|default:"Как мы доставляем ценность — не только продукт. Логистика, инженерная поддержка и контроль качества, встроенные в поставку."|safe }}</p></div></section>
+<section><div class="wrap"><div class="grid c2">{% for c in cards_by_section.links %}<a class="icard" {% if c.url_name %}href="{% url c.url_name %}"{% endif %}>{% if c.icon %}<span class="ic">{{ c.icon }}</span>{% endif %}<h3>{{ c.title }}</h3><p>{{ c.text }}</p>{% if c.link_label %}<span class="go">{{ c.link_label }}</span>{% endif %}</a>{% endfor %}</div></div></section><section class="final">
+  <div class="wrap" style="position:relative">
+    <p class="eyebrow" style="justify-content:center">Один партнёр — весь монолит</p>
+    <h2 style="margin-top:22px">Нужен <em>сервис</em> под задачу?</h2>
+    <p>Опишите объект — предложим состав сервисов и включим их в ТКП.</p>
+    <div class="cta-row">
+      <a class="btn btn--solid" href="#tkp">Запросить ТКП</a>
+      <a class="btn btn--line" href="tel:{{ site.phone_link }}">Заказать звонок</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

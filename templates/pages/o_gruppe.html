@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}О группе{% endblock %}
+
+{% block content %}
+<nav class="bc"><div class="wrap"><a href="{% url 'home' %}">Главная</a><i>/</i><span>О группе</span></div></nav>
+<section class="phero"><div class="wrap"><h1>{{ page.h1|default:"О группе <em style=&quot;font-style:normal;color:var(--accent)&quot;>ГАНИН ГРУПП</em>"|safe }}</h1><p class="sub">{{ page.subtitle|default:"Одна сильная компания с несколькими направлениями: бетон, ЖБИ, асфальт, опалубка UPEX, карьер и транспорт. База на Кавказских Минеральных Водах, поставки по СКФО и всей России."|safe }}</p><div class="tags"><a class="chip" href="#istoriya">История</a><a class="chip" href="#aktivy">Активы</a><a class="chip" href="#komanda">Команда</a><a class="chip" href="#docs">Документы</a><a class="chip" href="#slovo">Слово собственника</a></div></div></section>
+
+<section id="slovo">
+  <div class="wrap">
+    <div class="sec-head"><p class="eyebrow">Слово собственника</p><span class="num">01 / 06</span></div>
+    <div class="about-grid" style="grid-template-columns:280px 1fr;align-items:start">
+      <div class="pcard" style="pointer-events:none"><span class="ph" style="aspect-ratio:3/3.6"><i>[ портрет собственника ]</i></span></div>
+      <div>
+        <p class="big" style="font-size:clamp(20px,2.2vw,30px);line-height:1.45;font-weight:500;color:var(--paper)">«Мы шестьдесят лет делаем одно дело: бетон, который приходит вовремя. Всё, что вокруг — карьер, лаборатория, машины, опалубка — существует ради этого. <b style="color:var(--accent)">График заказчика — наша главная марка прочности»</b>.</p>
+        <div class="quote-who" style="margin-top:26px">
+          <span><b style="color:var(--white)">Михаил Ганин</b><span style="color:var(--muted);display:block;font-size:13px">собственник группы</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="istoriya" class="bt">
+  <div class="wrap">
+    <div class="sec-head"><h2>История и наследие</h2><span class="num">02 / 06</span></div>
+    <div class="tl">
+      {% for e in timeline %}<div class="ev"><div class="y">{{ e.year }}</div><b>{{ e.title }}</b><p>{{ e.text }}</p></div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section id="aktivy" class="bt">
+  <div class="wrap">
+    <div class="sec-head"><h2>Производственные активы</h2><span class="num">03 / 06</span></div>
+<div class="grid c3"><a class="pcard" href="#" style="position:relative"><span class="ph"><i>[ фото: карьер ]</i></span><span class="body"><h3>Карьер</h3><p>Щебень из плотных пород, природный крупный песок, отсев</p></span></a><a class="pcard" href="#" style="position:relative"><span class="ph"><i>[ фото: завод ]</i></span><span class="body"><h3>Бетонный завод</h3><p>Смесительные узлы Teka — до 150 000 м³ бетона и раствора в год</p></span></a><a class="pcard" href="#" style="position:relative"><span class="ph"><i>[ фото: лаборатория ]</i></span><span class="body"><h3>Лаборатория</h3><p>Подбор составов, контроль партий, паспорт качества на каждую отгрузку</p></span></a><a class="pcard" href="#" style="position:relative"><span class="ph"><i>[ фото: автопарк ]</i></span><span class="body"><h3>Автопарк</h3><p>25 автомиксеров, 8 бетононасосов, самосвальный парк</p></span></a><a class="pcard" href="#" style="position:relative"><span class="ph"><i>[ фото: цех UPEX ]</i></span><span class="body"><h3>Производство UPEX</h3><p>Опалубочные системы собственной разработки и производства</p></span></a><a class="pcard" href="#" style="position:relative"><span class="ph"><i>[ фото: линия ЖБИ ]</i></span><span class="body"><h3>ЖБИ и асфальт</h3><p>Формовочные линии ZENITH — 293 вида изделий, до 3 млн блоков в год</p></span></a></div>
+  </div>
+</section>
+
+<section class="stats">
+  <div class="wrap"><div class="sec-head"><h2>Цифры группы</h2><span class="num">04 / 06</span></div></div>
+  <div class="wrap"><div class="stats-grid">
+    <div class="stat"><div class="v">150<sup>тыс</sup></div><div class="l">м³ бетона и раствора в год</div><div class="b">проектная мощность</div></div>
+    <div class="stat"><div class="v">293</div><div class="l">вида изделий ЖБИ</div><div class="b">до 3 млн блоков в год</div></div>
+    <div class="stat"><div class="v">25</div><div class="l">автомиксеров</div><div class="b">+ 8 бетононасосов</div></div>
+    <div class="stat"><div class="v">60<sup>+</sup></div><div class="l">лет на рынке</div><div class="b">база — КМВ</div></div>
+  </div></div>
+</section>
+
+<section class="light" id="komanda">
+  <div class="wrap">
+    <div class="sec-head"><h2>Команда</h2><span class="num">05 / 06</span></div>
+    <div class="team-grid">
+      <div class="tm"><span class="ph"><i>[ портрет ]</i></span><div class="body"><b>Имя Фамилия</b><span>генеральный директор</span></div></div>
+      <div class="tm"><span class="ph"><i>[ портрет ]</i></span><div class="body"><b>Имя Фамилия</b><span>главный технолог</span></div></div>
+      <div class="tm"><span class="ph"><i>[ портрет ]</i></span><div class="body"><b>Имя Фамилия</b><span>начальник лаборатории</span></div></div>
+      <div class="tm"><span class="ph"><i>[ портрет ]</i></span><div class="body"><b>Имя Фамилия</b><span>руководитель UPEX</span></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="docs" class="bt">
+  <div class="wrap">
+    <div class="sec-head"><h2>Документы и сертификаты</h2><span class="num">06 / 06</span></div>
+    <div class="rows">
+      <div class="rowi"><span class="kind">PDF</span><div><div class="tit">Лицензии и СРО</div><div class="sub">допуски на виды работ · членство в саморегулируемых организациях</div></div><a class="btn btn--line btn--sm act" href="#">Скачать</a></div>
+      <div class="rowi"><span class="kind">PDF</span><div><div class="tit">Паспорта качества бетона</div><div class="sub">форма паспорта на партию · протоколы испытаний лаборатории</div></div><a class="btn btn--line btn--sm act" href="#">Скачать</a></div>
+      <div class="rowi"><span class="kind">PDF</span><div><div class="tit">Сертификаты на продукцию</div><div class="sub">соответствие ГОСТ по направлениям: бетон, ЖБИ, асфальт</div></div><a class="btn btn--line btn--sm act" href="#">Скачать</a></div>
+    </div>
+  </div>
+</section>
+<section class="final">
+  <div class="wrap" style="position:relative">
+    <p class="eyebrow" style="justify-content:center">Один партнёр — весь монолит</p>
+    <h2 style="margin-top:22px">Готовы обсудить <em>ваш объект</em>?</h2>
+    <p>Пришлите параметры объекта — вернёмся с технико-коммерческим предложением и графиком поставок.</p>
+    <div class="cta-row">
+      <a class="btn btn--solid" href="#tkp">Запросить ТКП</a>
+      <a class="btn btn--line" href="tel:{{ site.phone_link }}">Заказать звонок</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

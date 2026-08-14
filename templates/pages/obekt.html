@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}ЖК «Название» — кейс{% endblock %}
+
+{% block content %}
+<nav class="bc"><div class="wrap"><a href="{% url 'home' %}">Главная</a><i>/</i><a href="{% url 'obekty' %}">Объекты</a><i>/</i><span>ЖК «Название»</span></div></nav>
+<section class="phero-photo" style="margin-top:16px">
+  <span class="ph-note">[ главное фото объекта / съёмка с дрона ]</span>
+  <div class="wrap inner"><p class="meta">Кейс · Ставрополь · бетон · застройщик (по согласию)</p><h1>{{ page.h1|default:"Давайте зальём ЖК в срок"|safe }}</h1><p class="sub">{{ page.subtitle|default:"ЖК «Название»: монолитный жилой комплекс, 4 корпуса по 18 этажей. Поставка товарного бетона с подачей насосами в течение полного строительного сезона."|safe }}</p></div>
+</section>
+
+<section>
+  <div class="wrap">
+<div class="sec-head"><h2>Как это было</h2><span class="num">02 / 05</span></div>
+    <div class="case-rows">
+      <div class="case-row"><b>Контекст</b><p>Крупный ЖК с жёстким графиком монолитных работ: четыре корпуса строятся параллельно, пиковые заливки — до 400 м³ в сутки, работы идут круглый год, включая зимние месяцы.</p></div>
+      <div class="case-row"><b>Вызов</b><p>Предыдущий поставщик срывал ритм подачи на пике сезона: простои бригад и бетононасосов, риск холодных швов на перекрытиях, отставание от графика на два месяца.</p></div>
+      <div class="case-row"><b>Решение</b><p>Выделенная диспетчерская линия и закреплённый парк миксеров, поставка с двух смесительных узлов, зимние рецептуры с прогревом, лаборатория на связи с ПТО заказчика. Единый график заливок на месяц вперёд.</p></div>
+      <div class="case-row"><b>Результат</b><p>12 000 м³ за сезон без единого срыва графика. Заказчик перевёл на нас все следующие очереди комплекса и рекомендовал группу генподрядчику соседнего объекта.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="stats">
+  <div class="wrap"><div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+    <div class="stat"><div class="v">12<sup>тыс</sup></div><div class="l">м³ бетона поставлено</div><div class="b">за один сезон</div></div>
+    <div class="stat"><div class="v">400</div><div class="l">м³ — пиковая заливка в сутки</div><div class="b">подача двумя насосами</div></div>
+    <div class="stat"><div class="v">0</div><div class="l">срывов графика</div><div class="b">включая зимние работы</div></div>
+  </div></div>
+</section>
+
+<section>
+  <div class="wrap">
+<div class="sec-head"><h2>Фотографии объекта</h2><span class="num">04 / 05</span></div>
+    <div class="gal"><span class="ph"><i>[ фото 1 ]</i></span><span class="ph"><i>[ фото 2 ]</i></span><span class="ph"><i>[ фото 3 ]</i></span><span class="ph"><i>[ фото 4 ]</i></span></div>
+  </div>
+</section>
+
+<section class="light">
+  <div class="wrap">
+    <div class="quote-big">
+      <p class="q">«Для нас важнее всего был <em>ритм поставок</em> на пике сезона. График монолита мы не сорвали ни разу — поэтому и продолжаем работать вместе».</p>
+      <div class="quote-who">
+        <span class="ava">фото</span>
+        <span><b>Имя Фамилия</b><span>руководитель снабжения · застройщик</span></span>
+      </div>
+    </div>
+    <a class="btn btn--line on-light btn--sm" href="{% url 'home' %}#map" style="margin-top:32px">Показать на карте присутствия →</a>
+  </div>
+</section>
+<section class="final">
+  <div class="wrap" style="position:relative">
+    <p class="eyebrow" style="justify-content:center">Один партнёр — весь монолит</p>
+    <h2 style="margin-top:22px">Похожий <em>объект</em> впереди?</h2>
+    <p>Пришлите параметры — вернёмся с графиком поставок и ТКП.</p>
+    <div class="cta-row">
+      <a class="btn btn--solid" href="#tkp">Запросить ТКП</a>
+      <a class="btn btn--line" href="tel:{{ site.phone_link }}">Заказать звонок</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

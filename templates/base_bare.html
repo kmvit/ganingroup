@@ -1,0 +1,18 @@
+{% load static %}<!DOCTYPE html>
+<html lang="ru">
+{# Автономная страница без шапки/подвала (лист айдентики, вне навигации) #}
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<script>try{var t=localStorage.getItem('gg-theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}</script>
+<title>{% block title %}{% endblock %} — ГАНИН ГРУПП</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" />
+<link rel="stylesheet" href="{% static 'assets/site.css' %}" />
+<link rel="icon" type="image/svg+xml" href="{{ site.logo_mark_url }}" />
+</head>
+<body>
+{% block content %}{% endblock %}
+</body>
+</html>

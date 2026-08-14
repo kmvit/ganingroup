@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Контакты{% endblock %}
+
+{% block content %}
+<nav class="bc"><div class="wrap"><a href="{% url 'home' %}">Главная</a><i>/</i><span>Контакты</span></div></nav>
+<section class="phero"><div class="wrap"><h1>{{ page.h1|default:"Контакты"|safe }}</h1><p class="sub">{{ page.subtitle|default:"Телефоны по отделам — с именами и лицами ответственных, а не «единый колл-центр»."|safe }}</p></div></section>
+<section style="padding-top:0;margin-top:-16px"><div class="wrap"><div class="grid c3">{% for d in departments %}<div class="dept"><span class="ava">{% if d.photo %}<img src="{{ d.photo.url }}" alt="{{ d.person }}" style="width:100%;height:100%;object-fit:cover" />{% else %}фото{% endif %}</span><div><b>{{ d.title }}</b><span>{{ d.person }}{% if d.position %} · {{ d.position }}{% endif %}</span>{% if d.phone %}<span><a href="tel:{{ d.phone }}">{{ d.phone }}</a></span>{% endif %}{% if d.email %}<span><a href="mailto:{{ d.email }}">{{ d.email }}</a></span>{% endif %}</div></div>
+      {% endfor %}</div></div></section>
+<section class="bt" id="form">
+  <div class="wrap">
+<div class="sec-head"><h2>Напишите нам</h2><span class="num">02 / 03</span></div>
+    <div class="grid c2" style="align-items:start">
+      <div class="form-card">
+        <h3>Форма обратной связи</h3>
+        <div class="grid c2" style="gap:14px;margin-top:4px">
+          <div><label class="f-label">Имя *</label><input class="f-input" /></div>
+          <div><label class="f-label">Телефон *</label><input class="f-input" placeholder="+7 ___ ___-__-__" /></div>
+          <div><label class="f-label">Направление</label><input class="f-input" value="Бетон / Опалубка ▾" readonly /></div>
+          <div><label class="f-label">Ваша роль</label><input class="f-input" value="Снабжение / ГИП ▾" readonly /></div>
+        </div>
+        <label class="f-label">Сообщение</label><textarea class="f-input" placeholder="Объект, объём, сроки"></textarea>
+        <label class="f-agree"><input type="checkbox" checked /> <span>Согласен на обработку персональных данных — <a href="{% url 'consent' %}">текст</a></span></label>
+        <a class="btn btn--solid" href="#tkp-ok" style="width:100%;margin-top:22px">Отправить</a>
+      </div>
+      <div>
+        <div class="dmap">
+          <span class="map-pt" style="left:38%;top:44%">офис и завод · КМВ</span>
+          <span class="map-pt f" style="left:22%;top:66%">карьер</span>
+          <span class="map-note">[ карта проезда · Яндекс.Карты ]</span>
+        </div>
+        <div class="rows" style="margin-top:22px">
+          <div class="rowi" style="padding:14px 0"><span class="kind">Адрес</span><div class="sub" style="font-size:14px;color:var(--silver)">Ставропольский край, Кавказские Минеральные Воды, промзона, стр. 1</div></div>
+          <div class="rowi" style="padding:14px 0"><span class="kind">График</span><div class="sub" style="font-size:14px;color:var(--silver)">Пн–Сб 8:00–18:00 · диспетчерская бетона в сезон — 24/7</div></div>
+          <div class="rowi" style="padding:14px 0"><span class="kind">Почта</span><div class="sub" style="font-size:14px;color:var(--silver)">info@ganin.group · Мессенджеры: MAX / Telegram</div></div>
+          <div class="rowi" style="padding:14px 0"><span class="kind">Реквизиты</span><div class="sub" style="font-size:14px;color:var(--silver)">ЗАО «Стройдеталь-2» · ИНН 26ХХХХХХХХ · ОГРН 10226ХХХХХХХХ</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="final">
+  <div class="wrap" style="position:relative">
+    <p class="eyebrow" style="justify-content:center">Один партнёр — весь монолит</p>
+    <h2 style="margin-top:22px">Быстрее — <em>по телефону</em></h2>
+    <p>Диспетчерская бетона отвечает в сезон круглосуточно.</p>
+    <div class="cta-row">
+      <a class="btn btn--solid" href="tel:{{ site.phone_link }}">Позвонить</a>
+      <a class="btn btn--line" href="#tkp">Запросить ТКП</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

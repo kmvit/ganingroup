@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Продукция{% endblock %}
+
+{% block content %}
+<nav class="bc"><div class="wrap"><a href="{% url 'home' %}">Главная</a><i>/</i><span>Продукция</span></div></nav>
+<section class="phero"><div class="wrap"><h1>{{ page.h1|default:"Продукция"|safe }}</h1><p class="sub">{{ page.subtitle|default:"Что мы физически производим и поставляем: собственный карьер, заводы бетона, ЖБИ и асфальта, производство опалубки UPEX. Паспорт качества — на каждую партию."|safe }}</p></div></section>
+
+<section>
+  <div class="wrap">
+    <div class="mosaic">
+      <a class="mz big" href="{% url 'produkciya_beton' %}">
+        <span class="ph-tag">[ фото: миксер на заливке ]</span>
+        <span class="cap"><h3>Бетон <em>→</em></h3><p>Товарный бетон М100–М1000, спецмарки и растворы. До 150 000 м³ в год. Доставка миксерами, подача насосами.</p></span>
+      </a>
+      <a class="mz" href="{% url 'produkciya_zhbi' %}">
+        <span class="ph-tag">[ фото: склад ЖБИ ]</span>
+        <span class="cap"><h3>ЖБИ <em>→</em></h3><p>293 вида: ФБС, кольца, плиты, бордюры</p></span>
+      </a>
+      <a class="mz" href="{% url 'produkciya_asfalt' %}">
+        <span class="ph-tag">[ фото: укладка ]</span>
+        <span class="cap"><h3>Асфальт <em>→</em></h3><p>Смеси по ГОСТ 9128-2009</p></span>
+      </a>
+      <a class="mz tall upex" href="#">
+        <span class="glow"></span>
+        <span class="cap"><h3>Опалубка UPEX <em>→</em></h3><p>Системы собственного производства. Расчёт комплекта, отгрузка в любой регион, шеф-монтаж.</p><span class="ext">upex.pro ↗</span></span>
+      </a>
+      <a class="mz" href="{% url 'produkciya_inertnye' %}">
+        <span class="ph-tag">[ фото: карьер ]</span>
+        <span class="cap"><h3>Инертные материалы <em>→</em></h3><p>Щебень, песок природный, отсев</p></span>
+      </a>
+      <a class="mz" href="{% url 'produkciya_cement' %}">
+        <span class="ph-tag">[ фото: фасовка ]</span>
+        <span class="cap"><h3>Фасованный цемент <em>→</em></h3><p>Направление для розничных и мелкооптовых запросов</p></span>
+      </a>
+    </div>
+    <p style="margin-top:18px;font-family:var(--font-m);font-size:11.5px;color:var(--concrete);letter-spacing:.06em">* Фасованный цемент — информационная страница направления с формой запроса, без онлайн-каталога.</p>
+  </div>
+</section>
+<section class="final">
+  <div class="wrap" style="position:relative">
+    <p class="eyebrow" style="justify-content:center">Один партнёр — весь монолит</p>
+    <h2 style="margin-top:22px">Нужна <em>спецификация</em> под проект?</h2>
+    <p>Пришлите ведомость объёмов — подберём марки, комплектацию и график поставки.</p>
+    <div class="cta-row">
+      <a class="btn btn--solid" href="#tkp">Запросить ТКП</a>
+      <a class="btn btn--line" href="tel:{{ site.phone_link }}">Заказать звонок</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

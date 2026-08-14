@@ -1,0 +1,13 @@
+{% load static %}
+<header class="site">
+  <div class="wrap site-row">
+    <a class="brand" href="{% url 'home' %}" aria-label="ГАНИН ГРУПП"><img class="lg-dark" src="{{ site.logo_compact_url }}" alt="ГАНИН ГРУПП" /><img class="lg-light" src="{{ site.logo_compact_light_url }}" alt="ГАНИН ГРУПП" /></a>
+    <nav class="main">{% for item in nav_main %}<div><a class="top{% if active == item.key %} act{% endif %}" href="{% url item.url_name %}">{{ item.label }}{% if item.children %} ▾{% endif %}</a>{% if item.children %}<div class="dd">{% for c in item.children %}<a href="{% if c.url_name %}{% url c.url_name %}{% else %}{{ c.external }}{% endif %}">{{ c.label }}</a>{% endfor %}</div>{% endif %}</div>{% endfor %}</nav>
+    <div class="site-cta">
+      {% include "partials/theme_toggle.html" %}
+      <a class="tel" href="tel:{{ phone }}" aria-label="Позвонить">{% include "partials/icon_phone.html" %}</a>
+      <a class="btn btn--solid btn--sm" href="#tkp">Запросить ТКП</a>
+      <a class="burger" href="#menu" aria-label="Меню">≡</a>
+    </div>
+  </div>
+</header>

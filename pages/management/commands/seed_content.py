@@ -104,9 +104,15 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--reset', action='store_true',
                             help='Очистить контентные таблицы перед заливкой')
+        parser.add_argument('--if-empty', action='store_true',
+                            help='Заливать только в пустую базу (для автостарта на сервере)')
 
     @transaction.atomic
     def handle(self, *args, **opts):
+        if opts['if_empty'] and Page.objects.exists():
+            self.stdout.write('Контент уже есть — заливка пропущена.')
+            return
+
         if opts['reset']:
             for model in (Stat, Direction, ProjectObject, Department, TeamMember,
                           Review, Vacancy, Document, TimelineEvent, MapPoint):

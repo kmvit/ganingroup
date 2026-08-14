@@ -1,0 +1,18 @@
+# Сайт ГАНИН ГРУПП.
+# Контейнер слушает только localhost — наружу его отдаёт nginx хоста
+# (конфиг: deploy/nginx-host.conf).
+#
+# ВАЖНО: база и загруженные файлы лежат на хосте (папки data/ и media/),
+# поэтому `docker compose up --build` не стирает контент заказчика.
+services:
+  web:
+    build: .
+    image: ganin-site
+    restart: always
+    env_file: .env
+    volumes:
+      - ./data:/app/data                  # база SQLite
+      - ./media:/app/media                # логотипы, фото, резюме
+      - ./staticfiles:/app/staticfiles    # собранная статика — её отдаёт nginx
+    ports:
+      - "127.0.0.1:8001:8000"

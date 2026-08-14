@@ -86,10 +86,12 @@ WSGI_APPLICATION = 'ganin_site.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# Путь к базе задаётся переменной, чтобы в Docker она лежала на хосте
+# (папка data/) и переживала пересборку контейнера.
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': os.environ.get('DJANGO_DB_PATH', BASE_DIR / 'db.sqlite3'),
     }
 }
 

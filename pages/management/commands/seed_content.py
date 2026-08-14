@@ -12,9 +12,9 @@ from django.core.files import File
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from pages.models import (Card, Department, Direction, Document, MapPoint, MenuItem, Page,
-                          ProjectObject, Review, SiteSettings, Stat, TeamMember,
-                          TimelineEvent, Vacancy)
+from pages.models import (Card, ConcreteGrade, Department, Direction, Document, MapPoint,
+                          MenuItem, Page, ProjectObject, Review, SiteSettings, Stat,
+                          TeamMember, TimelineEvent, Vacancy)
 from pages.nav import MAIN as NAV_MAIN
 from pages.seed_cards import CARDS
 from pages.seed_cards_links import CARD_LINKS
@@ -94,6 +94,22 @@ MAP_POINTS = [
 REVIEW = ('«Для нас важнее всего был <em>ритм поставок</em> на пике сезона. График монолита '
           'мы не сорвали ни разу — поэтому и продолжаем работать вместе».',
           'Имя Фамилия', 'руководитель снабжения · застройщик')
+
+# Цены из прайса «Бетоны и растворы», за 1 м³ без доставки.
+# Класс переведён в марку по стандартному соответствию (В15 ≈ М200 и т.д.).
+CONCRETE_GRADES = [
+    ('М100', 'В7,5 W4', 5076, ''),
+    ('М150', 'В12,5 W4', 5355, ''),
+    ('М200', 'В15 W4', 5596, ''),
+    ('М250', 'В20 W4', 5736, ''),
+    ('М300', 'В22,5 W4', 6015, ''),
+    ('М350', 'В25 W4', 6200, ''),
+    ('М400', 'В30 W6-8', 7100, 'пластичность П4'),
+    ('М450', 'В35 W6-8', 8320, 'высокомарочный'),
+    ('М550', 'В40 W6-8', 8785, 'высокомарочный'),
+    ('М600', 'В45 W6-8', 10180, 'высокомарочный'),
+    ('спецмарка', '', None, 'подбирает технолог по проекту'),
+]
 
 DOCUMENTS = [
     ('Паспорт качества на партию бетона', 'PDF', 'выдаётся на каждую отгрузку'),
@@ -228,6 +244,11 @@ class Command(BaseCommand):
             Document.objects.get_or_create(title=title, defaults=dict(
                 kind=kind, summary=summary, order=i * 10))
 
+        for i, (title, gclass, price, note) in enumerate(CONCRETE_GRADES, 1):
+            ConcreteGrade.objects.get_or_create(title=title, defaults=dict(
+                grade_class=gclass, price=price, note=note,
+                is_default=(title == 'М300'), order=i * 10))
+
         for i, (year, title, txt) in enumerate(TIMELINE, 1):
             TimelineEvent.objects.get_or_create(title=title, defaults=dict(
                 year=year, text=txt, order=i * 10))
@@ -241,4 +262,5 @@ class Command(BaseCommand):
             f'объекты: {ProjectObject.objects.count()}, отделы: {Department.objects.count()}, '
             f'команда: {TeamMember.objects.count()}, вакансии: {Vacancy.objects.count()}, '
             f'история: {TimelineEvent.objects.count()}, карта: {MapPoint.objects.count()}, '
-            f'документы: {Document.objects.count()}, отзывы: {Review.objects.count()}'))
+            f'документы: {Document.objects.count()}, отзывы: {Review.objects.count()}, '
+            f'марки бетона: {ConcreteGrade.objects.count()}'))

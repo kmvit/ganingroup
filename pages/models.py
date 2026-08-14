@@ -117,6 +117,16 @@ class SiteSettings(models.Model):
                                help_text='Ссылка в меню «Опалубка (UPEX) ↗»')
     messenger_url = models.CharField('Ссылка мессенджера (кнопка MAX)', max_length=250, blank=True)
 
+    # --- цены ---
+    price_note = models.CharField(
+        'Оговорка про цены', max_length=300, blank=True,
+        default='Цены указаны без доставки. Окончательная стоимость зависит от объёма, '
+                'графика поставок и удалённости объекта.',
+        help_text='Показывается под результатом калькулятора')
+    price_valid_from = models.DateField(
+        'Цены действуют с', null=True, blank=True,
+        help_text='Дата из прайс-листа — выводится рядом с результатом')
+
     # --- уведомления о заявках ---
     notify_emails = models.CharField(
         'Куда слать заявки (почта)', max_length=400, blank=True,
@@ -518,3 +528,30 @@ class VacancyApplication(models.Model):
 
     def __str__(self):
         return f'{self.name} · {self.vacancy or self.vacancy_title or "без вакансии"}'
+
+
+# ============================================================ ЦЕНЫ
+
+class ConcreteGrade(Ordered):
+    """Марка бетона с ценой для калькулятора.
+
+    Цена — «от», за 1 м³, без доставки: окончательная зависит от объёма,
+    графика поставок и удалённости объекта. Точные цифры берутся из прайса
+    и правятся здесь, без участия разработчика.
+    """
+
+    title = models.CharField('Марка', max_length=40, help_text='Например: М300')
+    grade_class = models.CharField('Класс', max_length=40, blank=True,
+                                   help_text='Например: В22,5 W4')
+    price = models.PositiveIntegerField(
+        'Цена от, ₽ за м³', null=True, blank=True,
+        help_text='Без доставки. Пусто — вместо цены покажем «по запросу»')
+    note = models.CharField('Примечание', max_length=200, blank=True)
+    is_default = models.BooleanField('Выбрана по умолчанию', default=False)
+
+    class Meta(Ordered.Meta):
+        verbose_name = 'Марка бетона и цена'
+        verbose_name_plural = 'Марки бетона и цены'
+
+    def __str__(self):
+        return f'{self.title} — {self.price} ₽/м³' if self.price else f'{self.title} — по запросу'

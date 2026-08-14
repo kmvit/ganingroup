@@ -4,7 +4,7 @@ from django.utils.html import format_html
 
 from .models import (Card, Department, Direction, Document, HaulerLead, Lead, MapPoint,
                      MenuItem, Page, ProjectObject, Review, SiteSettings, Stat, TeamMember,
-                     TimelineEvent, Vacancy, VacancyApplication)
+                     TimelineEvent, Vacancy, VacancyApplication, ConcreteGrade)
 
 admin.site.site_header = 'ГАНИН ГРУПП — управление сайтом'
 admin.site.site_title = 'ГАНИН ГРУПП'
@@ -88,6 +88,11 @@ class SiteSettingsAdmin(admin.ModelAdmin):
             'fields': ('slogan', 'founded_year', 'legal_name', 'copyright_note', 'footer_about'),
         }),
         ('Внешние ссылки', {'fields': ('upex_url', 'messenger_url')}),
+        ('Цены', {
+            'description': 'Оговорка и дата прайса — показываются в калькуляторе. '
+                           'Сами цены задаются в разделе «Марки бетона и цены».',
+            'fields': ('price_note', 'price_valid_from'),
+        }),
         ('Уведомления о заявках', {
             'description': 'Куда сообщать о новых заявках. Если поля пустые — '
                            'заявки всё равно сохраняются и видны в разделах ниже.',
@@ -195,6 +200,14 @@ class TimelineEventAdmin(admin.ModelAdmin):
     list_display = ('year', 'title', 'order', 'published')
     list_editable = ('order', 'published')
     list_display_links = ('year',)
+
+
+@admin.register(ConcreteGrade)
+class ConcreteGradeAdmin(admin.ModelAdmin):
+    """Цены для калькулятора: «от», за 1 м³, без доставки."""
+    list_display = ('title', 'grade_class', 'price', 'is_default', 'order', 'published')
+    list_editable = ('price', 'is_default', 'order', 'published')
+    list_display_links = ('title',)
 
 
 # ============================================================ СТРАНИЦЫ

@@ -11,12 +11,12 @@
   <div class="wrap">
 <div class="sec-head"><h2>Шаг 1 — Тип конструкции</h2><span class="num">01 / 04</span></div>
     <div class="calc-type">
-      <button class="act"><span class="pic">▭</span>Плита / стяжка</button>
-      <button><span class="pic">▯</span>Лента</button>
-      <button><span class="pic">▮</span>Стена</button>
-      <button><span class="pic">◫</span>Колонна</button>
-      <button><span class="pic">◎</span>Свая</button>
-      <button><span class="pic">◺</span>Лестница</button>
+      <button type="button" class="act" data-kind="plate" data-pic="▭"><span class="pic">▭</span>Плита / стяжка</button>
+      <button type="button" data-kind="strip" data-pic="▯"><span class="pic">▯</span>Лента</button>
+      <button type="button" data-kind="wall" data-pic="▮"><span class="pic">▮</span>Стена</button>
+      <button type="button" data-kind="column" data-pic="◫"><span class="pic">◫</span>Колонна</button>
+      <button type="button" data-kind="pile" data-pic="◎"><span class="pic">◎</span>Свая</button>
+      <button type="button" data-kind="stairs" data-pic="◺"><span class="pic">◺</span>Лестница</button>
     </div>
   </div>
 </section>
@@ -26,45 +26,175 @@
     <div class="grid c2" style="align-items:start">
       <div class="form-card">
         <span class="eyebrow">Шаг 2 — Размеры, м</span>
-        <div class="grid c3" style="gap:14px;margin-top:16px">
-          <div><label class="f-label" style="margin-top:0">Длина</label><input id="c-l" class="f-input" value="10" /></div>
-          <div><label class="f-label" style="margin-top:0">Ширина</label><input id="c-w" class="f-input" value="8" /></div>
-          <div><label class="f-label" style="margin-top:0">Толщина</label><input id="c-h" class="f-input" value="0.2" /></div>
+        <div class="grid c3" id="c-fields" style="gap:14px;margin-top:16px">
+          <div><label class="f-label" for="c-a" id="c-a-label" style="margin-top:0">Длина</label><input id="c-a" class="f-input" inputmode="decimal" value="10" /></div>
+          <div><label class="f-label" for="c-b" id="c-b-label" style="margin-top:0">Ширина</label><input id="c-b" class="f-input" inputmode="decimal" value="8" /></div>
+          <div><label class="f-label" for="c-c" id="c-c-label" style="margin-top:0">Толщина</label><input id="c-c" class="f-input" inputmode="decimal" value="0.2" /></div>
         </div>
-        <div class="dmap" style="min-height:150px;margin-top:18px;display:grid;place-items:center"><span style="font-family:var(--font-m);font-size:11px;color:var(--concrete);letter-spacing:.1em">[ СХЕМА КОНСТРУКЦИИ С ПОДСКАЗКАМИ ]</span></div>
+        <div id="c-count-row" style="margin-top:14px;display:none">
+          <label class="f-label" for="c-n" style="margin-top:0">Количество, шт</label>
+          <input id="c-n" class="f-input" inputmode="numeric" value="1" style="max-width:180px" />
+        </div>
+        <p id="c-hint" class="note" style="margin-top:14px;font-family:var(--font-m);font-size:11px;letter-spacing:.06em;color:var(--concrete)"></p>
+
         <span class="eyebrow" style="margin-top:26px">Шаг 3 — Марка / класс</span>
-        <div class="opts" style="display:flex;flex-wrap:wrap;gap:7px;margin-top:12px">
-          <a class="chip" href="#">М200</a><a class="chip act" href="#">М300</a><a class="chip" href="#">М350</a><a class="chip" href="#">М400</a><a class="chip" href="#">спецмарка</a>
+        <div class="opts" id="c-grades" style="display:flex;flex-wrap:wrap;gap:7px;margin-top:12px">
+          {% for g in grades %}<button type="button" class="chip{% if g.is_default %} act{% endif %}"
+            data-grade="{{ g.title }}" data-price="{{ g.price|default_if_none:'' }}"
+            title="{{ g.grade_class }}{% if g.note %} · {{ g.note }}{% endif %}">{{ g.title }}</button>{% endfor %}
         </div>
         <p style="margin-top:12px;font-size:12.5px;color:var(--muted)">+ дополнительные требования: морозостойкость, водонепроницаемость — уточнит технолог.</p>
       </div>
       <div>
         <div class="calc-res">
           <span class="eyebrow">Шаг 4 — Результат</span>
-          <div class="v" style="margin-top:14px"><span id="c-res">16.8</span><small> м³</small></div>
-          <p class="note">С запасом +5% · округление до 0,1 м³ · марка М300</p>
+          <div class="v" style="margin-top:14px"><span id="c-res">16,8</span><small> м³</small></div>
+          <div id="c-price-row" style="margin-top:18px;padding-top:18px;border-top:1px solid var(--line-d)">
+            <span class="eyebrow" style="margin-bottom:8px">Ориентировочно</span>
+            <div style="font-family:var(--font-h);font-weight:600;font-size:clamp(26px,3vw,40px);line-height:1.1;color:var(--white);margin-top:8px">
+              от <span id="c-price">—</span>
+            </div>
+          </div>
+          <p class="note" id="c-note">С запасом +5% · округление до 0,1 м³</p>
           <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:24px">
-            <a class="btn btn--solid" href="#tkp">Перенести в заявку на ТКП</a>
+            <a class="btn btn--solid" id="c-to-tkp" href="#tkp">Перенести в заявку на ТКП</a>
             <a class="btn btn--line" href="{% url 'produkciya_beton' %}">К маркам бетона</a>
           </div>
         </div>
-        <p style="margin-top:16px;font-family:var(--font-m);font-size:10.5px;color:var(--concrete);letter-spacing:.06em;line-height:1.8">Расчёт выполняется на клиенте, мгновенно. Результат и выбранная марка подставляются в форму ТКП. Точный объём подтверждает технолог по проекту.</p>
+        <p style="margin-top:16px;font-family:var(--font-m);font-size:10.5px;color:var(--concrete);letter-spacing:.06em;line-height:1.8">
+          {{ site.price_note|default:"Цены указаны без доставки. Окончательная стоимость зависит от объёма, графика поставок и удалённости объекта." }}
+          {% if site.price_valid_from %} Цены действуют с {{ site.price_valid_from|date:"d.m.Y" }}.{% endif %}
+          Точный объём и марку подтверждает технолог по проекту.
+        </p>
       </div>
     </div>
   </div>
 </section>
+
 <script>
-(function(){
-  var f = ['c-l','c-w','c-h'].map(function(id){return document.getElementById(id)});
-  var out = document.getElementById('c-res');
-  function calc(){
-    var v = f.reduce(function(a,el){return a*(parseFloat(String(el.value).replace(',','.'))||0)},1);
-    out.textContent = (Math.ceil(v*1.05*10)/10).toFixed(1).replace('.',',');
+(function () {
+  // Формулы по типам конструкций. Для сваи считаем по диаметру, для лестницы —
+  // как половину параллелепипеда (треугольное сечение марша).
+  var TYPES = {
+    plate:  {labels: ['Длина', 'Ширина', 'Толщина'], count: false,
+             hint: 'Объём = длина × ширина × толщина',
+             calc: function (a, b, c) { return a * b * c; }},
+    strip:  {labels: ['Длина ленты', 'Ширина', 'Высота'], count: false,
+             hint: 'Общая длина всех лент фундамента',
+             calc: function (a, b, c) { return a * b * c; }},
+    wall:   {labels: ['Длина', 'Высота', 'Толщина'], count: false,
+             hint: 'Проёмы (окна, двери) вычтите из длины',
+             calc: function (a, b, c) { return a * b * c; }},
+    column: {labels: ['Сторона A', 'Сторона B', 'Высота'], count: true,
+             hint: 'Размеры сечения колонны и её высота',
+             calc: function (a, b, c, n) { return a * b * c * n; }},
+    pile:   {labels: ['Диаметр', 'Глубина', ''], count: true,
+             hint: 'Круглая свая: объём = π × (диаметр / 2)² × глубина',
+             calc: function (a, b, c, n) { return Math.PI * Math.pow(a / 2, 2) * b * n; }},
+    stairs: {labels: ['Ширина марша', 'Длина проекции', 'Высота подъёма'], count: true,
+             hint: 'Оценка по треугольному сечению марша — половина объёма',
+             calc: function (a, b, c, n) { return a * b * c * 0.5 * n; }}
+  };
+
+  var RESERVE = 1.05;                     // запас +5%, как в подписи под результатом
+
+  var typeBtns = [].slice.call(document.querySelectorAll('.calc-type button'));
+  var gradeBtns = [].slice.call(document.querySelectorAll('#c-grades button'));
+  var A = document.getElementById('c-a'), B = document.getElementById('c-b'),
+      C = document.getElementById('c-c'), N = document.getElementById('c-n');
+  var labA = document.getElementById('c-a-label'), labB = document.getElementById('c-b-label'),
+      labC = document.getElementById('c-c-label');
+  var countRow = document.getElementById('c-count-row');
+  var boxC = C.parentNode;
+  var outVol = document.getElementById('c-res'), outPrice = document.getElementById('c-price'),
+      priceRow = document.getElementById('c-price-row'), note = document.getElementById('c-note'),
+      hint = document.getElementById('c-hint');
+  var toTkp = document.getElementById('c-to-tkp');
+
+  var kind = 'plate';
+  var grade = (document.querySelector('#c-grades button.act') || {}).dataset || {};
+  var state = {volume: 0, price: null};
+
+  // название типа без пиктограммы (её текст лежит в отдельном span)
+  var typeName = function () {
+    var btn = document.querySelector('.calc-type button.act');
+    if (!btn) return '';
+    var pic = btn.querySelector('.pic');
+    return btn.textContent.replace(pic ? pic.textContent : '', '').trim();
+  };
+
+  var num = function (el) { return parseFloat(String(el.value).replace(',', '.')) || 0; };
+  var fmt = function (n) { return n.toFixed(1).replace('.', ','); };
+  var money = function (n) { return Math.round(n).toLocaleString('ru-RU') + ' ₽'; };
+
+  function applyType() {
+    var t = TYPES[kind];
+    labA.textContent = t.labels[0];
+    labB.textContent = t.labels[1];
+    boxC.style.display = t.labels[2] ? '' : 'none';
+    if (t.labels[2]) labC.textContent = t.labels[2];
+    countRow.style.display = t.count ? '' : 'none';
+    hint.textContent = t.hint;
+    calc();
   }
-  f.forEach(function(el){el.addEventListener('input',calc)});
-  calc();
+
+  function calc() {
+    var t = TYPES[kind];
+    var n = t.count ? Math.max(1, Math.round(num(N))) : 1;
+    var v = t.calc(num(A), num(B), num(C), n) * RESERVE;
+    v = Math.ceil(v * 10) / 10;                    // округление до 0,1 м³ вверх
+    state.volume = v;
+    outVol.textContent = fmt(v);
+
+    var price = grade.price ? parseFloat(grade.price) : null;
+    state.price = price;
+    if (price && v > 0) {
+      outPrice.textContent = money(v * price);
+      priceRow.style.display = '';
+    } else {
+      outPrice.textContent = 'по запросу';
+      priceRow.style.display = grade.grade ? '' : 'none';
+    }
+    note.textContent = 'С запасом +5% · округление до 0,1 м³'
+      + (grade.grade ? ' · ' + (/^М\d/.test(grade.grade) ? 'марка ' : '') + grade.grade : '')
+      + (price ? ' · ' + money(price) + ' за м³ без доставки' : '');
+  }
+
+  typeBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      typeBtns.forEach(function (b) { b.classList.remove('act'); });
+      btn.classList.add('act');
+      kind = btn.dataset.kind;
+      applyType();
+    });
+  });
+
+  gradeBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      gradeBtns.forEach(function (b) { b.classList.remove('act'); });
+      btn.classList.add('act');
+      grade = btn.dataset;
+      calc();
+    });
+  });
+
+  [A, B, C, N].forEach(function (el) { el.addEventListener('input', calc); });
+
+  // перенос результата в заявку на ТКП
+  toTkp.addEventListener('click', function () {
+    var field = document.getElementById('tkp-details');
+    if (!field) return;
+    var parts = ['Расчёт с сайта: ' + typeName(),
+                 'объём ' + fmt(state.volume) + ' м³ (с запасом +5%)'];
+    if (grade.grade) parts.push((/^М\d/.test(grade.grade) ? 'марка ' : '') + grade.grade);
+    if (state.price) parts.push('ориентировочно от ' + money(state.volume * state.price) + ' без доставки');
+    field.value = parts.join(', ') + '.';
+  });
+
+  applyType();
 })();
 </script>
+
 <section class="final">
   <div class="wrap" style="position:relative">
     <p class="eyebrow" style="justify-content:center">Один партнёр — весь монолит</p>

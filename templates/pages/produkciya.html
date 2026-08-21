@@ -10,30 +10,10 @@
 <section>
   <div class="wrap">
     <div class="mosaic">
-      <a class="mz big" href="{% url 'produkciya_beton' %}">
-        <span class="ph-tag">[ фото: миксер на заливке ]</span>
-        <span class="cap"><h3>Бетон <em>→</em></h3><p>Товарный бетон М100–М1000, спецмарки и растворы. До 150 000 м³ в год. Доставка миксерами, подача насосами.</p></span>
-      </a>
-      <a class="mz" href="{% url 'produkciya_zhbi' %}">
-        <span class="ph-tag">[ фото: склад ЖБИ ]</span>
-        <span class="cap"><h3>ЖБИ <em>→</em></h3><p>293 вида: ФБС, кольца, плиты, бордюры</p></span>
-      </a>
-      <a class="mz" href="{% url 'produkciya_asfalt' %}">
-        <span class="ph-tag">[ фото: укладка ]</span>
-        <span class="cap"><h3>Асфальт <em>→</em></h3><p>Смеси по ГОСТ 9128-2009</p></span>
-      </a>
-      <a class="mz tall upex" href="#">
-        <span class="glow"></span>
-        <span class="cap"><h3>Опалубка UPEX <em>→</em></h3><p>Системы собственного производства. Расчёт комплекта, отгрузка в любой регион, шеф-монтаж.</p><span class="ext">upex.pro ↗</span></span>
-      </a>
-      <a class="mz" href="{% url 'produkciya_inertnye' %}">
-        <span class="ph-tag">[ фото: карьер ]</span>
-        <span class="cap"><h3>Инертные материалы <em>→</em></h3><p>Щебень, песок природный, отсев</p></span>
-      </a>
-      <a class="mz" href="{% url 'produkciya_cement' %}">
-        <span class="ph-tag">[ фото: фасовка ]</span>
-        <span class="cap"><h3>Фасованный цемент <em>→</em></h3><p>Направление для розничных и мелкооптовых запросов</p></span>
-      </a>
+      {% for d in directions %}<a class="mz{% if d.size %} {{ d.size }}{% endif %}{% if d.is_upex %} upex{% endif %}"{% if d.url_name %} href="{% url d.url_name %}"{% elif d.external_url %} href="{{ d.external_url }}"{% endif %}>
+        {% if d.is_upex %}<span class="glow"></span>{% endif %}{% if d.photo %}<img src="{{ d.photo.url }}" alt="{{ d.title }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" />{% else %}<span class="ph-tag">[ фото: {{ d.title|lower }} ]</span>{% endif %}
+        <span class="cap"><h3>{{ d.title }} <em>→</em></h3><p>{{ d.tagline }}</p>{% if d.is_upex and d.external_url %}<span class="ext">перейти на сайт UPEX ↗</span>{% endif %}</span>
+      </a>{% endfor %}
     </div>
     <p style="margin-top:18px;font-family:var(--font-m);font-size:11.5px;color:var(--concrete);letter-spacing:.06em">* Фасованный цемент — информационная страница направления с формой запроса, без онлайн-каталога.</p>
   </div>

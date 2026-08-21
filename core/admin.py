@@ -58,7 +58,8 @@ class SiteSettingsAdmin(admin.ModelAdmin):
             'fields': ('address_office', 'address_plant', 'address_quarry', 'work_hours'),
         }),
         ('Бренд и реквизиты', {
-            'fields': ('slogan', 'founded_year', 'legal_name', 'copyright_note', 'footer_about'),
+            'fields': ('slogan', 'founded_year', 'legal_name', 'requisites',
+                       'copyright_note', 'footer_about'),
         }),
         ('Внешние ссылки', {'fields': ('upex_url', 'messenger_url')}),
         ('Цены', {

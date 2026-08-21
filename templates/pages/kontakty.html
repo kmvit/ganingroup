@@ -26,15 +26,15 @@
       </div>
       <div>
         <div class="dmap">
-          <span class="map-pt" style="left:38%;top:44%">офис и завод · КМВ</span>
-          <span class="map-pt f" style="left:22%;top:66%">карьер</span>
+          {% for pt in map_points %}<span class="map-pt{% if pt.is_own %} f{% endif %}" style="left:{{ pt.left }}%;top:{{ pt.top }}%">{{ pt.title }}</span>
+          {% endfor %}
           <span class="map-note">[ карта проезда · Яндекс.Карты ]</span>
         </div>
         <div class="rows" style="margin-top:22px">
-          <div class="rowi" style="padding:14px 0"><span class="kind">Адрес</span><div class="sub" style="font-size:14px;color:var(--silver)">Ставропольский край, Кавказские Минеральные Воды, промзона, стр. 1</div></div>
-          <div class="rowi" style="padding:14px 0"><span class="kind">График</span><div class="sub" style="font-size:14px;color:var(--silver)">Пн–Сб 8:00–18:00 · диспетчерская бетона в сезон — 24/7</div></div>
-          <div class="rowi" style="padding:14px 0"><span class="kind">Почта</span><div class="sub" style="font-size:14px;color:var(--silver)">info@ganin.group · Мессенджеры: MAX / Telegram</div></div>
-          <div class="rowi" style="padding:14px 0"><span class="kind">Реквизиты</span><div class="sub" style="font-size:14px;color:var(--silver)">ЗАО «Стройдеталь-2» · ИНН 26ХХХХХХХХ · ОГРН 10226ХХХХХХХХ</div></div>
+          {% if site.address_office %}<div class="rowi" style="padding:14px 0"><span class="kind">Адрес</span><div class="sub" style="font-size:14px;color:var(--silver)">{{ site.address_office }}</div></div>{% endif %}
+          {% if site.work_hours %}<div class="rowi" style="padding:14px 0"><span class="kind">График</span><div class="sub" style="font-size:14px;color:var(--silver)">{{ site.work_hours }}</div></div>{% endif %}
+          {% if site.email_main %}<div class="rowi" style="padding:14px 0"><span class="kind">Почта</span><div class="sub" style="font-size:14px;color:var(--silver)"><a href="mailto:{{ site.email_main }}">{{ site.email_main }}</a></div></div>{% endif %}
+          <div class="rowi" style="padding:14px 0"><span class="kind">Реквизиты</span><div class="sub" style="font-size:14px;color:var(--silver)">{{ site.legal_name }}{% if site.requisites %} · {{ site.requisites }}{% endif %}</div></div>
         </div>
       </div>
     </div>

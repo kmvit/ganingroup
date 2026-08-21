@@ -76,6 +76,10 @@ class SiteSettings(models.Model):
                                                help_text='Подставляется в текст «С … года поставляем бетон…»')
     legal_name = models.CharField('Юридическое лицо', max_length=250,
                                   default='ЗАО «Стройдеталь-2»')
+    requisites = models.CharField(
+        'Реквизиты (ИНН, ОГРН)', max_length=250, blank=True,
+        help_text='Строкой, например: ИНН 2600000000 · ОГРН 1022600000000. '
+                  'Показывается на странице «Контакты»')
     copyright_note = models.CharField('Приписка в копирайте', max_length=250, blank=True,
                                       default='ГАНИН ГРУПП — маркетинговый бренд группы.')
     footer_about = models.TextField(

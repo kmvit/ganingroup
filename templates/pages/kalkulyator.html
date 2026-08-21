@@ -70,7 +70,8 @@
           </div>
         </div>
         <p style="margin-top:16px;font-family:var(--font-m);font-size:10.5px;color:var(--concrete);letter-spacing:.06em;line-height:1.8">
-          {{ site.price_note|default:"Цены указаны без доставки. Окончательная стоимость зависит от объёма, графика поставок и удалённости объекта." }}
+          <span id="c-delivery-note">Цены указаны без доставки.</span>
+          {{ site.price_note|default:"Окончательная стоимость зависит от объёма, графика поставок и удалённости объекта." }}
           {% if site.price_valid_from %} Цены действуют с {{ site.price_valid_from|date:"d.m.Y" }}.{% endif %}
           Точный объём и марку подтверждает технолог по проекту.
         </p>
@@ -120,6 +121,7 @@
   var toTkp = document.getElementById('c-to-tkp');
   var zoneSel = document.getElementById('c-zone');
   var breakdown = document.getElementById('c-breakdown');
+  var deliveryNote = document.getElementById('c-delivery-note');
 
   // Порог из прайса: до 5 м³ доставка считается за рейс, от 5 м³ — за кубометр.
   var TRIP_LIMIT = 5;
@@ -136,7 +138,11 @@
     return btn.textContent.replace(pic ? pic.textContent : '', '').trim();
   };
 
-  var num = function (el) { return parseFloat(String(el.value).replace(',', '.')) || 0; };
+  // размеры не могут быть отрицательными: минус даёт отрицательный объём
+  var num = function (el) {
+    var v = parseFloat(String(el.value).replace(',', '.')) || 0;
+    return v > 0 ? v : 0;
+  };
   var fmt = function (n) { return n.toFixed(1).replace('.', ','); };
   var money = function (n) { return Math.round(n).toLocaleString('ru-RU') + ' ₽'; };
 
@@ -153,7 +159,11 @@
 
   function calc() {
     var t = TYPES[kind];
-    var n = t.count ? Math.max(1, Math.round(num(N))) : 1;
+    var n = 1;
+    if (t.count) {
+      n = Math.max(1, Math.round(num(N)));
+      if (String(n) !== N.value) N.value = n;      // чтобы поле совпадало с расчётом
+    }
     var v = t.calc(num(A), num(B), num(C), n) * RESERVE;
     v = Math.ceil(v * 10) / 10;                    // округление до 0,1 м³ вверх
     state.volume = v;
@@ -175,28 +185,35 @@
 
     var total = state.concrete + state.delivery;
     var rows = [];
-    if (price) {
-      rows.push(['Бетон ' + grade.grade + ' · ' + money(price) + '/м³', money(state.concrete)]);
-    } else {
-      rows.push(['Бетон ' + (grade.grade || ''), 'по запросу']);
-    }
-    if (state.zone) {
-      rows.push([v >= TRIP_LIMIT ? 'Доставка · ' + money(perM3) + '/м³'
-                                 : 'Доставка · рейс до ' + TRIP_LIMIT + ' м³',
-                 money(state.delivery)]);
+    if (v > 0) {
+      if (price) {
+        rows.push(['Бетон ' + grade.grade + ' · ' + money(price) + '/м³', money(state.concrete)]);
+      } else {
+        rows.push(['Бетон ' + (grade.grade || ''), 'по запросу']);
+      }
+      if (state.zone) {
+        rows.push([v >= TRIP_LIMIT ? 'Доставка · ' + money(perM3) + '/м³'
+                                   : 'Доставка · рейс до ' + TRIP_LIMIT + ' м³',
+                   money(state.delivery)]);
+      }
     }
     breakdown.innerHTML = rows.map(function (r) {
       return '<div style="display:flex;justify-content:space-between;gap:12px">'
            + '<span>' + r[0] + '</span><span>' + r[1] + '</span></div>';
     }).join('');
 
-    if (price && v > 0) {
+    if (v <= 0) {
+      outPrice.textContent = '—';               // размеры ещё не введены
+    } else if (price) {
       outPrice.textContent = money(total);
-      priceRow.style.display = '';
     } else {
-      outPrice.textContent = 'по запросу';
-      priceRow.style.display = grade.grade ? '' : 'none';
+      outPrice.textContent = 'по запросу';      // спецмарка: цену назовёт технолог
     }
+    priceRow.style.display = '';
+    deliveryNote.textContent = state.zone
+      ? 'Доставка до объекта учтена в итоге по тарифу вашей зоны.'
+      : 'Цены указаны без доставки.';
+
     note.textContent = 'С запасом +5% · округление до 0,1 м³'
       + (grade.grade ? ' · ' + (/^М\d/.test(grade.grade) ? 'марка ' : '') + grade.grade : '')
       + (state.zone ? ' · с доставкой' : ' · без доставки');
@@ -226,7 +243,8 @@
   // перенос результата в заявку на ТКП
   toTkp.addEventListener('click', function () {
     var field = document.getElementById('tkp-details');
-    if (!field) return;
+    // размеры не введены — не подставляем «0 м³ за 0 ₽», пусть клиент опишет сам
+    if (!field || state.volume <= 0) return;
     var parts = ['Расчёт с сайта: ' + typeName(),
                  'объём ' + fmt(state.volume) + ' м³ (с запасом +5%)'];
     if (grade.grade) parts.push((/^М\d/.test(grade.grade) ? 'марка ' : '') + grade.grade);

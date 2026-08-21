@@ -4,7 +4,8 @@ from django.utils.html import format_html
 
 from .models import (Card, Department, Direction, Document, HaulerLead, Lead, MapPoint,
                      MenuItem, Page, ProjectObject, Review, SiteSettings, Stat, TeamMember,
-                     TimelineEvent, Vacancy, VacancyApplication, ConcreteGrade)
+                     TimelineEvent, Vacancy, VacancyApplication, ConcreteGrade,
+                     DeliveryZone)
 
 admin.site.site_header = 'ГАНИН ГРУПП — управление сайтом'
 admin.site.site_title = 'ГАНИН ГРУПП'
@@ -207,6 +208,15 @@ class ConcreteGradeAdmin(admin.ModelAdmin):
     """Цены для калькулятора: «от», за 1 м³, без доставки."""
     list_display = ('title', 'grade_class', 'price', 'is_default', 'order', 'published')
     list_editable = ('price', 'is_default', 'order', 'published')
+    list_display_links = ('title',)
+
+
+@admin.register(DeliveryZone)
+class DeliveryZoneAdmin(admin.ModelAdmin):
+    """Тарифы доставки по прайсу: до 5 м³ — за рейс, от 5 м³ — за м³."""
+    list_display = ('title', 'price_trip', 'price_per_m3', 'price_trip_small',
+                    'order', 'published')
+    list_editable = ('price_trip', 'price_per_m3', 'price_trip_small', 'order', 'published')
     list_display_links = ('title',)
 
 

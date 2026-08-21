@@ -44,6 +44,13 @@
             title="{{ g.grade_class }}{% if g.note %} · {{ g.note }}{% endif %}">{{ g.title }}</button>{% endfor %}
         </div>
         <p style="margin-top:12px;font-size:12.5px;color:var(--muted)">+ дополнительные требования: морозостойкость, водонепроницаемость — уточнит технолог.</p>
+
+        <span class="eyebrow" style="margin-top:26px">Доставка до объекта</span>
+        <select class="f-input" id="c-zone" style="margin-top:12px">
+          <option value="" data-trip="" data-m3="">— самовывоз, без доставки —</option>
+          {% for z in zones %}<option value="{{ z.title }}" data-trip="{{ z.price_trip|default_if_none:'' }}" data-m3="{{ z.price_per_m3|default_if_none:'' }}">{{ z.title }}</option>{% endfor %}
+        </select>
+        <p style="margin-top:10px;font-size:12.5px;color:var(--muted)">До 5 м³ доставка считается за рейс, от 5 м³ — за кубометр. Другого населённого пункта нет в списке — уточните у менеджера.</p>
       </div>
       <div>
         <div class="calc-res">
@@ -54,6 +61,7 @@
             <div style="font-family:var(--font-h);font-weight:600;font-size:clamp(26px,3vw,40px);line-height:1.1;color:var(--white);margin-top:8px">
               от <span id="c-price">—</span>
             </div>
+            <div id="c-breakdown" style="margin-top:14px;display:grid;gap:6px;font-size:13.5px;color:var(--silver)"></div>
           </div>
           <p class="note" id="c-note">С запасом +5% · округление до 0,1 м³</p>
           <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:24px">
@@ -110,10 +118,15 @@
       priceRow = document.getElementById('c-price-row'), note = document.getElementById('c-note'),
       hint = document.getElementById('c-hint');
   var toTkp = document.getElementById('c-to-tkp');
+  var zoneSel = document.getElementById('c-zone');
+  var breakdown = document.getElementById('c-breakdown');
+
+  // Порог из прайса: до 5 м³ доставка считается за рейс, от 5 м³ — за кубометр.
+  var TRIP_LIMIT = 5;
 
   var kind = 'plate';
   var grade = (document.querySelector('#c-grades button.act') || {}).dataset || {};
-  var state = {volume: 0, price: null};
+  var state = {volume: 0, price: null, concrete: 0, delivery: 0, zone: ''};
 
   // название типа без пиктограммы (её текст лежит в отдельном span)
   var typeName = function () {
@@ -148,8 +161,37 @@
 
     var price = grade.price ? parseFloat(grade.price) : null;
     state.price = price;
+    state.concrete = price ? v * price : 0;
+
+    // доставка: до 5 м³ — фиксированная цена за рейс, от 5 м³ — за кубометр
+    var opt = zoneSel.options[zoneSel.selectedIndex] || {dataset: {}};
+    var trip = parseFloat(opt.dataset.trip) || 0;
+    var perM3 = parseFloat(opt.dataset.m3) || 0;
+    state.zone = zoneSel.value || '';
+    state.delivery = 0;
+    if (state.zone && v > 0) {
+      state.delivery = v >= TRIP_LIMIT ? perM3 * v : trip;
+    }
+
+    var total = state.concrete + state.delivery;
+    var rows = [];
+    if (price) {
+      rows.push(['Бетон ' + grade.grade + ' · ' + money(price) + '/м³', money(state.concrete)]);
+    } else {
+      rows.push(['Бетон ' + (grade.grade || ''), 'по запросу']);
+    }
+    if (state.zone) {
+      rows.push([v >= TRIP_LIMIT ? 'Доставка · ' + money(perM3) + '/м³'
+                                 : 'Доставка · рейс до ' + TRIP_LIMIT + ' м³',
+                 money(state.delivery)]);
+    }
+    breakdown.innerHTML = rows.map(function (r) {
+      return '<div style="display:flex;justify-content:space-between;gap:12px">'
+           + '<span>' + r[0] + '</span><span>' + r[1] + '</span></div>';
+    }).join('');
+
     if (price && v > 0) {
-      outPrice.textContent = money(v * price);
+      outPrice.textContent = money(total);
       priceRow.style.display = '';
     } else {
       outPrice.textContent = 'по запросу';
@@ -157,7 +199,7 @@
     }
     note.textContent = 'С запасом +5% · округление до 0,1 м³'
       + (grade.grade ? ' · ' + (/^М\d/.test(grade.grade) ? 'марка ' : '') + grade.grade : '')
-      + (price ? ' · ' + money(price) + ' за м³ без доставки' : '');
+      + (state.zone ? ' · с доставкой' : ' · без доставки');
   }
 
   typeBtns.forEach(function (btn) {
@@ -179,6 +221,7 @@
   });
 
   [A, B, C, N].forEach(function (el) { el.addEventListener('input', calc); });
+  zoneSel.addEventListener('change', calc);
 
   // перенос результата в заявку на ТКП
   toTkp.addEventListener('click', function () {
@@ -187,7 +230,11 @@
     var parts = ['Расчёт с сайта: ' + typeName(),
                  'объём ' + fmt(state.volume) + ' м³ (с запасом +5%)'];
     if (grade.grade) parts.push((/^М\d/.test(grade.grade) ? 'марка ' : '') + grade.grade);
-    if (state.price) parts.push('ориентировочно от ' + money(state.volume * state.price) + ' без доставки');
+    if (state.zone) parts.push('доставка: ' + state.zone);
+    if (state.price) {
+      parts.push('ориентировочно от ' + money(state.concrete + state.delivery)
+                 + (state.zone ? ' с доставкой' : ' без доставки'));
+    }
     field.value = parts.join(', ') + '.';
   });
 

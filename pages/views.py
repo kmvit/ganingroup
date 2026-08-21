@@ -7,8 +7,9 @@ from django.views.decorators.http import require_POST
 
 from .forms import LeadForm, HaulerLeadForm, VacancyApplicationForm
 from .notify import notify_application, notify_hauler, notify_lead
-from .models import (ConcreteGrade, Department, Direction, Document, MapPoint, Page,
-                     ProjectObject, Review, Stat, TeamMember, TimelineEvent, Vacancy)
+from .models import (ConcreteGrade, DeliveryZone, Department, Direction, Document,
+                     MapPoint, Page, ProjectObject, Review, Stat, TeamMember,
+                     TimelineEvent, Vacancy)
 
 # (url_path, url_name, шаблон, active-ключ для подсветки меню)
 PAGES = [
@@ -71,7 +72,8 @@ def page_extras(slug: str) -> dict:
     if slug == 'produkciya':
         return {'directions': Direction.objects.filter(published=True)}
     if slug in ('kalkulyator', 'produkciya_beton'):
-        return {'grades': ConcreteGrade.objects.filter(published=True)}
+        return {'grades': ConcreteGrade.objects.filter(published=True),
+                'zones': DeliveryZone.objects.filter(published=True)}
     return {}
 
 

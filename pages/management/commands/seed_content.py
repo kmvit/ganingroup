@@ -12,7 +12,8 @@ from django.core.files import File
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from pages.models import (Card, ConcreteGrade, Department, Direction, Document, MapPoint,
+from pages.models import (Card, ConcreteGrade, DeliveryZone, Department, Direction,
+                          Document, MapPoint,
                           MenuItem, Page, ProjectObject, Review, SiteSettings, Stat,
                           TeamMember, TimelineEvent, Vacancy)
 from pages.nav import MAIN as NAV_MAIN
@@ -109,6 +110,17 @@ CONCRETE_GRADES = [
     ('М550', 'В40 W6-8', 8785, 'высокомарочный'),
     ('М600', 'В45 W6-8', 10180, 'высокомарочный'),
     ('спецмарка', '', None, 'подбирает технолог по проекту'),
+]
+
+# Доставка из прайса: (зона, за рейс до 5 м³, за 1 м³ от 5 м³, маленький миксер за рейс)
+DELIVERY_ZONES = [
+    ('Пятигорск, Лермонтов, Винсады, Острогорка, Новый', 4751, 850, 5226),
+    ('Ессентуки, ст. Ессентукская, Санамер, Садовый, Энергетик', 4751, 850, 5226),
+    ('Капельница, Юца', 5362, 972, 5899),
+    ('Железноводск, Белый Уголь, Железноводский', 5974, 1095, 6571),
+    ('Горный, Бородыновка, Змейка', 5974, 1095, 6571),
+    ('Минеральные Воды, ст. Суворовская, ст. Зольская', 6585, 1217, 7243),
+    ('Кисловодск, Левокумка', 6585, 1217, 7243),
 ]
 
 DOCUMENTS = [
@@ -249,6 +261,10 @@ class Command(BaseCommand):
                 grade_class=gclass, price=price, note=note,
                 is_default=(title == 'М300'), order=i * 10))
 
+        for i, (title, trip, per_m3, small) in enumerate(DELIVERY_ZONES, 1):
+            DeliveryZone.objects.get_or_create(title=title, defaults=dict(
+                price_trip=trip, price_per_m3=per_m3, price_trip_small=small, order=i * 10))
+
         for i, (year, title, txt) in enumerate(TIMELINE, 1):
             TimelineEvent.objects.get_or_create(title=title, defaults=dict(
                 year=year, text=txt, order=i * 10))
@@ -263,4 +279,5 @@ class Command(BaseCommand):
             f'команда: {TeamMember.objects.count()}, вакансии: {Vacancy.objects.count()}, '
             f'история: {TimelineEvent.objects.count()}, карта: {MapPoint.objects.count()}, '
             f'документы: {Document.objects.count()}, отзывы: {Review.objects.count()}, '
-            f'марки бетона: {ConcreteGrade.objects.count()}'))
+            f'марки бетона: {ConcreteGrade.objects.count()}, '
+            f'зоны доставки: {DeliveryZone.objects.count()}'))

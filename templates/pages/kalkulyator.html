@@ -11,12 +11,10 @@
   <div class="wrap">
 <div class="sec-head"><h2>Шаг 1 — Тип конструкции</h2><span class="num">01 / 04</span></div>
     <div class="calc-type">
-      <button type="button" class="act" data-kind="plate" data-pic="▭"><span class="pic">▭</span>Плита / стяжка</button>
-      <button type="button" data-kind="foundation" data-pic="▤"><span class="pic">▤</span>Фундамент</button>
-      <button type="button" data-kind="wall" data-pic="▮"><span class="pic">▮</span>Стена</button>
-      <button type="button" data-kind="column" data-pic="◫"><span class="pic">◫</span>Колонна</button>
-      <button type="button" data-kind="pile" data-pic="◎"><span class="pic">◎</span>Свая</button>
-      <button type="button" data-kind="stairs" data-pic="◺"><span class="pic">◺</span>Лестница</button>
+      {% for t in ctypes %}<button type="button"{% if t.is_default %} class="act"{% endif %}
+        data-formula="{{ t.formula }}" data-count="{{ t.use_count|yesno:'1,' }}"
+        data-la="{{ t.label_a }}" data-lb="{{ t.label_b }}" data-lc="{{ t.label_c }}"
+        data-hint="{{ t.hint }}" data-title="{{ t.title }}"><span class="pic">{{ t.pic }}</span>{{ t.title }}</button>{% endfor %}
     </div>
   </div>
 </section>
@@ -82,27 +80,12 @@
 
 <script>
 (function () {
-  // Формулы по типам конструкций. Для сваи считаем по диаметру, для лестницы —
-  // как половину параллелепипеда (треугольное сечение марша).
-  var TYPES = {
-    plate:  {labels: ['Длина', 'Ширина', 'Толщина'], count: false,
-             hint: 'Объём = длина × ширина × толщина',
-             calc: function (a, b, c) { return a * b * c; }},
-    foundation: {labels: ['Длина лент, суммарно', 'Ширина ленты', 'Высота'], count: false,
-             hint: 'Ленточный фундамент: сложите длину всех лент, включая внутренние',
-             calc: function (a, b, c) { return a * b * c; }},
-    wall:   {labels: ['Длина', 'Высота', 'Толщина'], count: false,
-             hint: 'Проёмы (окна, двери) вычтите из длины',
-             calc: function (a, b, c) { return a * b * c; }},
-    column: {labels: ['Сторона A', 'Сторона B', 'Высота'], count: true,
-             hint: 'Размеры сечения колонны и её высота',
-             calc: function (a, b, c, n) { return a * b * c * n; }},
-    pile:   {labels: ['Диаметр', 'Глубина', ''], count: true,
-             hint: 'Круглая свая: объём = π × (диаметр / 2)² × глубина',
-             calc: function (a, b, c, n) { return Math.PI * Math.pow(a / 2, 2) * b * n; }},
-    stairs: {labels: ['Ширина марша', 'Длина проекции', 'Высота подъёма'], count: true,
-             hint: 'Оценка по треугольному сечению марша — половина объёма',
-             calc: function (a, b, c, n) { return a * b * c * 0.5 * n; }}
+  // Формулы остаются в коде — из админки приходит выбор одной из трёх
+  // и подписи полей. Так заказчик меняет названия, не трогая математику.
+  var FORMULAS = {
+    box:      function (a, b, c, n) { return a * b * c * n; },
+    cylinder: function (a, b, c, n) { return Math.PI * Math.pow(a / 2, 2) * b * n; },
+    half:     function (a, b, c, n) { return a * b * c * 0.5 * n; }
   };
 
   var RESERVE = 1.05;                     // запас +5%, как в подписи под результатом
@@ -126,17 +109,12 @@
   // Порог из прайса: до 5 м³ доставка считается за рейс, от 5 м³ — за кубометр.
   var TRIP_LIMIT = 5;
 
-  var kind = 'plate';
+  var current = document.querySelector('.calc-type button.act') || typeBtns[0];
   var grade = (document.querySelector('#c-grades button.act') || {}).dataset || {};
   var state = {volume: 0, price: null, concrete: 0, delivery: 0, zone: ''};
 
   // название типа без пиктограммы (её текст лежит в отдельном span)
-  var typeName = function () {
-    var btn = document.querySelector('.calc-type button.act');
-    if (!btn) return '';
-    var pic = btn.querySelector('.pic');
-    return btn.textContent.replace(pic ? pic.textContent : '', '').trim();
-  };
+  var typeName = function () { return current ? current.dataset.title : ''; };
 
   // размеры не могут быть отрицательными: минус даёт отрицательный объём
   var num = function (el) {
@@ -147,24 +125,25 @@
   var money = function (n) { return Math.round(n).toLocaleString('ru-RU') + ' ₽'; };
 
   function applyType() {
-    var t = TYPES[kind];
-    labA.textContent = t.labels[0];
-    labB.textContent = t.labels[1];
-    boxC.style.display = t.labels[2] ? '' : 'none';
-    if (t.labels[2]) labC.textContent = t.labels[2];
-    countRow.style.display = t.count ? '' : 'none';
-    hint.textContent = t.hint;
+    var d = current.dataset;
+    labA.textContent = d.la;
+    labB.textContent = d.lb;
+    boxC.style.display = d.lc ? '' : 'none';
+    if (d.lc) labC.textContent = d.lc;
+    countRow.style.display = d.count ? '' : 'none';
+    hint.textContent = d.hint || '';
     calc();
   }
 
   function calc() {
-    var t = TYPES[kind];
+    var d = current.dataset;
     var n = 1;
-    if (t.count) {
+    if (d.count) {
       n = Math.max(1, Math.round(num(N)));
       if (String(n) !== N.value) N.value = n;      // чтобы поле совпадало с расчётом
     }
-    var v = t.calc(num(A), num(B), num(C), n) * RESERVE;
+    var formula = FORMULAS[d.formula] || FORMULAS.box;
+    var v = formula(num(A), num(B), num(C), n) * RESERVE;
     v = Math.ceil(v * 10) / 10;                    // округление до 0,1 м³ вверх
     state.volume = v;
     outVol.textContent = fmt(v);
@@ -223,7 +202,7 @@
     btn.addEventListener('click', function () {
       typeBtns.forEach(function (b) { b.classList.remove('act'); });
       btn.classList.add('act');
-      kind = btn.dataset.kind;
+      current = btn;
       applyType();
     });
   });

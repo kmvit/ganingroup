@@ -7,7 +7,7 @@ from django.views.decorators.http import require_POST
 
 from .forms import LeadForm, HaulerLeadForm, VacancyApplicationForm
 from .notify import notify_application, notify_hauler, notify_lead
-from calc.models import ConcreteGrade, DeliveryZone
+from calc.models import ConcreteGrade, ConstructionType, DeliveryZone
 from content.models import (Department, Direction, Document, MapPoint, ProjectObject,
                             Review, Stat, TeamMember, TimelineEvent, Vacancy)
 from core.models import Page
@@ -74,7 +74,8 @@ def page_extras(slug: str) -> dict:
         return {'directions': Direction.objects.filter(published=True)}
     if slug in ('kalkulyator', 'produkciya_beton'):
         return {'grades': ConcreteGrade.objects.filter(published=True),
-                'zones': DeliveryZone.objects.filter(published=True)}
+                'zones': DeliveryZone.objects.filter(published=True),
+                'ctypes': ConstructionType.objects.filter(published=True)}
     return {}
 
 

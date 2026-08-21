@@ -12,7 +12,7 @@
 <div class="sec-head"><h2>Шаг 1 — Тип конструкции</h2><span class="num">01 / 04</span></div>
     <div class="calc-type">
       <button type="button" class="act" data-kind="plate" data-pic="▭"><span class="pic">▭</span>Плита / стяжка</button>
-      <button type="button" data-kind="strip" data-pic="▯"><span class="pic">▯</span>Лента</button>
+      <button type="button" data-kind="foundation" data-pic="▤"><span class="pic">▤</span>Фундамент</button>
       <button type="button" data-kind="wall" data-pic="▮"><span class="pic">▮</span>Стена</button>
       <button type="button" data-kind="column" data-pic="◫"><span class="pic">◫</span>Колонна</button>
       <button type="button" data-kind="pile" data-pic="◎"><span class="pic">◎</span>Свая</button>
@@ -88,8 +88,8 @@
     plate:  {labels: ['Длина', 'Ширина', 'Толщина'], count: false,
              hint: 'Объём = длина × ширина × толщина',
              calc: function (a, b, c) { return a * b * c; }},
-    strip:  {labels: ['Длина ленты', 'Ширина', 'Высота'], count: false,
-             hint: 'Общая длина всех лент фундамента',
+    foundation: {labels: ['Длина лент, суммарно', 'Ширина ленты', 'Высота'], count: false,
+             hint: 'Ленточный фундамент: сложите длину всех лент, включая внутренние',
              calc: function (a, b, c) { return a * b * c; }},
     wall:   {labels: ['Длина', 'Высота', 'Толщина'], count: false,
              hint: 'Проёмы (окна, двери) вычтите из длины',

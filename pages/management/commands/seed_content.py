@@ -12,10 +12,10 @@ from django.core.files import File
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from pages.models import (Card, ConcreteGrade, DeliveryZone, Department, Direction,
-                          Document, MapPoint,
-                          MenuItem, Page, ProjectObject, Review, SiteSettings, Stat,
-                          TeamMember, TimelineEvent, Vacancy)
+from calc.models import ConcreteGrade, DeliveryZone
+from content.models import (Department, Direction, Document, MapPoint, ProjectObject,
+                            Review, Stat, TeamMember, TimelineEvent, Vacancy)
+from core.models import Card, MenuItem, Page, SiteSettings
 from pages.nav import MAIN as NAV_MAIN
 from pages.seed_cards import CARDS
 from pages.seed_cards_links import CARD_LINKS

@@ -7,9 +7,10 @@ from django.views.decorators.http import require_POST
 
 from .forms import LeadForm, HaulerLeadForm, VacancyApplicationForm
 from .notify import notify_application, notify_hauler, notify_lead
-from .models import (ConcreteGrade, DeliveryZone, Department, Direction, Document,
-                     MapPoint, Page, ProjectObject, Review, Stat, TeamMember,
-                     TimelineEvent, Vacancy)
+from calc.models import ConcreteGrade, DeliveryZone
+from content.models import (Department, Direction, Document, MapPoint, ProjectObject,
+                            Review, Stat, TeamMember, TimelineEvent, Vacancy)
+from core.models import Page
 
 # (url_path, url_name, шаблон, active-ключ для подсветки меню)
 PAGES = [

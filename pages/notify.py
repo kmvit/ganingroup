@@ -36,7 +36,7 @@ def _telegram(text: str, token: str, chat_id: str) -> None:
 
 def notify(subject: str, lines: list[str]) -> None:
     """Отправить уведомление о заявке. Молча переживает любые сбои."""
-    from .models import SiteSettings
+    from core.models import SiteSettings
 
     try:
         site = SiteSettings.get()

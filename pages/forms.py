@@ -3,7 +3,7 @@ import re
 
 from django import forms
 
-from .models import Lead, HaulerLead, VacancyApplication
+from leads.models import HaulerLead, Lead, VacancyApplication
 
 PHONE_RE = re.compile(r'^[\d\s\-\+\(\)]{10,25}$')
 

@@ -51,7 +51,7 @@ def _item(title, url_name, external):
 
 def _from_db(upex_url=''):
     """Собрать навигацию из админки. None — если меню ещё не заполнено."""
-    from .models import MenuItem
+    from core.models import MenuItem
 
     tops = list(MenuItem.objects.filter(parent__isnull=True, published=True)
                 .prefetch_related('children'))
@@ -100,7 +100,7 @@ def _from_code(upex_url=''):
 
 def nav(request):
     """Контекст-процессор: навигация и общие данные сайта — во всех шаблонах."""
-    from .models import SiteSettings
+    from core.models import SiteSettings
 
     site = SiteSettings.get()
     upex = site.upex_url

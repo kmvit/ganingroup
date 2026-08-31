@@ -12,3 +12,28 @@
   });
 })();
 </script>
+<script>
+// карусель команды: стрелки листают дорожку на одну карточку;
+// на узкой дорожке (все влезли) стрелки прячем
+(function(){
+  document.querySelectorAll('.team-carousel').forEach(function(c){
+    var track=c.querySelector('.team-track');
+    var prev=c.querySelector('.tc-prev'), next=c.querySelector('.tc-next');
+    if(!track||!prev||!next) return;
+    function step(){var card=track.querySelector('.tm');
+      var gap=parseFloat(getComputedStyle(track).columnGap||getComputedStyle(track).gap)||20;
+      return card?card.getBoundingClientRect().width+gap:280;}
+    prev.addEventListener('click',function(){track.scrollBy({left:-step(),behavior:'smooth'});});
+    next.addEventListener('click',function(){track.scrollBy({left:step(),behavior:'smooth'});});
+    function sync(){
+      var overflow=track.scrollWidth-track.clientWidth>4;
+      c.classList.toggle('is-static',!overflow);
+      prev.disabled=track.scrollLeft<=1;
+      next.disabled=track.scrollLeft>=track.scrollWidth-track.clientWidth-1;
+    }
+    track.addEventListener('scroll',sync);
+    window.addEventListener('resize',sync);
+    sync();
+  });
+})();
+</script>

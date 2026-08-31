@@ -163,10 +163,13 @@
 <section class="light" id="team" style="padding-top:0">
   <div class="wrap">
     <div class="sec-head"><h2>Команда</h2><span class="num">10 / 12</span></div>
-    <div class="team-grid">
+    <div class="team-carousel">
+      <button class="tc-nav tc-prev" type="button" aria-label="Показать предыдущих">‹</button>
+      <div class="team-track">
       {% for p in team %}<div class="tm"><span class="ph">{% if p.photo %}<img src="{{ p.photo.url }}" alt="{{ p.name }}" style="width:100%;height:100%;object-fit:cover" />{% else %}<i>[ фото ]</i>{% endif %}</span><div class="body"><b>{{ p.name }}</b><span>{{ p.position }}</span></div></div>
       {% endfor %}
-    
+      </div>
+      <button class="tc-nav tc-next" type="button" aria-label="Показать следующих">›</button>
     </div>
   </div>
 </section>

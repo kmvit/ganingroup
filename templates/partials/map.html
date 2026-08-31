@@ -25,19 +25,24 @@
     map.behaviors.disable('scrollZoom');   // колесо листает страницу, а не зумит карту
 
     if (MODE === 'coverage') {
-      // Зона покрытия — круг радиуса, срезанный по югу: за Кавказский хребет
-      // (в Грузию) не возим, поэтому южную кромку ограничиваем по широте.
-      var SOUTH_LIMIT_LAT = 43.15;           // южнее не показываем зону
+      // Зона покрытия — круг радиуса, срезанный по югу (за Кавказский хребет,
+      // в Грузию, не возим) и повёрнутый по часовой, чтобы срез лёг по хребту.
+      var SOUTH_LIMIT_LAT = 43.15;           // южная кромка (до поворота)
+      var ROTATE_DEG = 20;                   // поворот зоны вправо (по часовой)
       var Rkm = radius / 1000;
       var kmPerLat = 111.32;                  // км в одном градусе широты
       var kmPerLng = 111.32 * Math.cos(plant[0] * Math.PI / 180);
+      var southKm = (SOUTH_LIMIT_LAT - plant[0]) * kmPerLat;   // < 0, южнее завода
+      var TH = ROTATE_DEG * Math.PI / 180, cs = Math.cos(TH), sn = Math.sin(TH);
       var ring = [];
       for (var a = 0; a <= 360; a += 5) {
         var t = a * Math.PI / 180;
-        var lat = plant[0] + (Rkm / kmPerLat) * Math.cos(t);
-        var lng = plant[1] + (Rkm / kmPerLng) * Math.sin(t);
-        if (lat < SOUTH_LIMIT_LAT) lat = SOUTH_LIMIT_LAT;   // ровная южная кромка
-        ring.push([lat, lng]);
+        var dx = Rkm * Math.sin(t);           // восток, км
+        var dy = Rkm * Math.cos(t);           // север, км
+        if (dy < southKm) dy = southKm;       // ровная южная кромка (до поворота)
+        var rx = dx * cs + dy * sn;           // поворот по часовой в км-пространстве
+        var ry = -dx * sn + dy * cs;
+        ring.push([plant[0] + ry / kmPerLat, plant[1] + rx / kmPerLng]);
       }
       var zone = new ymaps.Polygon([ring], {
         hintContent: 'Зона ритмичной доставки бетона и инертных — до ' + Rkm + ' км'

@@ -98,6 +98,18 @@ def _from_code(upex_url=''):
     return main, footer, mmenu
 
 
+def _asset_version():
+    """Версия статики = время изменения site.css. Меняется при каждой правке
+    стилей → браузер и nginx подхватывают свежий файл, не держат старый из кэша."""
+    from django.conf import settings
+    for base in [settings.BASE_DIR / 'static', settings.STATIC_ROOT]:
+        try:
+            return int((base / 'assets' / 'site.css').stat().st_mtime)
+        except OSError:
+            continue
+    return 1
+
+
 def nav(request):
     """Контекст-процессор: навигация и общие данные сайта — во всех шаблонах."""
     from core.models import SiteSettings
@@ -113,4 +125,5 @@ def nav(request):
         'nav_mmenu': mmenu,
         'phone': site.phone_link,
         'phone_label': site.phone_main,
+        'asset_v': _asset_version(),
     }

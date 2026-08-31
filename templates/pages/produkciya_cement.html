@@ -9,11 +9,15 @@
 <section style="padding-top:0"><div class="wrap"><div class="grid c2" style="align-items:start"><div class="grid c2">{% for c in cards_by_section.grid1 %}<div class="icard">{% if c.icon %}<span class="ic">{{ c.icon }}</span>{% endif %}<h3 style="font-size:16px">{{ c.title }}</h3><p>{{ c.text }}</p></div>{% endfor %}</div>
       <div class="form-card">
         <h3>Запрос по цементу</h3>
-        <label class="f-label">Имя *</label><input class="f-input" />
-        <label class="f-label">Телефон *</label><input class="f-input" placeholder="+7 ___ ___-__-__" />
-        <label class="f-label">Объём / марка</label><input class="f-input" placeholder="Например: 40 мешков М500" />
-        <label class="f-agree"><input type="checkbox" checked /> <span>Согласен на обработку персональных данных — <a href="{% url 'consent' %}">текст</a></span></label>
-        <a class="btn btn--solid" href="#tkp-ok" style="width:100%;margin-top:22px">Отправить запрос</a>
+        <form method="post" action="{% url 'lead_create' %}">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.path }}" />
+          <label class="f-label" for="cem-name">Имя *</label><input class="f-input" id="cem-name" name="name" required />
+          <label class="f-label" for="cem-phone">Телефон *</label><input class="f-input" id="cem-phone" name="phone" placeholder="+7 ___ ___-__-__" required />
+          <label class="f-label" for="cem-details">Объём</label><input class="f-input" id="cem-details" name="details" placeholder="Например: 40 мешков по 50 кг" />
+          <label class="f-agree"><input type="checkbox" name="agree" required /> <span>Согласен на обработку персональных данных — <a href="{% url 'consent' %}">текст</a></span></label>
+          <button class="btn btn--solid" type="submit" style="width:100%;margin-top:22px">Отправить запрос</button>
+        </form>
       </div>
     </div>
     

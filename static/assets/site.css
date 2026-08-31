@@ -202,17 +202,20 @@ nav.main .dd a:hover{background:var(--ink-3);color:var(--white)}
 
 /* команда */
 .team-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(14px,1.8vw,24px);position:relative;z-index:1}
-.team-carousel{position:relative;z-index:1;display:flex;align-items:center;gap:10px}
-.team-track{flex:1;min-width:0;display:flex;gap:clamp(14px,1.8vw,24px);overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:2px}
+.team-carousel{--tg:clamp(14px,1.8vw,24px);position:relative;z-index:1}
+.team-track{display:flex;gap:var(--tg);overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:2px}
 .team-track::-webkit-scrollbar{display:none}
-.team-track .tm{flex:0 0 auto;width:clamp(208px,24vw,258px);scroll-snap-align:start}
-.tc-nav{flex:0 0 auto;width:42px;height:42px;border-radius:50%;border:1px solid rgba(0,0,0,.16);background:rgba(255,255,255,.92);color:#1b1c1e;font-size:22px;line-height:1;cursor:pointer;display:grid;place-items:center;transition:opacity .2s,background .2s}
+/* карточка — ровно 1/4 ширины, как в исходной сетке; при 5+ появляется прокрутка */
+.team-track .tm{flex:0 0 auto;width:calc((100% - 3*var(--tg))/4);scroll-snap-align:start}
+.tc-nav{position:absolute;top:38%;transform:translateY(-50%);z-index:3;width:44px;height:44px;border-radius:50%;border:1px solid rgba(0,0,0,.16);background:rgba(255,255,255,.94);color:#1b1c1e;font-size:22px;line-height:1;cursor:pointer;display:grid;place-items:center;box-shadow:0 4px 14px rgba(0,0,0,.18);transition:opacity .2s,background .2s}
 .tc-nav:hover{background:#fff}
-.tc-nav:disabled{opacity:.3;cursor:default}
-.team-carousel.is-static{gap:0}
+.tc-nav:disabled{opacity:.28;cursor:default;box-shadow:none}
+.tc-prev{left:-10px}
+.tc-next{right:-10px}
 .team-carousel.is-static .tc-nav{display:none}
 .team-carousel.is-static .team-track{overflow:visible}
-@media(max-width:560px){.team-carousel .tc-nav{display:none}.team-track{scroll-snap-type:none}}
+@media(max-width:900px){.team-track .tm{width:calc((100% - var(--tg))/2)}}
+@media(max-width:560px){.team-track .tm{width:100%}.tc-nav{display:none}.team-track{scroll-snap-type:none}}
 .tm{border:1px solid #D2D2CC;background:var(--white)}
 .tm .ph{aspect-ratio:3/3.4;background:linear-gradient(160deg,#D6D6D2,#B9BAB6);display:grid;place-items:center;position:relative}
 .tm .ph i{font-family:var(--font-m);font-style:normal;font-size:10px;color:#90918D;letter-spacing:.1em}

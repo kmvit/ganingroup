@@ -602,6 +602,14 @@ html.flat .floats{display:none}
 :root[data-theme="light"] .phero-photo .sub,
 :root[data-theme="light"] .phero-photo .meta{color:#C7C8C4}
 
+/* Первый экран лежит на тёмном видео/фото — текст остаётся светлым и в светлой
+   теме (иначе тёмные токены делают заголовок нечитаемым на светлом кадре) */
+:root[data-theme="light"] .hero h1,
+:root[data-theme="light"] .hero-geo b{color:#fff}
+:root[data-theme="light"] .hero .sub{color:#E4E5E1}
+:root[data-theme="light"] .hero .eyebrow,
+:root[data-theme="light"] .hero-geo span{color:#C7C8C4}
+
 /* блок «Перевозчикам» (#haulers) — светлая карточка с инлайн-стилями,
    рассчитанными на светлую полосу; в светлой теме полоса инвертируется
    в тёмную, поэтому перекрываем инлайн через !important */

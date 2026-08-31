@@ -10,6 +10,10 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
+        # таблицы физически создаёт приложение pages — эти модели
+        # лишь переезжают в другое приложение на уровне состояния,
+        # поэтому на чистой базе порядок обязан быть именно таким
+        ('pages', '0011_fix_price_note'),
     ]
 
     operations = [

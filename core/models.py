@@ -166,7 +166,7 @@ class SiteSettings(models.Model):
     @property
     def phone_link(self):
         """Телефон в виде tel:+7900… — только цифры и плюс."""
-        digits = ''.join(ch for ch in self.phone_main if ch.isdigit())
+        digits = ''.join(ch for ch in self.phone_main.split(',')[0] if ch.isdigit())
         return '+' + digits if digits else ''
 
 

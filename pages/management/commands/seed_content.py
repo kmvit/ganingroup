@@ -15,6 +15,7 @@ from django.db import transaction
 
 from calc.models import ConcreteGrade, DeliveryZone
 from content.cases import case_for
+from content.docs_seed import DOCS as DOCS_SEED
 from content.models import (CatalogItem, Department, Direction, Document, MapPoint,
                             ObjectPhoto, ObjectStat, ProjectObject, Review, Stat,
                             TeamMember, TimelineEvent, Vacancy)
@@ -163,11 +164,7 @@ CATALOG = [
     ('produkciya_inertnye', 'Минеральный порошок', 'МП-1 · МП-2'),
 ]
 
-DOCUMENTS = [
-    ('Паспорт качества на партию бетона', 'PDF', 'выдаётся на каждую отгрузку'),
-    ('Сертификаты на ЖБИ', 'PDF', 'по каталогу изделий'),
-    ('Реквизиты и карточка предприятия', 'PDF', 'для договорного отдела'),
-]
+# Документы берём из единого списка content/docs_seed.py (файлы — в media/docs/)
 
 
 class Command(BaseCommand):
@@ -325,9 +322,9 @@ class Command(BaseCommand):
             CatalogItem.objects.get_or_create(section=section, title=title, defaults=dict(
                 chips=chips, order=counters[section]))
 
-        for i, (title, kind, summary) in enumerate(DOCUMENTS, 1):
-            Document.objects.get_or_create(title=title, defaults=dict(
-                kind=kind, summary=summary, order=i * 10))
+        for i, (filename, title, kind, summary) in enumerate(DOCS_SEED, 1):
+            Document.objects.get_or_create(file=f'docs/{filename}', defaults=dict(
+                title=title, kind=kind, summary=summary, order=i * 10))
 
         for i, (title, gclass, price, note) in enumerate(CONCRETE_GRADES, 1):
             ConcreteGrade.objects.get_or_create(title=title, defaults=dict(

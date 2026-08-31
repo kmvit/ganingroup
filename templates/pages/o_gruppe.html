@@ -67,9 +67,11 @@
   <div class="wrap">
     <div class="sec-head"><h2>Документы и сертификаты</h2><span class="num">06 / 06</span></div>
     <div class="rows">
-      <div class="rowi"><span class="kind">PDF</span><div><div class="tit">Лицензии и СРО</div><div class="sub">допуски на виды работ · членство в саморегулируемых организациях</div></div><a class="btn btn--line btn--sm act" href="#">Скачать</a></div>
-      <div class="rowi"><span class="kind">PDF</span><div><div class="tit">Паспорта качества бетона</div><div class="sub">форма паспорта на партию · протоколы испытаний лаборатории</div></div><a class="btn btn--line btn--sm act" href="#">Скачать</a></div>
-      <div class="rowi"><span class="kind">PDF</span><div><div class="tit">Сертификаты на продукцию</div><div class="sub">соответствие ГОСТ по направлениям: бетон, ЖБИ, асфальт</div></div><a class="btn btn--line btn--sm act" href="#">Скачать</a></div>
+      {% for d in documents %}
+      <div class="rowi"><span class="kind">{{ d.kind|default:"PDF" }}</span><div><div class="tit">{{ d.title }}</div>{% if d.summary %}<div class="sub">{{ d.summary }}</div>{% endif %}</div>{% if d.file %}<a class="btn btn--line btn--sm act" href="{{ d.file.url }}" target="_blank" rel="noopener">Скачать</a>{% endif %}</div>
+      {% empty %}
+      <div class="rowi"><span class="kind">PDF</span><div><div class="tit">Документы готовятся к публикации</div><div class="sub">сертификаты и декларации появятся здесь</div></div></div>
+      {% endfor %}
     </div>
   </div>
 </section>

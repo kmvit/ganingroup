@@ -81,6 +81,16 @@ def page_extras(slug: str) -> dict:
         return extras
     if slug in ('produkciya_zhbi', 'produkciya_asfalt', 'produkciya_inertnye'):
         return {'catalog': CatalogItem.objects.filter(published=True, section=slug)}
+    if slug == 'resheniya':
+        # плитки хаба берут фото из шапок страниц сегментов (Page.photo),
+        # чтобы не загружать фото отдельно — грузится один раз на странице сегмента
+        seg_slugs = ['reshenie_zastroyshchikam', 'reshenie_kommercheskoe',
+                     'reshenie_dorozhnikam', 'reshenie_promyshlennost',
+                     'reshenie_chastnaya_zastroyka']
+        return {
+            'seg_pages': {p.slug: p for p in Page.objects.filter(slug__in=seg_slugs)},
+            'upex_dir': Direction.objects.filter(published=True, is_upex=True).first(),
+        }
     if slug.startswith('reshenie_'):
         # плитки «Продукция под сегмент» берут фото из направлений (по маршруту),
         # чтобы не грузить фото на каждую страницу решения отдельно

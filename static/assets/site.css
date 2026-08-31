@@ -81,6 +81,10 @@ nav.main .dd a:hover{background:var(--ink-3);color:var(--white)}
   linear-gradient(180deg,#141517 0%, #101112 60%, #0C0D0E 100%)}
 .hero-bg::after{content:"";position:absolute;inset:0;background-image:var(--noise)}
 .hero-draft{position:absolute;inset:0;pointer-events:none;opacity:.5}
+.hero-media{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.hero-media-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(12,13,14,.35),rgba(12,13,14,.78))}
+/* на мобильном показываем фото-постер вместо видео (широкое видео сильно режется) */
+@media (max-width:768px){.hero-media-video{display:none}}
 .hero-media-tag{position:absolute;top:104px;right:var(--gut);font-family:var(--font-m);font-size:11px;letter-spacing:.14em;color:#5E6164;border:1px dashed #33363A;padding:8px 12px}
 .hero-inner{position:relative;padding-bottom:clamp(28px,4svh,88px)}
 .hero h1{font-size:clamp(52px,9.6vw,168px);font-weight:600;color:var(--white);max-width:12ch}
@@ -97,7 +101,8 @@ nav.main .dd a:hover{background:var(--ink-3);color:var(--white)}
    убираем — подгоняем отступами и умеренным размером заголовка */
 @media (max-height:860px){
   .hero{padding-top:clamp(84px,10svh,120px)}
-  .hero h1{font-size:clamp(44px,9.5svh,132px)}
+  /* min() с vw — чтобы на узких экранах заголовок не вылезал за край по ширине */
+  .hero h1{font-size:min(clamp(44px,9.5svh,132px),13.5vw)}
   .hero .sub{margin-top:clamp(10px,1.8svh,20px)}
   .hero-geo{margin-top:clamp(16px,2.4svh,40px)}
   .hero-geo div{padding:clamp(12px,2svh,20px) 18px}

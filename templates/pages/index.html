@@ -26,7 +26,11 @@
       <rect x="34" y="77" width="9" height="9" fill="#FF6A00" opacity=".8"/>
     </g>
   </svg>
-  {% if site.hero_video %}<video autoplay muted loop playsinline{% if site.hero_photo %} poster="{{ site.hero_photo.url }}"{% endif %} style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"><source src="{{ site.hero_video.url }}" /></video><span style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(12,13,14,.35),rgba(12,13,14,.78))"></span>{% elif site.hero_photo %}<img src="{{ site.hero_photo.url }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" /><span style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(12,13,14,.35),rgba(12,13,14,.78))"></span>{% else %}<span class="hero-media-tag">[ фоновое видео: завод · миксеры · заливка / mobile — фото ]</span>{% endif %}
+  {% if site.hero_video or site.hero_photo %}
+    {% if site.hero_photo %}<img class="hero-media hero-media-photo" src="{{ site.hero_photo.url }}" alt="" />{% endif %}
+    {% if site.hero_video %}<video class="hero-media hero-media-video" autoplay muted loop playsinline{% if site.hero_photo %} poster="{{ site.hero_photo.url }}"{% endif %}><source src="{{ site.hero_video.url }}" /></video>{% endif %}
+    <span class="hero-media-shade"></span>
+  {% else %}<span class="hero-media-tag">[ фоновое видео: завод · миксеры · заливка / mobile — фото ]</span>{% endif %}
   <div class="wrap hero-inner">
     <p class="eyebrow">Группа компаний · Кавказские Минеральные Воды</p>
     <h1 style="margin-top:22px">{{ page.h1|default:"Строим основу<br>будущего<em>.</em>"|safe }}</h1>

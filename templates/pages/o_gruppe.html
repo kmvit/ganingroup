@@ -11,7 +11,7 @@
   <div class="wrap">
     <div class="sec-head"><p class="eyebrow">Слово собственника</p><span class="num">01 / 06</span></div>
     <div class="about-grid" style="grid-template-columns:280px 1fr;align-items:start">
-      <div class="pcard" style="pointer-events:none"><span class="ph" style="aspect-ratio:3/3.6"><i>[ портрет собственника ]</i></span></div>
+      <div class="pcard" style="pointer-events:none"><span class="ph" style="aspect-ratio:3/3.6">{% if page.photo %}<img src="{{ page.photo.url }}" alt="Михаил Ганин" style="width:100%;height:100%;object-fit:cover" />{% else %}<i>[ портрет собственника ]</i>{% endif %}</span></div>
       <div>
         <p class="big" style="font-size:clamp(18px,2vw,26px);line-height:1.5;font-weight:500;color:var(--paper)">«Мой дед начинал на этом заводе начальником цеха. Отец вырос до директора. После распада Союза предприятие продолжил я. Сегодня здесь работают мои сын и дочь.<br><br>Всё это время — шестьдесят лет — меняются времена, технологии и масштабы. Не меняется одно: мы делаем бетон, который приходит вовремя. Карьер, лаборатория, машины, опалубка — всё существует ради этого.<br><br>Мы отвечаем за то, чтобы бетон был нужного качества и доставлялся тогда, когда он нужен заказчику. Ведь <b style="color:var(--accent)">график заказчика для нас — главная марка прочности»</b>.</p>
         <div class="quote-who" style="margin-top:26px">

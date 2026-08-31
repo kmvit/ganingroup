@@ -25,12 +25,25 @@
     map.behaviors.disable('scrollZoom');   // колесо листает страницу, а не зумит карту
 
     if (MODE === 'coverage') {
-      // зона покрытия — мягкий оранжевый круг
-      var zone = new ymaps.Circle([plant, radius], {
-        hintContent: 'Зона ритмичной доставки бетона и инертных — ' + (radius / 1000) + ' км'
+      // Зона покрытия — круг радиуса, срезанный по югу: за Кавказский хребет
+      // (в Грузию) не возим, поэтому южную кромку ограничиваем по широте.
+      var SOUTH_LIMIT_LAT = 43.15;           // южнее не показываем зону
+      var Rkm = radius / 1000;
+      var kmPerLat = 111.32;                  // км в одном градусе широты
+      var kmPerLng = 111.32 * Math.cos(plant[0] * Math.PI / 180);
+      var ring = [];
+      for (var a = 0; a <= 360; a += 5) {
+        var t = a * Math.PI / 180;
+        var lat = plant[0] + (Rkm / kmPerLat) * Math.cos(t);
+        var lng = plant[1] + (Rkm / kmPerLng) * Math.sin(t);
+        if (lat < SOUTH_LIMIT_LAT) lat = SOUTH_LIMIT_LAT;   // ровная южная кромка
+        ring.push([lat, lng]);
+      }
+      var zone = new ymaps.Polygon([ring], {
+        hintContent: 'Зона ритмичной доставки бетона и инертных — до ' + Rkm + ' км'
       }, {
         fillColor: '#FF6A001F', strokeColor: '#FF6A00',
-        strokeWidth: 2, strokeOpacity: 0.75
+        strokeWidth: 2, strokeOpacity: 0.75, fillRule: 'nonZero'
       });
       map.geoObjects.add(zone);
 

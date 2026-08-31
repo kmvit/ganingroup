@@ -82,6 +82,36 @@ class ProjectObject(Ordered):
         return ' · '.join(p for p in (self.city, self.direction) if p)
 
 
+class CatalogItem(Ordered):
+    """Позиция каталога продукции: марка бетона, изделие ЖБИ, смесь, фракция."""
+
+    SECTIONS = [
+        ('produkciya_beton', 'Бетон'),
+        ('produkciya_zhbi', 'ЖБИ'),
+        ('produkciya_asfalt', 'Асфальт'),
+        ('produkciya_inertnye', 'Инертные материалы'),
+    ]
+
+    section = models.CharField('Раздел каталога', max_length=40, choices=SECTIONS)
+    title = models.CharField('Название', max_length=200)
+    chips = models.CharField('Бейджи', max_length=200, blank=True,
+                             help_text='Короткие метки через « · », например: W4 · П3–П4')
+    photo = models.ImageField('Фото', upload_to='catalog/', blank=True,
+                              help_text='Если пусто — покажется серая плитка-заглушка')
+
+    class Meta(Ordered.Meta):
+        db_table = 'pages_catalogitem'
+        verbose_name = 'Позиция каталога'
+        verbose_name_plural = 'Каталог продукции'
+
+    def __str__(self):
+        return f'{self.get_section_display()} · {self.title}'
+
+    @property
+    def chip_list(self):
+        return [c.strip() for c in self.chips.split('·') if c.strip()]
+
+
 class Department(Ordered):
     """Отдел на странице «Контакты»: приёмная, диспетчерская, UPEX, кадры…"""
 

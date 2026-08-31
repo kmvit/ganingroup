@@ -3,8 +3,8 @@
 from django.contrib import admin
 from django.utils.html import format_html
 
-from .models import (Department, Direction, Document, MapPoint, ProjectObject,
-                     Review, Stat, TeamMember, TimelineEvent, Vacancy)
+from .models import (CatalogItem, Department, Direction, Document, MapPoint,
+                     ProjectObject, Review, Stat, TeamMember, TimelineEvent, Vacancy)
 
 
 def photo_preview(obj, field='photo', height=44):
@@ -38,6 +38,15 @@ class DirectionAdmin(admin.ModelAdmin, PhotoMixin):
         ('Вид плитки', {'fields': ('size', 'is_upex')}),
         ('Показ', {'fields': ('order', 'published')}),
     )
+
+
+@admin.register(CatalogItem)
+class CatalogItemAdmin(admin.ModelAdmin, PhotoMixin):
+    list_display = ('title', 'preview', 'section', 'chips', 'order', 'published')
+    list_editable = ('order', 'published')
+    list_display_links = ('title',)
+    list_filter = ('section', 'published')
+    search_fields = ('title', 'chips')
 
 
 @admin.register(ProjectObject)

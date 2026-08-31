@@ -9,16 +9,15 @@
 <section><div class="wrap"><div class="cat-grid">
   <aside class="filter"><h3>Фильтр</h3><div class="f-label" style="margin-top:0">Тип смеси</div><div class="opts"><a class="chip act" href="#">Все</a><a class="chip" href="#">Плотная</a><a class="chip" href="#">Щебёночно-мастичная (ЩМА)</a></div><div class="f-label" style="margin-top:20px">Применение</div><div class="opts"><a class="chip" href="#">дороги</a><a class="chip" href="#">благоустройство</a></div>
     <a class="btn btn--line btn--sm" href="#" style="margin-top:24px;width:100%">Сбросить фильтр</a>
-    <p style="margin-top:14px;font-family:var(--font-m);font-size:10.5px;color:var(--concrete);letter-spacing:.06em">HTMX · без перезагрузки · состояние в URL</p>
-  </aside>
-  <div><div class="grid c3"><a class="pcard" href="{% url 'produkciya_kartochka' %}" style="position:relative"><span class="ph"><i>[ фото ]</i></span><span class="body"><h3>Плотная А8 (мелкозернистая)</h3><span class="row"><span class="chip">ГОСТ 9128</span></span></span></a><a class="pcard" href="{% url 'produkciya_kartochka' %}" style="position:relative"><span class="ph"><i>[ фото ]</i></span><span class="body"><h3>Плотная А11</h3><span class="row"><span class="chip">ГОСТ 9128</span></span></span></a><a class="pcard" href="{% url 'produkciya_kartochka' %}" style="position:relative"><span class="ph"><i>[ фото ]</i></span><span class="body"><h3>Плотная А16</h3><span class="row"><span class="chip">ГОСТ 9128</span></span></span></a><a class="pcard" href="{% url 'produkciya_kartochka' %}" style="position:relative"><span class="ph"><i>[ фото ]</i></span><span class="body"><h3>Плотная А22</h3><span class="row"><span class="chip">ГОСТ 9128</span></span></span></a><a class="pcard" href="{% url 'produkciya_kartochka' %}" style="position:relative"><span class="ph"><i>[ фото ]</i></span><span class="body"><h3>Плотная А32</h3><span class="row"><span class="chip">ГОСТ 9128</span></span></span></a><a class="pcard" href="{% url 'produkciya_kartochka' %}" style="position:relative"><span class="ph"><i>[ фото ]</i></span><span class="body"><h3>ЩМА-16</h3><span class="row"><span class="chip">ГОСТ 9128</span></span></span></a><a class="pcard" href="{% url 'produkciya_kartochka' %}" style="position:relative"><span class="ph"><i>[ фото ]</i></span><span class="body"><h3>ЩМА-22</h3><span class="row"><span class="chip">ГОСТ 9128</span></span></span></a></div>
+      </aside>
+  <div><div class="grid c3">{% for item in catalog %}<a class="pcard" href="{% url 'produkciya_kartochka' %}" style="position:relative"><span class="ph">{% if item.photo %}<img src="{{ item.photo.url }}" alt="{{ item.title }}" style="width:100%;height:100%;object-fit:cover" />{% else %}<i>[ фото ]</i>{% endif %}</span><span class="body"><h3>{{ item.title }}</h3><span class="row">{% for ch in item.chip_list %}<span class="chip">{{ ch }}</span>{% endfor %}</span></span></a>{% endfor %}</div>
     <div style="display:flex;justify-content:center;margin-top:32px"><a class="btn btn--line" href="#">Показать ещё</a></div>
   </div>
 </div></div></section><section class="final">
   <div class="wrap" style="position:relative">
     <p class="eyebrow" style="justify-content:center">Один партнёр — весь монолит</p>
     <h2 style="margin-top:22px">Нужна помощь с <em>подбором</em>?</h2>
-    <p>Технолог подберёт марку и состав под конструкцию и условия на площадке.</p>
+    <p>Пришлите ведомость работ — технолог подберёт тип смеси, менеджер поставит подачу под темп укладчика.</p>
     <div class="cta-row">
       <a class="btn btn--solid" href="#tkp">Запросить ТКП</a>
       <a class="btn btn--line" href="tel:{{ site.phone_link }}">Заказать звонок</a>

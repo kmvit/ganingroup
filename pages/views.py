@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.contrib import messages
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
@@ -8,8 +8,8 @@ from django.views.decorators.http import require_POST
 from .forms import LeadForm, HaulerLeadForm, VacancyApplicationForm
 from .notify import notify_application, notify_hauler, notify_lead
 from calc.models import ConcreteGrade, ConstructionType, DeliveryZone
-from content.models import (Department, Direction, Document, MapPoint, ProjectObject,
-                            Review, Stat, TeamMember, TimelineEvent, Vacancy)
+from content.models import (CatalogItem, Department, Direction, Document, MapPoint,
+                            ProjectObject, Review, Stat, TeamMember, TimelineEvent, Vacancy)
 from core.models import Page
 
 # (url_path, url_name, шаблон, active-ключ для подсветки меню)
@@ -35,7 +35,7 @@ PAGES = [
     ('uslugi/shef-montazh/',          'shef_montazh',                 'shef_montazh',                 'uslugi'),
     ('uslugi/laboratoriya/',          'laboratoriya',                 'laboratoriya',                 'uslugi'),
     ('obekty/',                       'obekty',                       'obekty',                       'obekty'),
-    ('obekty/zhk-nazvanie/',          'obekt',                        'obekt',                        'obekty'),
+    ('obekty/mkc-rossiya-kislovodsk/','obekt',                        'obekt',                        'obekty'),
     ('kariera/',                      'kariera',                      'kariera',                      'kariera'),
     ('kontakty/',                     'kontakty',                     'kontakty',                     'kontakty'),
     ('kalkulyator/',                  'kalkulyator',                  'kalkulyator',                  'produkciya'),
@@ -73,9 +73,21 @@ def page_extras(slug: str) -> dict:
     if slug == 'produkciya':
         return {'directions': Direction.objects.filter(published=True)}
     if slug in ('kalkulyator', 'produkciya_beton'):
-        return {'grades': ConcreteGrade.objects.filter(published=True),
-                'zones': DeliveryZone.objects.filter(published=True),
-                'ctypes': ConstructionType.objects.filter(published=True)}
+        extras = {'grades': ConcreteGrade.objects.filter(published=True),
+                  'zones': DeliveryZone.objects.filter(published=True),
+                  'ctypes': ConstructionType.objects.filter(published=True)}
+        if slug == 'produkciya_beton':
+            extras['catalog'] = CatalogItem.objects.filter(published=True, section=slug)
+        return extras
+    if slug in ('produkciya_zhbi', 'produkciya_asfalt', 'produkciya_inertnye'):
+        return {'catalog': CatalogItem.objects.filter(published=True, section=slug)}
+    # кейсы на страницах решений — реальные объекты из БД (фото грузятся в «Объектах»)
+    if slug == 'reshenie_zastroyshchikam':
+        return {'objects': ProjectObject.objects.filter(published=True, direction='бетон')}
+    if slug == 'reshenie_kommercheskoe':
+        return {'objects': ProjectObject.objects.filter(published=True)}
+    if slug == 'reshenie_promyshlennost':
+        return {'objects': ProjectObject.objects.filter(published=True, direction='опалубка')}
     return {}
 
 
@@ -98,6 +110,33 @@ def make_page_view(template: str, active: str, slug: str):
         return render(request, f'pages/{template}.html', ctx)
     view.__name__ = f'page_{template}'
     return view
+
+
+# служебные страницы не отдаём поисковикам
+SITEMAP_EXCLUDE = {'policy', 'consent', 'aidentika'}
+
+
+def sitemap_xml(request):
+    base = f'{request.scheme}://{request.get_host()}'
+    items = ''.join(
+        f'  <url><loc>{base}/{p}</loc></url>\n'
+        for p, name, _tpl, _active in PAGES if name not in SITEMAP_EXCLUDE)
+    xml = ('<?xml version="1.0" encoding="UTF-8"?>\n'
+           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+           f'{items}</urlset>\n')
+    return HttpResponse(xml, content_type='application/xml')
+
+
+def robots_txt(request):
+    base = f'{request.scheme}://{request.get_host()}'
+    text = ('User-agent: *\n'
+            'Disallow: /admin/\n'
+            'Disallow: /zayavka/\n'
+            'Disallow: /policy/\n'
+            'Disallow: /consent/\n'
+            'Disallow: /aidentika/\n'
+            f'Sitemap: {base}/sitemap.xml\n')
+    return HttpResponse(text, content_type='text/plain')
 
 
 def _back(request, fragment: str):

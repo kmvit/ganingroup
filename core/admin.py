@@ -3,7 +3,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 
-from .models import Card, MenuItem, Page, SiteSettings
+from .models import Card, MenuItem, Page, PagePhoto, SiteSettings
 
 admin.site.site_header = 'ГАНИН ГРУПП — управление сайтом'
 admin.site.site_title = 'ГАНИН ГРУПП'
@@ -37,8 +37,15 @@ class CardInline(admin.TabularInline):
     """Плитки правятся прямо внутри своей страницы."""
     model = Card
     extra = 0
-    fields = ('section', 'icon', 'title', 'text', 'url_name', 'link_label', 'order', 'published')
+    fields = ('section', 'icon', 'title', 'text', 'photo', 'url_name', 'link_label', 'order', 'published')
     ordering = ('section', 'order')
+
+
+class PagePhotoInline(admin.TabularInline):
+    """Галерея страницы: фото кейса, галерея карточки товара."""
+    model = PagePhoto
+    extra = 0
+    fields = ('image', 'caption', 'order', 'published')
 
 
 @admin.register(SiteSettings)
@@ -46,6 +53,11 @@ class SiteSettingsAdmin(admin.ModelAdmin):
     """Одна запись на весь сайт — добавлять и удалять нельзя, только править."""
 
     fieldsets = (
+        ('Первый экран главной', {
+            'description': 'Фоновое видео (MP4/WEBM, без звука) и фото-замена. '
+                           'Пока файлы не загружены — показывается заглушка вёрстки.',
+            'fields': ('hero_video', 'hero_photo'),
+        }),
         ('Логотипы', {
             'description': 'Если файл не загружен — используется логотип из вёрстки. '
                            'Нужны версии для тёмного и светлого оформления.',
@@ -104,10 +116,16 @@ class PageAdmin(admin.ModelAdmin):
     list_display = ('admin_title', 'h1', 'slug', 'has_seo')
     search_fields = ('admin_title', 'h1', 'subtitle', 'body')
     readonly_fields = ('slug', 'admin_title')
-    inlines = [CardInline]
+    inlines = [PagePhotoInline, CardInline]
     fieldsets = (
         ('Какая страница', {'fields': ('admin_title', 'slug')}),
         ('Тексты', {'fields': ('h1', 'subtitle', 'body')}),
+        ('Фото', {
+            'description': 'Главное фото страницы: фон шапки у решений и кейса, '
+                           'фото слева у сервисов, главное фото товара на карточке. '
+                           'Галерея (фото кейса, галерея товара) — внизу страницы.',
+            'fields': ('photo',),
+        }),
         ('SEO — как страница выглядит в поиске', {
             'description': 'Если оставить пустым, поисковик увидит заголовок страницы.',
             'fields': ('seo_title', 'seo_description'),

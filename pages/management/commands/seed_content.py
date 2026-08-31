@@ -14,8 +14,8 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from calc.models import ConcreteGrade, DeliveryZone
-from content.models import (Department, Direction, Document, MapPoint, ProjectObject,
-                            Review, Stat, TeamMember, TimelineEvent, Vacancy)
+from content.models import (CatalogItem, Department, Direction, Document, MapPoint,
+                            ProjectObject, Review, Stat, TeamMember, TimelineEvent, Vacancy)
 from core.models import Card, MenuItem, Page, SiteSettings
 from pages.nav import MAIN as NAV_MAIN
 from pages.seed_cards import CARDS
@@ -30,14 +30,15 @@ STATS = [
 ]
 
 DIRECTIONS = [
-    ('Бетон', 'Товарный бетон М100–М600, спецмарки до М1000 под задачу. Два узла, лаборатория.',
+    ('Бетон', 'Товарный бетон М100–М600 (спецмарки до М1000 под задачу), растворы. '
+     'До 150 000 м³ в год. Доставка миксерами, подача насосами.',
      'produkciya_beton', 'big', False),
     ('ЖБИ', '293 вида: ФБС, кольца, плиты, бордюры', 'produkciya_zhbi', '', False),
     ('Асфальт', 'Смеси по ГОСТ 9128-2009', 'produkciya_asfalt', '', False),
-    ('Опалубка UPEX', 'Системы собственного производства. Расчёт комплекта и шеф-монтаж.',
+    ('Опалубка UPEX', 'Системы собственного производства. Расчёт комплекта, отгрузка в любой регион, шеф-монтаж.',
      '', 'tall', True),
     ('Карьер', 'Щебень, песок природный, отсев', 'produkciya_inertnye', '', False),
-    ('Транспорт', '25 миксеров · 8 насосов · самосвалы', 'logistika', '', False),
+    ('Транспорт', '25 миксеров · 8 бетононасосов · самосвалы', 'logistika', '', False),
     ('Цемент', 'Фасованный — для мелкого опта', 'produkciya_cement', '', False),
     ('Лаборатория', 'Паспорт качества на каждую партию', 'laboratoriya', '', False),
 ]
@@ -48,7 +49,7 @@ OBJECTS = [
     ('МКЦ «Россия»', 'Кисловодск', 'бетон',
      '20 000 м³ бетона — сложная логистика в центре города в реальном времени'),
     ('Маслоцех АО «Азовский хлеб»', 'Азов', 'опалубка',
-     'Рамная опалубка UPEX перекрытия 300 мм с ригелями 800 мм, 3 варианта расстановки'),
+     'Рамная опалубка UPEX перекрытия 300 мм с ригелями 800 мм — 3 варианта расстановки, изготовление за 7 дней'),
 ]
 
 DEPARTMENTS = []  # заказчик: на сайте только телефоны отдела продаж из «Общих данных»
@@ -118,6 +119,47 @@ DELIVERY_ZONES = [
     ('Кисловодск, Левокумка', 6585, 1217, 7243),
 ]
 
+# Каталоги продукции: (раздел, название, бейджи через ·). Фото грузятся в админке.
+CATALOG = [
+    ('produkciya_beton', 'Бетон М200 (B15)', 'W4 · П3–П4'),
+    ('produkciya_beton', 'Бетон М300 (B22,5)', 'W4 · П3–П4'),
+    ('produkciya_beton', 'Бетон М350 (B25)', 'W4 · П3–П4'),
+    ('produkciya_beton', 'Бетон М400 (B30)', 'W6–8 · П4'),
+    ('produkciya_beton', 'Бетон М500 (B40)', 'W6–8 · П4'),
+    ('produkciya_beton', 'Бетон М600 (B45)', 'W6–8 · П4'),
+    ('produkciya_beton', 'Бетон М350 пониж. проницаемости', 'B25 · W6–8'),
+    ('produkciya_beton', 'Мелкозернистый бетон', 'B7,5–B35'),
+    ('produkciya_beton', 'Раствор кладочный', 'М50–М200'),
+    ('produkciya_beton', 'Раствор на стяжку', 'М100 · М150'),
+    ('produkciya_beton', 'Спецбетоны', 'сульфатостойкий · безусадочный'),
+    ('produkciya_zhbi', 'Блоки ФБС', '24.4.6 · 12.4.6'),
+    ('produkciya_zhbi', 'Кольца колодезные КС', 'КС10 · КС15 · КС20'),
+    ('produkciya_zhbi', 'Плиты перекрытия', 'ПК · ПБ'),
+    ('produkciya_zhbi', 'Перемычки', 'ПБ · ПП'),
+    ('produkciya_zhbi', 'Тротуарная плитка', 'вибропресс'),
+    ('produkciya_zhbi', 'Бордюры', 'БР100 · БР300'),
+    ('produkciya_zhbi', 'Стеновые блоки', 'до 3 млн шт/год'),
+    ('produkciya_zhbi', 'Ступени и лестничные марши', ''),
+    ('produkciya_zhbi', 'Водоотводные лотки', ''),
+    ('produkciya_zhbi', 'Палисады', 'благоустройство'),
+    ('produkciya_asfalt', 'Плотная А8 (мелкозернистая)', 'ГОСТ 9128'),
+    ('produkciya_asfalt', 'Плотная А11', 'ГОСТ 9128'),
+    ('produkciya_asfalt', 'Плотная А16', 'ГОСТ 9128'),
+    ('produkciya_asfalt', 'Плотная А22', 'ГОСТ 9128'),
+    ('produkciya_asfalt', 'Плотная А32', 'ГОСТ 9128'),
+    ('produkciya_asfalt', 'ЩМА-16', 'ГОСТ 9128'),
+    ('produkciya_asfalt', 'ЩМА-22', 'ГОСТ 9128'),
+    ('produkciya_inertnye', 'Щебень мытый фр. 5–10', 'М1000'),
+    ('produkciya_inertnye', 'Щебень мытый фр. 10–15', 'М1000'),
+    ('produkciya_inertnye', 'Щебень мытый фр. 5–20', 'М1000'),
+    ('produkciya_inertnye', 'Щебень мытый фр. 15–20', 'М1000'),
+    ('produkciya_inertnye', 'Песок природный мытый', 'Мк 2,5–3,0'),
+    ('produkciya_inertnye', 'Песок из отсевов дробления', 'Мк 3,0–3,5'),
+    ('produkciya_inertnye', 'Песок тонкий', 'Мк 0,7–1,0'),
+    ('produkciya_inertnye', 'Щебёночно-песчаная смесь', '0–10'),
+    ('produkciya_inertnye', 'Минеральный порошок', 'МП-1 · МП-2'),
+]
+
 DOCUMENTS = [
     ('Паспорт качества на партию бетона', 'PDF', 'выдаётся на каждую отгрузку'),
     ('Сертификаты на ЖБИ', 'PDF', 'по каталогу изделий'),
@@ -148,7 +190,8 @@ class Command(BaseCommand):
         s.address_office = 'Россия, 357522, Ставропольский край, г. Пятигорск, Черкесское шоссе, 2 (промзона)'
         s.address_plant = 'г. Пятигорск, Черкесское шоссе, 2 (промзона «Скачки»)'
         s.address_quarry = 'между станицами Зольская и Марьинская'
-        s.work_hours = 'с 8:00 до 16:30 · отгрузка готовых изделий — до 16:00'
+        s.work_hours = ('с 8:00 до 16:30 · отгрузка готовых изделий — до 16:00 · '
+                        'производство работает, пока не выполнит задачи дня')
         s.legal_name = 'ЗАО «Стройдеталь-2»'
         s.requisites = 'ИНН 2632015284 · ОГРН 1022601632151'
         s.copyright_note = 'ГАНИН ГРУПП — маркетинговый бренд группы.'
@@ -186,7 +229,7 @@ class Command(BaseCommand):
         if opts['reset']:
             for model in (Stat, Direction, ProjectObject, Department, TeamMember,
                           Review, Vacancy, Document, TimelineEvent, MapPoint,
-                          ConcreteGrade, DeliveryZone):
+                          ConcreteGrade, DeliveryZone, CatalogItem):
                 model.objects.all().delete()
             MenuItem.objects.all().delete()
             Page.objects.all().delete()
@@ -209,7 +252,9 @@ class Command(BaseCommand):
             Page.objects.update_or_create(
                 slug=row['slug'],
                 defaults=dict(admin_title=row['admin_title'], h1=row['h1'],
-                              subtitle=row['subtitle']),
+                              subtitle=row['subtitle'],
+                              seo_title=row.get('seo_title', ''),
+                              seo_description=row.get('seo_description', '')),
             )
         self.stdout.write(f'  • страниц: {Page.objects.count()}')
 
@@ -239,7 +284,8 @@ class Command(BaseCommand):
 
         for i, (title, tagline, url_name, size, is_upex) in enumerate(DIRECTIONS, 1):
             Direction.objects.get_or_create(title=title, defaults=dict(
-                tagline=tagline, url_name=url_name, size=size, is_upex=is_upex, order=i * 10))
+                tagline=tagline, url_name=url_name, size=size, is_upex=is_upex,
+                external_url=(s.upex_url if is_upex else ''), order=i * 10))
 
         for i, (title, city, direction, summary) in enumerate(OBJECTS, 1):
             ProjectObject.objects.get_or_create(title=title, defaults=dict(
@@ -261,6 +307,12 @@ class Command(BaseCommand):
         for i, (title, kind, summary) in enumerate(VACANCIES, 1):
             Vacancy.objects.get_or_create(title=title, defaults=dict(
                 kind=kind, summary=summary, order=i * 10))
+
+        counters = {}
+        for section, title, chips in CATALOG:
+            counters[section] = counters.get(section, 0) + 10
+            CatalogItem.objects.get_or_create(section=section, title=title, defaults=dict(
+                chips=chips, order=counters[section]))
 
         for i, (title, kind, summary) in enumerate(DOCUMENTS, 1):
             Document.objects.get_or_create(title=title, defaults=dict(

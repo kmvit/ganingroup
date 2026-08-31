@@ -5,7 +5,7 @@
 
 {% block content %}
 <nav class="bc"><div class="wrap"><a href="{% url 'home' %}">Главная</a><i>/</i><a href="{% url 'produkciya_beton' %}">Бетон</a><i>/</i><span>Калькулятор</span></div></nav>
-<section class="phero"><div class="wrap"><h1>{{ page.h1|default:"Калькулятор объёма бетона"|safe }}</h1><p class="sub">{{ page.subtitle|default:"Предварительная оценка объёма и марки — мгновенно, на странице. Результат переносится в заявку на ТКП. Запас +5% и округление до 0,1 м³ учтены."|safe }}</p></div></section>
+<section class="phero"><div class="wrap"><h1>{{ page.h1|default:"Калькулятор объёма бетона"|safe }}</h1><p class="sub">{{ page.subtitle|default:"Онлайн-расчёт объёма и марки — мгновенно, на странице. Результат переносится в заявку на ТКП. Запас 5–10% (на выбор) и округление до 0,1 м³ учтены."|safe }}</p></div></section>
 
 <section style="padding-top:0">
   <div class="wrap">
@@ -38,40 +38,41 @@
         <span class="eyebrow" style="margin-top:26px">Шаг 3 — Марка / класс</span>
         <div class="opts" id="c-grades" style="display:flex;flex-wrap:wrap;gap:7px;margin-top:12px">
           {% for g in grades %}<button type="button" class="chip{% if g.is_default %} act{% endif %}"
-            data-grade="{{ g.title }}" data-price="{{ g.price|default_if_none:'' }}"
+            data-grade="{{ g.title }}"
             title="{{ g.grade_class }}{% if g.note %} · {{ g.note }}{% endif %}">{{ g.title }}</button>{% endfor %}
         </div>
         <p style="margin-top:12px;font-size:12.5px;color:var(--muted)">+ дополнительные требования: морозостойкость, водонепроницаемость — уточнит технолог.</p>
 
-        <span class="eyebrow" style="margin-top:26px">Доставка до объекта</span>
-        <select class="f-input" id="c-zone" style="margin-top:12px">
-          <option value="" data-trip="" data-m3="">— самовывоз, без доставки —</option>
-          {% for z in zones %}<option value="{{ z.title }}" data-trip="{{ z.price_trip|default_if_none:'' }}" data-m3="{{ z.price_per_m3|default_if_none:'' }}">{{ z.title }}</option>{% endfor %}
-        </select>
-        <p style="margin-top:10px;font-size:12.5px;color:var(--muted)">До 5 м³ доставка считается за рейс, от 5 м³ — за кубометр. Другого населённого пункта нет в списке — уточните у менеджера.</p>
+        <span class="eyebrow" style="margin-top:26px">Запас на потери</span>
+        <div class="opts" id="c-reserve" style="display:flex;flex-wrap:wrap;gap:7px;margin-top:12px">
+          <button type="button" class="chip act" data-reserve="1.05">+5%</button>
+          <button type="button" class="chip" data-reserve="1.10">+10%</button>
+        </div>
+        <p style="margin-top:10px;font-size:12.5px;color:var(--muted)">Запас на усмотрение клиента: 5% — ровная опалубка, 10% — грунт и сложная геометрия.</p>
       </div>
       <div>
         <div class="calc-res">
           <span class="eyebrow">Шаг 4 — Результат</span>
           <div class="v" style="margin-top:14px"><span id="c-res">16,8</span><small> м³</small></div>
-          <div id="c-price-row" style="margin-top:18px;padding-top:18px;border-top:1px solid var(--line-d)">
-            <span class="eyebrow" style="margin-bottom:8px">Ориентировочно</span>
-            <div style="font-family:var(--font-h);font-weight:600;font-size:clamp(26px,3vw,40px);line-height:1.1;color:var(--white);margin-top:8px">
-              от <span id="c-price">—</span>
-            </div>
-            <div id="c-breakdown" style="margin-top:14px;display:grid;gap:6px;font-size:13.5px;color:var(--silver)"></div>
-          </div>
           <p class="note" id="c-note">С запасом +5% · округление до 0,1 м³</p>
-          <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:24px">
-            <a class="btn btn--solid" id="c-to-tkp" href="#tkp">Перенести в заявку на ТКП</a>
+          <form method="post" action="{% url 'lead_create' %}" style="margin-top:22px;padding-top:18px;border-top:1px solid var(--line-d)">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.path }}" />
+            <input type="hidden" name="details" id="c-details" value="" />
+            <span class="eyebrow" style="margin-bottom:6px">Получить ТКП по расчёту</span>
+            <label class="f-label" for="c-lead-name">Имя *</label>
+            <input class="f-input" id="c-lead-name" name="name" placeholder="Как к вам обращаться" required />
+            <label class="f-label" for="c-lead-phone">Телефон *</label>
+            <input class="f-input" id="c-lead-phone" name="phone" placeholder="+7 ___ ___-__-__" required />
+            <label class="f-agree"><input type="checkbox" name="agree" required /> <span>Согласен на обработку персональных данных — <a href="{% url 'consent' %}">текст согласия</a></span></label>
+            <button class="btn btn--solid" type="submit" style="width:100%;margin-top:18px">Отправить расчёт менеджеру</button>
+          </form>
+          <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:18px">
             <a class="btn btn--line" href="{% url 'produkciya_beton' %}">К маркам бетона</a>
           </div>
         </div>
         <p style="margin-top:16px;font-family:var(--font-m);font-size:10.5px;color:var(--concrete);letter-spacing:.06em;line-height:1.8">
-          <span id="c-delivery-note">Цены указаны без доставки.</span>
-          {{ site.price_note|default:"Окончательная стоимость зависит от объёма, графика поставок и удалённости объекта." }}
-          {% if site.price_valid_from %} Цены действуют с {{ site.price_valid_from|date:"d.m.Y" }}.{% endif %}
-          Точный объём и марку подтверждает технолог по проекту.
+          Расчёт выполняется мгновенно на странице. Точный объём и марку подтверждает технолог по проекту.
         </p>
       </div>
     </div>
@@ -88,30 +89,23 @@
     half:     function (a, b, c, n) { return a * b * c * 0.5 * n; }
   };
 
-  var RESERVE = 1.05;                     // запас +5%, как в подписи под результатом
-
   var typeBtns = [].slice.call(document.querySelectorAll('.calc-type button'));
   var gradeBtns = [].slice.call(document.querySelectorAll('#c-grades button'));
+  var reserveBtns = [].slice.call(document.querySelectorAll('#c-reserve button'));
   var A = document.getElementById('c-a'), B = document.getElementById('c-b'),
       C = document.getElementById('c-c'), N = document.getElementById('c-n');
   var labA = document.getElementById('c-a-label'), labB = document.getElementById('c-b-label'),
       labC = document.getElementById('c-c-label');
   var countRow = document.getElementById('c-count-row');
   var boxC = C.parentNode;
-  var outVol = document.getElementById('c-res'), outPrice = document.getElementById('c-price'),
-      priceRow = document.getElementById('c-price-row'), note = document.getElementById('c-note'),
+  var outVol = document.getElementById('c-res'), note = document.getElementById('c-note'),
       hint = document.getElementById('c-hint');
-  var toTkp = document.getElementById('c-to-tkp');
-  var zoneSel = document.getElementById('c-zone');
-  var breakdown = document.getElementById('c-breakdown');
-  var deliveryNote = document.getElementById('c-delivery-note');
-
-  // Порог из прайса: до 5 м³ доставка считается за рейс, от 5 м³ — за кубометр.
-  var TRIP_LIMIT = 5;
+  var detailsField = document.getElementById('c-details');
 
   var current = document.querySelector('.calc-type button.act') || typeBtns[0];
   var grade = (document.querySelector('#c-grades button.act') || {}).dataset || {};
-  var state = {volume: 0, price: null, concrete: 0, delivery: 0, zone: ''};
+  var reserve = 1.05;                     // запас 5–10% — на выбор клиента
+  var state = {volume: 0};
 
   // название типа без пиктограммы (её текст лежит в отдельном span)
   var typeName = function () { return current ? current.dataset.title : ''; };
@@ -122,7 +116,7 @@
     return v > 0 ? v : 0;
   };
   var fmt = function (n) { return n.toFixed(1).replace('.', ','); };
-  var money = function (n) { return Math.round(n).toLocaleString('ru-RU') + ' ₽'; };
+  var reservePct = function () { return Math.round((reserve - 1) * 100); };
 
   function applyType() {
     var d = current.dataset;
@@ -143,59 +137,23 @@
       if (String(n) !== N.value) N.value = n;      // чтобы поле совпадало с расчётом
     }
     var formula = FORMULAS[d.formula] || FORMULAS.box;
-    var v = formula(num(A), num(B), num(C), n) * RESERVE;
+    var v = formula(num(A), num(B), num(C), n) * reserve;
     v = Math.ceil(v * 10) / 10;                    // округление до 0,1 м³ вверх
     state.volume = v;
     outVol.textContent = fmt(v);
 
-    var price = grade.price ? parseFloat(grade.price) : null;
-    state.price = price;
-    state.concrete = price ? v * price : 0;
+    note.textContent = 'С запасом +' + reservePct() + '% · округление до 0,1 м³'
+      + (grade.grade ? ' · ' + (/^М\d/.test(grade.grade) ? 'марка ' : '') + grade.grade : '');
 
-    // доставка: до 5 м³ — фиксированная цена за рейс, от 5 м³ — за кубометр
-    var opt = zoneSel.options[zoneSel.selectedIndex] || {dataset: {}};
-    var trip = parseFloat(opt.dataset.trip) || 0;
-    var perM3 = parseFloat(opt.dataset.m3) || 0;
-    state.zone = zoneSel.value || '';
-    state.delivery = 0;
-    if (state.zone && v > 0) {
-      state.delivery = v >= TRIP_LIMIT ? perM3 * v : trip;
-    }
-
-    var total = state.concrete + state.delivery;
-    var rows = [];
+    // расчёт уходит менеджеру вместе с контактами — цен на странице нет
     if (v > 0) {
-      if (price) {
-        rows.push(['Бетон ' + grade.grade + ' · ' + money(price) + '/м³', money(state.concrete)]);
-      } else {
-        rows.push(['Бетон ' + (grade.grade || ''), 'по запросу']);
-      }
-      if (state.zone) {
-        rows.push([v >= TRIP_LIMIT ? 'Доставка · ' + money(perM3) + '/м³'
-                                   : 'Доставка · рейс до ' + TRIP_LIMIT + ' м³',
-                   money(state.delivery)]);
-      }
-    }
-    breakdown.innerHTML = rows.map(function (r) {
-      return '<div style="display:flex;justify-content:space-between;gap:12px">'
-           + '<span>' + r[0] + '</span><span>' + r[1] + '</span></div>';
-    }).join('');
-
-    if (v <= 0) {
-      outPrice.textContent = '—';               // размеры ещё не введены
-    } else if (price) {
-      outPrice.textContent = money(total);
+      var parts = ['Расчёт с сайта: ' + typeName(),
+                   'объём ' + fmt(v) + ' м³ (с запасом +' + reservePct() + '%)'];
+      if (grade.grade) parts.push((/^М\d/.test(grade.grade) ? 'марка ' : '') + grade.grade);
+      detailsField.value = parts.join(', ') + '.';
     } else {
-      outPrice.textContent = 'по запросу';      // спецмарка: цену назовёт технолог
+      detailsField.value = '';
     }
-    priceRow.style.display = '';
-    deliveryNote.textContent = state.zone
-      ? 'Доставка до объекта учтена в итоге по тарифу вашей зоны.'
-      : 'Цены указаны без доставки.';
-
-    note.textContent = 'С запасом +5% · округление до 0,1 м³'
-      + (grade.grade ? ' · ' + (/^М\d/.test(grade.grade) ? 'марка ' : '') + grade.grade : '')
-      + (state.zone ? ' · с доставкой' : ' · без доставки');
   }
 
   typeBtns.forEach(function (btn) {
@@ -216,24 +174,16 @@
     });
   });
 
-  [A, B, C, N].forEach(function (el) { el.addEventListener('input', calc); });
-  zoneSel.addEventListener('change', calc);
-
-  // перенос результата в заявку на ТКП
-  toTkp.addEventListener('click', function () {
-    var field = document.getElementById('tkp-details');
-    // размеры не введены — не подставляем «0 м³ за 0 ₽», пусть клиент опишет сам
-    if (!field || state.volume <= 0) return;
-    var parts = ['Расчёт с сайта: ' + typeName(),
-                 'объём ' + fmt(state.volume) + ' м³ (с запасом +5%)'];
-    if (grade.grade) parts.push((/^М\d/.test(grade.grade) ? 'марка ' : '') + grade.grade);
-    if (state.zone) parts.push('доставка: ' + state.zone);
-    if (state.price) {
-      parts.push('ориентировочно от ' + money(state.concrete + state.delivery)
-                 + (state.zone ? ' с доставкой' : ' без доставки'));
-    }
-    field.value = parts.join(', ') + '.';
+  reserveBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      reserveBtns.forEach(function (b) { b.classList.remove('act'); });
+      btn.classList.add('act');
+      reserve = parseFloat(btn.dataset.reserve) || 1.05;
+      calc();
+    });
   });
+
+  [A, B, C, N].forEach(function (el) { el.addEventListener('input', calc); });
 
   applyType();
 })();

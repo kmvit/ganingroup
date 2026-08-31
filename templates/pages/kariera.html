@@ -5,17 +5,5 @@
 
 {% block content %}
 <nav class="bc"><div class="wrap"><a href="{% url 'home' %}">Главная</a><i>/</i><span>Карьера</span></div></nav>
-<section class="phero"><div class="wrap"><h1>{{ page.h1|default:"Работа в ГАНИН ГРУПП"|safe }}</h1><p class="sub">{{ page.subtitle|default:"Две воронки: штатные вакансии на производстве и партнёрство для перевозчиков со своей техникой."|safe }}</p><div class="tags"><a class="chip hot" href="tel:{{ site.phone_link }}">Позвонить в отдел персонала</a></div></div></section>
-<section><div class="wrap"><div class="sec-head"><h2>Почему у нас</h2><span class="num">01 / 02</span></div><div class="grid c4">{% for c in cards_by_section.grid1 %}<div class="icard">{% if c.icon %}<span class="ic">{{ c.icon }}</span>{% endif %}<h3>{{ c.title }}</h3><p>{{ c.text }}</p></div>{% endfor %}</div></div></section>
-<section class="final">
-  <div class="wrap" style="position:relative">
-    <p class="eyebrow" style="justify-content:center">Один партнёр — весь монолит</p>
-    <h2 style="margin-top:22px">Не нашли <em>свою вакансию</em>?</h2>
-    <p>Пришлите резюме в отдел кадров — вернёмся, когда появится подходящая позиция.</p>
-    <div class="cta-row">
-      <a class="btn btn--solid" href="#tkp">Написать в отдел кадров</a>
-      <a class="btn btn--line" href="tel:{{ site.phone_link }}">Заказать звонок</a>
-    </div>
-  </div>
-</section>
+<section class="phero"><div class="wrap"><h1>{{ page.h1|default:"Работа в ГАНИН ГРУПП"|safe }}</h1><p class="sub">{{ page.subtitle|default:"Производственная группа на КМВ, работа рядом с домом. Открытые позиции — по телефону отдела персонала."|safe }}</p><div class="tags"><a class="chip hot" href="tel:{{ site.phone_link }}">Позвонить в отдел персонала</a></div></div></section>
 {% endblock %}

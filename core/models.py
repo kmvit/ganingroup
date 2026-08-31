@@ -53,6 +53,17 @@ class SiteSettings(models.Model):
                             upload_to='logo/', blank=True,
                             validators=[LOGO_EXT])
 
+    # --- первый экран главной ---
+    hero_video = models.FileField(
+        'Видео первого экрана', upload_to='hero/', blank=True,
+        validators=[FileExtensionValidator(allowed_extensions=['mp4', 'webm'],
+                    message='Видео принимаем в MP4 или WEBM.')],
+        help_text='Фоновое видео на главной (без звука, короткий ролик). '
+                  'Если пусто — показывается фото или заглушка')
+    hero_photo = models.ImageField(
+        'Фото первого экрана', upload_to='hero/', blank=True,
+        help_text='Показывается на телефонах и пока видео не загружено')
+
     # --- телефоны ---
     phone_main = models.CharField('Телефон основной', max_length=40, default='+7 800 000-00-00')
     phone_dispatch = models.CharField('Диспетчерская бетона', max_length=40, blank=True)
@@ -169,6 +180,17 @@ class SiteSettings(models.Model):
         digits = ''.join(ch for ch in self.phone_main.split(',')[0] if ch.isdigit())
         return '+' + digits if digits else ''
 
+    @property
+    def phone_list(self):
+        """Все номера из phone_main парами (как показать, tel:-ссылка)."""
+        result = []
+        for part in self.phone_main.split(','):
+            display = part.strip()
+            digits = ''.join(ch for ch in display if ch.isdigit())
+            if digits:
+                result.append((display, '+' + digits))
+        return result
+
 
 class MenuItem(Ordered):
     """Пункт меню. Дерево на два уровня: раздел и его подпункты.
@@ -220,6 +242,10 @@ class Page(models.Model):
     subtitle = models.TextField('Подзаголовок / вводный текст', blank=True)
     body = models.TextField('Основной текст', blank=True,
                             help_text='Для текстовых страниц — политика, согласие. Можно с HTML')
+    photo = models.ImageField(
+        'Фото страницы', upload_to='pages/', blank=True,
+        help_text='Главное фото: фон шапки у решений и кейса, фото слева у сервисов, '
+                  'главное фото товара на карточке. Если пусто — серая заглушка')
     seo_title = models.CharField('SEO-заголовок (title)', max_length=250, blank=True,
                                  help_text='Если пусто — берётся заголовок страницы')
     seo_description = models.TextField('SEO-описание (description)', blank=True, max_length=400)
@@ -232,6 +258,10 @@ class Page(models.Model):
 
     def __str__(self):
         return self.admin_title
+
+    @property
+    def gallery(self):
+        return self.photos.filter(published=True)
 
     @property
     def title_tag(self):
@@ -262,6 +292,9 @@ class Card(Ordered):
                             help_text='Короткая подпись в квадрате, например 01 или ↗')
     title = models.CharField('Заголовок', max_length=200)
     text = models.TextField('Текст', blank=True)
+    photo = models.ImageField('Фото', upload_to='cards/', blank=True,
+                              help_text='Для плиток с местом под фото '
+                                        '(например, активы на «О группе»)')
     url_name = models.CharField('Маршрут ссылки', max_length=60, blank=True,
                                 help_text='Имя URL, если плитка ведёт на страницу')
     link_label = models.CharField('Подпись ссылки', max_length=100, blank=True)
@@ -273,3 +306,21 @@ class Card(Ordered):
 
     def __str__(self):
         return f'{self.page.admin_title} · {self.title}'
+
+
+class PagePhoto(Ordered):
+    """Фото в галерее страницы: снимки кейса, галерея карточки товара."""
+
+    page = models.ForeignKey(Page, verbose_name='Страница', on_delete=models.CASCADE,
+                             related_name='photos')
+    image = models.ImageField('Фото', upload_to='pages/gallery/')
+    caption = models.CharField('Подпись', max_length=200, blank=True,
+                               help_text='Например: этап заливки — что видно на снимке')
+
+    class Meta(Ordered.Meta):
+        db_table = 'pages_pagephoto'
+        verbose_name = 'Фото в галерее страницы'
+        verbose_name_plural = 'Фото в галереях страниц'
+
+    def __str__(self):
+        return f'{self.page.admin_title} · фото {self.pk}'

@@ -11,16 +11,16 @@
   <div class="wrap">
     <div class="grid c2" style="align-items:start">
       <div>
-        <div class="pcard" style="pointer-events:none"><span class="ph" style="aspect-ratio:4/3"><i>[ главное фото продукта ]</i></span></div>
-        <div class="gal" style="margin-top:14px"><span class="ph"><i>[ 1 ]</i></span><span class="ph"><i>[ 2 ]</i></span><span class="ph"><i>[ 3 ]</i></span><span class="ph"><i>[ 4 ]</i></span></div>
+        <div class="pcard" style="pointer-events:none"><span class="ph" style="aspect-ratio:4/3">{% if page.photo %}<img src="{{ page.photo.url }}" alt="{{ page.admin_title }}" style="width:100%;height:100%;object-fit:cover" />{% else %}<i>[ главное фото продукта ]</i>{% endif %}</span></div>
+        <div class="gal" style="margin-top:14px">{% for ph in page.gallery %}<span class="ph"><img src="{{ ph.image.url }}" alt="{{ ph.caption }}" style="width:100%;height:100%;object-fit:cover" /></span>{% empty %}<span class="ph"><i>[ 1 ]</i></span><span class="ph"><i>[ 2 ]</i></span><span class="ph"><i>[ 3 ]</i></span><span class="ph"><i>[ 4 ]</i></span>{% endfor %}</div>
       </div>
       <div>
-        <div class="tags" style="display:flex;flex-wrap:wrap;gap:8px"><span class="chip">F200</span><span class="chip">W4</span><span class="chip">П4</span><span class="chip hot">ГОСT 7473</span></div>
+        <div class="tags" style="display:flex;flex-wrap:wrap;gap:8px"><span class="chip">W4</span><span class="chip">П3–П4</span><span class="chip">F — по паспорту партии</span><span class="chip hot">ГОСТ 7473</span></div>
         <p class="sub" style="margin-top:20px;color:var(--silver);font-size:15.5px;line-height:1.7;max-width:56ch">{{ page.subtitle|default:"Конструкционный бетон для монолитных каркасов жилых и коммерческих зданий: колонны, ригели, перекрытия. Подбор состава и паспорт качества — собственная лаборатория."|safe }}</p>
         <div class="form-card" style="margin-top:26px">
           <span class="eyebrow">Цена</span>
           <div style="font-family:var(--font-h);font-weight:600;font-size:38px;text-transform:uppercase;color:var(--white);margin-top:10px">По запросу</div>
-          <p style="font-size:13px;color:var(--muted);margin-top:6px">Зависит от объёма, графика и способа подачи. Поле цены скрываемое — управляется из CMS.</p>
+          <p style="font-size:13px;color:var(--muted);margin-top:6px">Зависит от объёма, графика поставки и способа подачи.</p>
           <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:20px">
             <a class="btn btn--solid" href="#tkp">Запросить цену</a>
             <a class="btn btn--line" href="{% url 'kalkulyator' %}">Рассчитать объём</a>
@@ -38,8 +38,8 @@
     <div style="overflow-x:auto"><table class="spec">
       <tr><th>Параметр</th><th>Значение</th><th>Норматив</th></tr>
       <tr><td>Класс прочности</td><td>B25 (М350)</td><td>ГОСТ 26633</td></tr>
-      <tr><td>Морозостойкость</td><td>F200</td><td>ГОСТ 10060</td></tr>
       <tr><td>Водонепроницаемость</td><td>W4</td><td>ГОСТ 12730.5</td></tr>
+      <tr><td>Морозостойкость</td><td>по паспорту партии</td><td>ГОСТ 10060</td></tr>
       <tr><td>Подвижность</td><td>П3–П4</td><td>ГОСТ 7473</td></tr>
       <tr><td>Заполнитель</td><td>щебень фр. 5–20, собственный карьер</td><td>ГОСТ 8267</td></tr>
     </table></div>

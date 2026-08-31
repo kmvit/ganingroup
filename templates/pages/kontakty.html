@@ -5,9 +5,9 @@
 
 {% block content %}
 <nav class="bc"><div class="wrap"><a href="{% url 'home' %}">Главная</a><i>/</i><span>Контакты</span></div></nav>
-<section class="phero"><div class="wrap"><h1>{{ page.h1|default:"Контакты"|safe }}</h1><p class="sub">{{ page.subtitle|default:"Телефоны по отделам — с именами и лицами ответственных, а не «единый колл-центр»."|safe }}</p></div></section>
+<section class="phero"><div class="wrap"><h1>{{ page.h1|default:"Контакты"|safe }}</h1><p class="sub">{{ page.subtitle|default:"Отдел продаж на связи — звоните или оставьте заявку."|safe }}</p></div></section>
 <section style="padding-top:0;margin-top:-16px"><div class="wrap"><div class="rows" style="max-width:640px">
-    <div class="rowi" style="padding:16px 0"><span class="kind">Отдел продаж</span><div class="sub" style="font-size:18px;color:var(--paper)"><a href="tel:{{ site.phone_link }}">{{ site.phone_main }}</a></div></div>
+    <div class="rowi" style="padding:16px 0"><span class="kind">Отдел продаж</span><div class="sub" style="font-size:18px;color:var(--paper)">{% for ph in site.phone_list %}<a href="tel:{{ ph.1 }}">{{ ph.0 }}</a>{% if not forloop.last %}, {% endif %}{% empty %}<a href="tel:{{ site.phone_link }}">{{ site.phone_main }}</a>{% endfor %}</div></div>
     {% if site.email_sales %}<div class="rowi" style="padding:16px 0"><span class="kind">E-mail</span><div class="sub" style="font-size:15px;color:var(--silver)"><a href="mailto:{{ site.email_sales }}">{{ site.email_sales }}</a></div></div>{% endif %}
   </div></div></section>
 <section class="bt" id="form">
@@ -16,13 +16,17 @@
     <div class="grid c2" style="align-items:start">
       <div class="form-card">
         <h3>Форма обратной связи</h3>
-        <div class="grid c2" style="gap:14px;margin-top:4px">
-          <div><label class="f-label">Имя *</label><input class="f-input" /></div>
-          <div><label class="f-label">Телефон *</label><input class="f-input" placeholder="+7 ___ ___-__-__" /></div>
-        </div>
-        <label class="f-label">Сообщение</label><textarea class="f-input" placeholder="Объект, объём, сроки"></textarea>
-        <label class="f-agree"><input type="checkbox" checked /> <span>Согласен на обработку персональных данных — <a href="{% url 'consent' %}">текст</a></span></label>
-        <a class="btn btn--solid" href="#tkp-ok" style="width:100%;margin-top:22px">Отправить</a>
+        <form method="post" action="{% url 'lead_create' %}">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.path }}" />
+          <div class="grid c2" style="gap:14px;margin-top:4px">
+            <div><label class="f-label" for="fb-name">Имя *</label><input class="f-input" id="fb-name" name="name" required /></div>
+            <div><label class="f-label" for="fb-phone">Телефон *</label><input class="f-input" id="fb-phone" name="phone" placeholder="+7 ___ ___-__-__" required /></div>
+          </div>
+          <label class="f-label" for="fb-details">Сообщение</label><textarea class="f-input" id="fb-details" name="details" placeholder="Объект, объём, сроки"></textarea>
+          <label class="f-agree"><input type="checkbox" name="agree" required /> <span>Согласен на обработку персональных данных — <a href="{% url 'consent' %}">текст</a></span></label>
+          <button class="btn btn--solid" type="submit" style="width:100%;margin-top:22px">Отправить</button>
+        </form>
       </div>
       <div>
         <div class="dmap">

@@ -26,7 +26,7 @@
       <rect x="34" y="77" width="9" height="9" fill="#FF6A00" opacity=".8"/>
     </g>
   </svg>
-  <span class="hero-media-tag">[ фоновое видео: завод · миксеры · заливка / mobile — фото ]</span>
+  {% if site.hero_video %}<video autoplay muted loop playsinline{% if site.hero_photo %} poster="{{ site.hero_photo.url }}"{% endif %} style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"><source src="{{ site.hero_video.url }}" /></video><span style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(12,13,14,.35),rgba(12,13,14,.78))"></span>{% elif site.hero_photo %}<img src="{{ site.hero_photo.url }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" /><span style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(12,13,14,.35),rgba(12,13,14,.78))"></span>{% else %}<span class="hero-media-tag">[ фоновое видео: завод · миксеры · заливка / mobile — фото ]</span>{% endif %}
   <div class="wrap hero-inner">
     <p class="eyebrow">Группа компаний · Кавказские Минеральные Воды</p>
     <h1 style="margin-top:22px">{{ page.h1|default:"Строим основу<br>будущего<em>.</em>"|safe }}</h1>
@@ -37,7 +37,7 @@
     </div>
     <div class="hero-geo">
       <div><span>База · производство</span><b>КМВ</b></div>
-      <div><span>Бетон · ритмичная поставка</span><b>Весь СКФО</b></div>
+      <div><span>Бетон · доставка</span><b>радиус 200 км</b></div>
       <div><span>Опалубка UPEX · отгрузка</span><b>Вся Россия</b></div>
     </div>
   </div>
@@ -70,7 +70,7 @@
       <a class="scen" href="{% url 'reshenie_dorozhnikam' %}"><i>S-03</i><b>Дорожники</b><span>Асфальтобетон, инертные и дорожный бетон — ритмично и по ГОСТ</span><span class="go">→ решение</span></a>
       <a class="scen" href="{% url 'reshenie_promyshlennost' %}"><i>S-04</i><b>Промышленность</b><span>Спецмарки, фундаменты под оборудование, лабораторное сопровождение</span><span class="go">→ решение</span></a>
       <a class="scen" href="{% url 'reshenie_chastnaya_zastroyka' %}"><i>S-05</i><b>Частная застройка</b><span>Точный объём, доставка миксером, простой заказ</span><span class="go">→ решение</span></a>
-      <a class="scen" href="#"><i>S-06</i><b>Опалубка по РФ</b><span>Системы UPEX: расчёт, отгрузка в любой регион, шеф-монтаж</span><span class="go">→ upex.pro ↗</span></a>
+      <a class="scen" href="https://upex.pro" target="_blank" rel="noopener"><i>S-06</i><b>Опалубка по РФ</b><span>Системы UPEX: расчёт, отгрузка в любой регион, шеф-монтаж</span><span class="go">→ upex.pro ↗</span></a>
     </div>
   </div>
 </section>
@@ -94,7 +94,7 @@
       <div class="tri">
         <span class="n">03 — Сервисы</span>
         <h3>Как доставляем ценность</h3>
-        <p>Логистика 24/7, инженерная поддержка, контроль качества.</p>
+        <p>Логистика и менеджеры на связи 24/7, инженерная поддержка, контроль качества.</p>
         <ul><li><a href="{% url 'logistika' %}">Логистика</a></li><li><a href="{% url 'raschet_opalubki' %}">Расчёт опалубки</a></li><li><a href="{% url 'shef_montazh' %}">Шеф-монтаж</a></li><li><a href="{% url 'laboratoriya' %}">Лаборатория</a></li></ul>
       </div>
     </div>

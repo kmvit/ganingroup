@@ -7,19 +7,8 @@
 <nav class="bc"><div class="wrap"><a href="{% url 'home' %}">Главная</a><i>/</i><a href="{% url 'uslugi' %}">Сервисы</a><i>/</i><span>Логистика и диспетчеризация</span></div></nav>
 <section class="phero"><div class="wrap"><h1>{{ page.h1|default:"Логистика и диспетчеризация"|safe }}</h1><p class="sub">{{ page.subtitle|default:"Правильный бетон — правильной бригаде — в правильное время. Собственный автопарк и менеджеры на связи 24/7 в сезон: вам ничего делать не нужно, мы держим график."|safe }}</p></div></section>
 <section><div class="wrap"><div class="sec-head"><h2>Что вы получаете</h2><span class="num">02 / 03</span></div><div class="grid c2" style="align-items:stretch">
-      <div class="pcard" style="pointer-events:none"><span class="ph" style="aspect-ratio:4/3.4;height:100%"><i>[ фото: автопарк ]</i></span></div>
-      <div class="grid c2">{% for c in cards_by_section.grid1 %}<div class="icard">{% if c.icon %}<span class="ic">{{ c.icon }}</span>{% endif %}<h3 style="font-size:16px">{{ c.title }}</h3><p>{{ c.text }}</p></div>{% endfor %}</div></div></div></section><section class="bt"><div class="wrap"><div class="sec-head"><h2>Как заказать</h2><span class="num">03 / 03</span></div><div class="steps"><div class="step"><i>Шаг 1</i><b>Оставляете заявку и график</b><span>Объект, объёмы, окна заливок</span></div><div class="step"><i>Шаг 2</i><b>Составляем план поставок</b><span>Логист закрепляет машины и маршруты</span></div><div class="step"><i>Шаг 3</i><b>Подаём бетон по графику</b><span>Менеджер ведёт поставку до последнего куба</span></div></div></div></section><section class="light">
-  <div class="wrap">
-    <div class="sec-head"><p class="eyebrow">Перевозчикам — партнёрам</p></div>
-    <div class="about-grid" style="grid-template-columns:1.2fr .8fr;align-items:center">
-      <div>
-        <h2 style="font-size:clamp(26px,3.2vw,48px);color:var(--ink)">Своя техника? Возите с ГАНИН ГРУПП</h2>
-        <p style="margin-top:14px;color:#5B5D5C;font-size:15px;line-height:1.7;max-width:56ch">Одна страница — две аудитории: заказчикам мы возим бетон, а перевозчикам со своими машинами даём стабильные объёмы в сезон и быстрые расчёты.</p>
-      </div>
-      <div style="display:flex;justify-content:flex-end"><a class="btn btn--line on-light" href="{% url 'kariera' %}#haulers">Стать перевозчиком →</a></div>
-    </div>
-  </div>
-</section><section class="final">
+      <div class="pcard" style="pointer-events:none"><span class="ph" style="aspect-ratio:4/3.4;height:100%">{% if page.photo %}<img src="{{ page.photo.url }}" alt="" style="width:100%;height:100%;object-fit:cover" />{% else %}<i>[ фото: автопарк ]</i>{% endif %}</span></div>
+      <div class="grid c2">{% for c in cards_by_section.grid1 %}<div class="icard">{% if c.icon %}<span class="ic">{{ c.icon }}</span>{% endif %}<h3 style="font-size:16px">{{ c.title }}</h3><p>{{ c.text }}</p></div>{% endfor %}</div></div></div></section><section class="bt"><div class="wrap"><div class="sec-head"><h2>Как заказать</h2><span class="num">03 / 03</span></div><div class="steps"><div class="step"><i>Шаг 1</i><b>Оставляете заявку и график</b><span>Объект, объёмы, окна заливок</span></div><div class="step"><i>Шаг 2</i><b>Составляем план поставок</b><span>Логист закрепляет машины и маршруты</span></div><div class="step"><i>Шаг 3</i><b>Подаём бетон по графику</b><span>Менеджер ведёт поставку до последнего куба</span></div></div></div></section><section class="final">
   <div class="wrap" style="position:relative">
     <p class="eyebrow" style="justify-content:center">Один партнёр — весь монолит</p>
     <h2 style="margin-top:22px">Нужен <em>этот сервис</em>?</h2>

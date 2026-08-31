@@ -1,54 +1,62 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}МКЦ «Россия», Кисловодск — кейс{% endblock %}
+{% block title %}{{ object.title }}{% endblock %}
 
 {% block content %}
-<nav class="bc"><div class="wrap"><a href="{% url 'home' %}">Главная</a><i>/</i><a href="{% url 'obekty' %}">Объекты</a><i>/</i><span>МКЦ «Россия», Кисловодск</span></div></nav>
+<nav class="bc"><div class="wrap"><a href="{% url 'home' %}">Главная</a><i>/</i><a href="{% url 'obekty' %}">Объекты</a><i>/</i><span>{{ object.title }}</span></div></nav>
 <section class="phero-photo" style="margin-top:16px">
-  {% if page.photo %}<img src="{{ page.photo.url }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" />{% else %}<span class="ph-note">[ главное фото объекта / съёмка с дрона ]</span>{% endif %}
-  <div class="wrap inner"><p class="meta">Кейс · Кисловодск · бетон · согласовано с заказчиком</p><h1>{{ page.h1|default:"20 000 м³ бетона в центре города — без остановки движения"|safe }}</h1><p class="sub">{{ page.subtitle|default:"Многофункциональный культурный центр «Россия», Кисловодск: поставка 20 000 м³ товарного бетона на объект в плотной городской застройке."|safe }}</p></div>
+  {% if object.photo %}<img src="{{ object.photo.url }}" alt="{{ object.title }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" />{% else %}<span class="ph-note">[ главное фото объекта / съёмка с дрона ]</span>{% endif %}
+  <div class="wrap inner">
+    <p class="meta">Кейс{% if object.meta_line %} · {{ object.meta_line }}{% endif %}{% if object.year %} · {{ object.year }}{% endif %}</p>
+    <h1>{{ headline }}</h1>
+    {% if object.summary %}<p class="sub">{{ object.summary }}</p>{% endif %}
+  </div>
 </section>
 
+{% if object.case_rows %}
 <section>
   <div class="wrap">
-<div class="sec-head"><h2>Как это было</h2><span class="num">02 / 05</span></div>
+    <div class="sec-head"><h2>Как это было</h2><span class="num">02 / 05</span></div>
     <div class="case-rows">
-      <div class="case-row"><b>Контекст</b><p>Крупный общественный объект в самом центре Кисловодска: большой объём бетона при плотной городской застройке и постоянном движении вокруг площадки.</p></div>
-      <div class="case-row"><b>Вызов</b><p>Логистику приходилось решать в реальном времени: узкие подъезды, ограничения по времени работ в центре, необходимость подавать бетон непрерывно, без простоев на площадке.</p></div>
-      <div class="case-row"><b>Решение</b><p>Закреплённый парк миксеров и менеджеры на связи 24/7, поставка с двух смесительных узлов, единый график заливок, лаборатория на связи с ПТО заказчика.</p></div>
-      <div class="case-row"><b>Результат</b><p>20 000 м³ поставлено в срок, без остановки работы центра города и без срывов графика заливок.</p></div>
+      {% for label, text in object.case_rows %}<div class="case-row"><b>{{ label }}</b><p>{{ text }}</p></div>
+      {% endfor %}
     </div>
   </div>
 </section>
+{% endif %}
 
+{% if object.stats.exists %}
 <section class="stats">
   <div class="wrap"><div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
-    <div class="stat"><div class="v">20<sup>тыс</sup></div><div class="l">м³ бетона поставлено</div><div class="b">в центре города</div></div>
-    <div class="stat"><div class="v">24/7</div><div class="l">менеджеры на связи</div><div class="b">логистика в реальном времени</div></div>
-    <div class="stat"><div class="v">0</div><div class="l">срывов графика</div><div class="b">без остановки движения</div></div>
+    {% for s in object.stats.all %}<div class="stat"><div class="v">{{ s.value }}{% if s.sup %}<sup>{{ s.sup }}</sup>{% endif %}</div><div class="l">{{ s.label }}</div>{% if s.note %}<div class="b">{{ s.note }}</div>{% endif %}</div>{% endfor %}
   </div></div>
 </section>
+{% endif %}
 
+{% if object.gallery %}
 <section>
   <div class="wrap">
-<div class="sec-head"><h2>Фотографии объекта</h2><span class="num">04 / 05</span></div>
-    <div class="gal">{% for ph in page.gallery %}<span class="ph" title="{{ ph.caption }}"><img src="{{ ph.image.url }}" alt="{{ ph.caption }}" style="width:100%;height:100%;object-fit:cover" /></span>{% empty %}<span class="ph"><i>[ фото 1 ]</i></span><span class="ph"><i>[ фото 2 ]</i></span><span class="ph"><i>[ фото 3 ]</i></span><span class="ph"><i>[ фото 4 ]</i></span>{% endfor %}</div>
+    <div class="sec-head"><h2>Фотографии объекта</h2><span class="num">04 / 05</span></div>
+    <div class="gal">{% for ph in object.gallery %}<span class="ph" title="{{ ph.caption }}"><img src="{{ ph.image.url }}" alt="{{ ph.caption }}" style="width:100%;height:100%;object-fit:cover" /></span>{% endfor %}</div>
   </div>
 </section>
+{% endif %}
 
+{% if object.quote_text %}
 <section class="light">
   <div class="wrap">
     <div class="quote-big">
-      <p class="q">«Для нас важнее всего был <em>ритм поставок</em> на пике сезона. График монолита мы не сорвали ни разу — поэтому и продолжаем работать вместе».</p>
-      <div class="quote-who">
+      <p class="q">{{ object.quote_text|safe }}</p>
+      {% if object.quote_author %}<div class="quote-who">
         <span class="ava">фото</span>
-        <span><b>Николай Алексеевич Галка</b><span>директор ООО СЗ «Неруд Зольское»</span></span>
-      </div>
+        <span><b>{{ object.quote_author }}</b>{% if object.quote_role %}<span>{{ object.quote_role }}</span>{% endif %}</span>
+      </div>{% endif %}
     </div>
     <a class="btn btn--line on-light btn--sm" href="{% url 'home' %}#map" style="margin-top:32px">Показать на карте присутствия →</a>
   </div>
 </section>
+{% endif %}
 <section class="final">
   <div class="wrap" style="position:relative">
     <p class="eyebrow" style="justify-content:center">Один партнёр — весь монолит</p>

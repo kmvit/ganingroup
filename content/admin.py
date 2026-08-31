@@ -4,7 +4,8 @@ from django.contrib import admin
 from django.utils.html import format_html
 
 from .models import (CatalogItem, Department, Direction, Document, MapPoint,
-                     ProjectObject, Review, Stat, TeamMember, TimelineEvent, Vacancy)
+                     ObjectPhoto, ObjectStat, ProjectObject, Review, Stat,
+                     TeamMember, TimelineEvent, Vacancy)
 
 
 def photo_preview(obj, field='photo', height=44):
@@ -49,6 +50,18 @@ class CatalogItemAdmin(admin.ModelAdmin, PhotoMixin):
     search_fields = ('title', 'chips')
 
 
+class ObjectStatInline(admin.TabularInline):
+    model = ObjectStat
+    extra = 0
+    fields = ('value', 'sup', 'label', 'note', 'order', 'published')
+
+
+class ObjectPhotoInline(admin.TabularInline):
+    model = ObjectPhoto
+    extra = 0
+    fields = ('image', 'caption', 'order', 'published')
+
+
 @admin.register(ProjectObject)
 class ProjectObjectAdmin(admin.ModelAdmin, PhotoMixin):
     list_display = ('title', 'preview', 'city', 'direction', 'is_featured', 'order', 'published')
@@ -56,10 +69,18 @@ class ProjectObjectAdmin(admin.ModelAdmin, PhotoMixin):
     list_display_links = ('title',)
     list_filter = ('is_featured', 'published', 'direction')
     search_fields = ('title', 'city', 'summary')
-    prepopulated_fields = {}
+    inlines = [ObjectStatInline, ObjectPhotoInline]
     fieldsets = (
         (None, {'fields': ('title', 'summary', 'photo')}),
         ('Данные объекта', {'fields': ('city', 'direction', 'year', 'volume')}),
+        ('Страница кейса', {
+            'description': 'Заголовок и блок «Как это было». Пустые поля на странице '
+                           'не показываются. Цифры-плашки и фото-галерея — ниже.',
+            'fields': ('headline', 'context', 'challenge', 'solution', 'result'),
+        }),
+        ('Отзыв по объекту (необязательно)', {
+            'fields': ('quote_text', 'quote_author', 'quote_role'),
+        }),
         ('Показ', {'fields': ('is_featured', 'order', 'published', 'slug')}),
     )
     readonly_fields = ('slug',)

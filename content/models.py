@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """Содержание сайта: цифры, направления, объекты, люди, вакансии."""
 from django.db import models
-from django.utils.text import slugify
 
 from core.models import Ordered
+from content.utils import slugify_ru
 
 
 class Stat(Ordered):
@@ -59,10 +59,24 @@ class ProjectObject(Ordered):
     direction = models.CharField('Направление', max_length=100, blank=True,
                                  help_text='Например: бетон, опалубка, асфальт')
     summary = models.CharField('Кратко (в карточке)', max_length=250, blank=True)
-    photo = models.ImageField('Фото объекта', upload_to='objects/', blank=True)
+    photo = models.ImageField('Фото объекта', upload_to='objects/', blank=True,
+                              help_text='Обложка карточки и главное фото на странице кейса')
     year = models.CharField('Год / период', max_length=40, blank=True)
     volume = models.CharField('Объём поставки', max_length=100, blank=True)
     is_featured = models.BooleanField('Показать на главной', default=False)
+
+    # --- страница кейса ---
+    headline = models.CharField(
+        'Заголовок кейса (H1)', max_length=250, blank=True,
+        help_text='Крупный заголовок на странице объекта. Пусто — берётся название')
+    context = models.TextField('Контекст', blank=True)
+    challenge = models.TextField('Вызов', blank=True)
+    solution = models.TextField('Решение', blank=True)
+    result = models.TextField('Результат', blank=True)
+    quote_text = models.TextField('Отзыв по объекту', blank=True,
+                                  help_text='Часть можно выделить: <em>…</em>')
+    quote_author = models.CharField('Автор отзыва', max_length=150, blank=True)
+    quote_role = models.CharField('Должность / компания', max_length=200, blank=True)
 
     class Meta(Ordered.Meta):
         db_table = 'pages_projectobject'
@@ -74,12 +88,61 @@ class ProjectObject(Ordered):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.title, allow_unicode=True)[:200] or 'obekt'
+            self.slug = slugify_ru(self.title)[:200] or 'obekt'
         super().save(*args, **kwargs)
 
     @property
     def meta_line(self):
         return ' · '.join(p for p in (self.city, self.direction) if p)
+
+    @property
+    def case_rows(self):
+        """Ряды блока «Как это было» — только заполненные."""
+        return [(label, text) for label, text in (
+            ('Контекст', self.context), ('Вызов', self.challenge),
+            ('Решение', self.solution), ('Результат', self.result)) if text]
+
+    @property
+    def gallery(self):
+        return self.gallery_photos.filter(published=True)
+
+
+class ObjectStat(Ordered):
+    """Цифра-плашка на странице кейса (20 тыс м³ / 24-7 / 0 срывов)."""
+
+    project = models.ForeignKey(ProjectObject, verbose_name='Объект',
+                                on_delete=models.CASCADE, related_name='stats')
+    value = models.CharField('Значение', max_length=30, help_text='Например: 20 или 24/7')
+    sup = models.CharField('Приписка сверху', max_length=20, blank=True,
+                           help_text='Например: тыс — мелким оранжевым')
+    label = models.CharField('Подпись', max_length=200, help_text='Например: м³ бетона поставлено')
+    note = models.CharField('Уточнение', max_length=200, blank=True)
+
+    class Meta(Ordered.Meta):
+        db_table = 'pages_objectstat'
+        verbose_name = 'Цифра объекта'
+        verbose_name_plural = 'Цифры объекта'
+
+    def __str__(self):
+        return f'{self.value}{self.sup} — {self.label}'
+
+
+class ObjectPhoto(Ordered):
+    """Фото в галерее объекта."""
+
+    project = models.ForeignKey(ProjectObject, verbose_name='Объект',
+                                on_delete=models.CASCADE, related_name='gallery_photos')
+    image = models.ImageField('Фото', upload_to='objects/gallery/')
+    caption = models.CharField('Подпись', max_length=200, blank=True,
+                               help_text='Например: этап заливки — что видно на снимке')
+
+    class Meta(Ordered.Meta):
+        db_table = 'pages_objectphoto'
+        verbose_name = 'Фото объекта'
+        verbose_name_plural = 'Фото объекта'
+
+    def __str__(self):
+        return f'{self.project.title} · фото {self.pk}'
 
 
 class CatalogItem(Ordered):

@@ -155,7 +155,7 @@
   <div class="wrap">
     <div class="sec-head"><h2>Свежие объекты</h2><a class="btn btn--line on-light btn--sm" href="{% url 'obekty' %}">Все объекты</a></div>
     <div class="obj-grid">
-      {% for o in objects %}<a class="obj" href="{% url 'obekt' %}"><span class="ph">{% if o.photo %}<img src="{{ o.photo.url }}" alt="{{ o.title }}" style="width:100%;height:100%;object-fit:cover" />{% else %}<i>[ фото объекта ]</i>{% endif %}</span><span class="body"><span class="meta">{{ o.meta_line }}</span><h3>{{ o.title }}</h3><p>{{ o.summary }}</p></span></a>{% endfor %}
+      {% for o in objects %}<a class="obj" href="{% url 'obekt' o.slug %}"><span class="ph">{% if o.photo %}<img src="{{ o.photo.url }}" alt="{{ o.title }}" style="width:100%;height:100%;object-fit:cover" />{% else %}<i>[ фото объекта ]</i>{% endif %}</span><span class="body"><span class="meta">{{ o.meta_line }}</span><h3>{{ o.title }}</h3><p>{{ o.summary }}</p></span></a>{% endfor %}
     </div>
   </div>
 </section>

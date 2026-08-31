@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.contrib import messages
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
@@ -35,7 +35,6 @@ PAGES = [
     ('uslugi/shef-montazh/',          'shef_montazh',                 'shef_montazh',                 'uslugi'),
     ('uslugi/laboratoriya/',          'laboratoriya',                 'laboratoriya',                 'uslugi'),
     ('obekty/',                       'obekty',                       'obekty',                       'obekty'),
-    ('obekty/mkc-rossiya-kislovodsk/','obekt',                        'obekt',                        'obekty'),
     ('kariera/',                      'kariera',                      'kariera',                      'kariera'),
     ('kontakty/',                     'kontakty',                     'kontakty',                     'kontakty'),
     ('kalkulyator/',                  'kalkulyator',                  'kalkulyator',                  'produkciya'),
@@ -118,9 +117,10 @@ SITEMAP_EXCLUDE = {'policy', 'consent', 'aidentika'}
 
 def sitemap_xml(request):
     base = f'{request.scheme}://{request.get_host()}'
-    items = ''.join(
-        f'  <url><loc>{base}/{p}</loc></url>\n'
-        for p, name, _tpl, _active in PAGES if name not in SITEMAP_EXCLUDE)
+    locs = [p for p, name, _tpl, _active in PAGES if name not in SITEMAP_EXCLUDE]
+    locs += [f'obekty/{o.slug}/'
+             for o in ProjectObject.objects.filter(published=True)]
+    items = ''.join(f'  <url><loc>{base}/{loc}</loc></url>\n' for loc in locs)
     xml = ('<?xml version="1.0" encoding="UTF-8"?>\n'
            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
            f'{items}</urlset>\n')
@@ -137,6 +137,24 @@ def robots_txt(request):
             'Disallow: /aidentika/\n'
             f'Sitemap: {base}/sitemap.xml\n')
     return HttpResponse(text, content_type='text/plain')
+
+
+def object_detail(request, slug):
+    """Страница кейса конкретного объекта (obekty/<slug>/)."""
+    obj = get_object_or_404(ProjectObject, slug=slug, published=True)
+    headline = obj.headline or obj.title
+    # page-подобный словарь только ради SEO и дефолтов в base.html
+    page = {
+        'seo_title': f'{obj.title}, {obj.city} — кейс | ГАНИН ГРУПП'
+                     if obj.city else f'{obj.title} — кейс | ГАНИН ГРУПП',
+        'seo_description': obj.summary,
+        'title_tag': obj.title,
+        'h1': headline,
+        'subtitle': obj.summary,
+    }
+    return render(request, 'pages/obekt.html', {
+        'active': 'obekty', 'page': page, 'object': obj, 'headline': headline,
+    })
 
 
 def _back(request, fragment: str):

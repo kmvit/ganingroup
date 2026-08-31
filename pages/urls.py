@@ -7,6 +7,7 @@ urlpatterns = [
     path(p, views.make_page_view(tpl, active, name), name=name)
     for p, name, tpl, active in views.PAGES
 ] + [
+    path('obekty/<slug:slug>/', views.object_detail, name='obekt'),
     path('sitemap.xml', views.sitemap_xml, name='sitemap'),
     path('robots.txt', views.robots_txt, name='robots'),
     path('zayavka/tkp/', views.lead_create, name='lead_create'),

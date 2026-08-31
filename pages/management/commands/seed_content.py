@@ -14,8 +14,10 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from calc.models import ConcreteGrade, DeliveryZone
+from content.cases import case_for
 from content.models import (CatalogItem, Department, Direction, Document, MapPoint,
-                            ProjectObject, Review, Stat, TeamMember, TimelineEvent, Vacancy)
+                            ObjectPhoto, ObjectStat, ProjectObject, Review, Stat,
+                            TeamMember, TimelineEvent, Vacancy)
 from core.models import Card, MenuItem, Page, SiteSettings
 from pages.nav import MAIN as NAV_MAIN
 from pages.seed_cards import CARDS
@@ -231,7 +233,8 @@ class Command(BaseCommand):
         if opts['reset']:
             for model in (Stat, Direction, ProjectObject, Department, TeamMember,
                           Review, Vacancy, Document, TimelineEvent, MapPoint,
-                          ConcreteGrade, DeliveryZone, CatalogItem):
+                          ConcreteGrade, DeliveryZone, CatalogItem,
+                          ObjectStat, ObjectPhoto):
                 model.objects.all().delete()
             MenuItem.objects.all().delete()
             Page.objects.all().delete()
@@ -290,9 +293,15 @@ class Command(BaseCommand):
                 external_url=(s.upex_url if is_upex else ''), order=i * 10))
 
         for i, (title, city, direction, summary) in enumerate(OBJECTS, 1):
-            ProjectObject.objects.get_or_create(title=title, defaults=dict(
+            case = case_for(title) or {}
+            obj, created = ProjectObject.objects.get_or_create(title=title, defaults=dict(
                 city=city, direction=direction, summary=summary,
-                is_featured=(i <= 3), order=i * 10))
+                is_featured=(i <= 3), order=i * 10,
+                **{k: v for k, v in case.items() if k != 'stats'}))
+            if created:
+                for j, (value, sup, label, note) in enumerate(case.get('stats', []), 1):
+                    ObjectStat.objects.create(project=obj, value=value, sup=sup,
+                                              label=label, note=note, order=j * 10)
 
         for i, title in enumerate(DEPARTMENTS, 1):
             Department.objects.get_or_create(title=title, defaults=dict(

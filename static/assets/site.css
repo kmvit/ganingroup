@@ -511,7 +511,27 @@ a.chip:hover{color:var(--white);border-color:var(--accent)}
 
 /* ---------- ГАЛЕРЕЯ ---------- */
 .gal{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-.gal .ph{aspect-ratio:1;background:linear-gradient(135deg,#4A4D51,#2B2D30);display:grid;place-items:center;position:relative;border:1px solid var(--line-d)}
+.gal .ph{aspect-ratio:1;background:linear-gradient(135deg,#4A4D51,#2B2D30);display:grid;place-items:center;position:relative;border:1px solid var(--line-d);overflow:hidden}
+.gal .ph.zoomable{cursor:zoom-in}
+.gal .ph.zoomable img{transition:transform .4s ease,opacity .2s}
+.gal .ph.zoomable:hover img{transform:scale(1.05)}
+.gal .ph.zoomable::before{content:"";position:absolute;inset:0;z-index:1;background:rgba(12,13,14,0);transition:background .2s}
+.gal .ph.zoomable:hover::before{background:rgba(12,13,14,.12)}
+/* лайтбокс галереи объекта */
+.lightbox{position:fixed;inset:0;z-index:1000;background:rgba(8,9,10,.95);display:none;align-items:center;justify-content:center;padding:clamp(16px,4vw,56px)}
+.lightbox.open{display:flex;animation:lbfade .2s ease}
+@keyframes lbfade{from{opacity:0}to{opacity:1}}
+.lightbox img{max-width:92vw;max-height:84vh;object-fit:contain;box-shadow:0 24px 70px rgba(0,0,0,.6)}
+.lb-cap{position:absolute;bottom:clamp(16px,3vw,32px);left:0;right:0;text-align:center;color:#E4E5E1;font-family:var(--font-m);font-size:13px;letter-spacing:.04em;padding:0 24px}
+.lb-count{position:absolute;top:clamp(18px,3vw,28px);left:clamp(18px,3vw,28px);color:#B9BBB8;font-family:var(--font-m);font-size:12px;letter-spacing:.12em}
+.lb-x,.lb-nav{border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.06);color:#fff;cursor:pointer;display:grid;place-items:center;transition:background .2s,border-color .2s}
+.lb-x:hover,.lb-nav:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.5)}
+.lb-x{position:absolute;top:clamp(14px,3vw,24px);right:clamp(14px,3vw,24px);width:46px;height:46px;border-radius:50%;font-size:20px}
+.lb-nav{position:absolute;top:50%;transform:translateY(-50%);width:52px;height:52px;border-radius:50%;font-size:26px;line-height:1}
+.lb-prev{left:clamp(10px,2vw,28px)}
+.lb-next{right:clamp(10px,2vw,28px)}
+.lightbox.single .lb-nav{display:none}
+@media(max-width:560px){.lb-nav{width:44px;height:44px}}
 .gal .ph::after{content:"";position:absolute;inset:0;background-image:var(--noise)}
 .gal .ph i{font-family:var(--font-m);font-style:normal;font-size:10px;letter-spacing:.12em;color:rgba(255,255,255,.45);text-transform:uppercase}
 

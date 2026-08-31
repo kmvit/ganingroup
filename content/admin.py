@@ -30,13 +30,20 @@ class StatAdmin(admin.ModelAdmin):
 
 @admin.register(Direction)
 class DirectionAdmin(admin.ModelAdmin, PhotoMixin):
-    list_display = ('title', 'preview', 'tagline', 'size', 'is_upex', 'order', 'published')
-    list_editable = ('order', 'published')
+    list_display = ('title', 'preview', 'tagline', 'size', 'is_upex',
+                    'show_in_assets', 'order', 'published')
+    list_editable = ('show_in_assets', 'order', 'published')
     list_display_links = ('title',)
     fieldsets = (
         (None, {'fields': ('title', 'tagline', 'photo')}),
         ('Ссылка', {'fields': ('url_name', 'external_url')}),
         ('Вид плитки', {'fields': ('size', 'is_upex')}),
+        ('Блок «Производственные активы» на «О группе»', {
+            'description': 'Чтобы не загружать фото второй раз: отметьте галочку — '
+                           'направление появится в активах с тем же фото. Заголовок и '
+                           'описание в активах можно задать свои (или оставить пустыми).',
+            'fields': ('show_in_assets', 'asset_title', 'asset_text'),
+        }),
         ('Показ', {'fields': ('order', 'published')}),
     )
 

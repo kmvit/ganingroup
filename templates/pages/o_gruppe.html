@@ -35,7 +35,7 @@
 <section id="aktivy" class="bt">
   <div class="wrap">
     <div class="sec-head"><h2>Производственные активы</h2><span class="num">03 / 06</span></div>
-<div class="grid c3">{% for c in cards_by_section.assets %}<div class="pcard" style="position:relative"><span class="ph">{% if c.photo %}<img src="{{ c.photo.url }}" alt="{{ c.title }}" style="width:100%;height:100%;object-fit:cover" />{% else %}<i>[ фото: {{ c.title|lower }} ]</i>{% endif %}</span><span class="body"><h3>{{ c.title }}</h3><p>{{ c.text }}</p></span></div>{% endfor %}</div>
+<div class="grid c3">{% for a in assets %}<div class="pcard" style="position:relative"><span class="ph">{% if a.photo %}<img src="{{ a.photo.url }}" alt="{{ a.asset_title_display }}" style="width:100%;height:100%;object-fit:cover" />{% else %}<i>[ фото: {{ a.asset_title_display|lower }} ]</i>{% endif %}</span><span class="body"><h3>{{ a.asset_title_display }}</h3><p>{{ a.asset_text_display }}</p></span></div>{% endfor %}</div>
   </div>
 </section>
 

@@ -61,6 +61,7 @@ def page_extras(slug: str) -> dict:
             'timeline': TimelineEvent.objects.filter(published=True),
             'documents': Document.objects.filter(published=True),
             'team': TeamMember.objects.filter(published=True),
+            'assets': Direction.objects.filter(published=True, show_in_assets=True),
         }
     if slug == 'obekty':
         return {'objects': ProjectObject.objects.filter(published=True)}

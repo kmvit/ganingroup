@@ -14,6 +14,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from calc.models import ConcreteGrade, DeliveryZone
+from content.assets_seed import ASSET_MAP
 from content.cases import case_for
 from content.models import (CatalogItem, Department, Direction, Document, MapPoint,
                             ObjectPhoto, ObjectStat, ProjectObject, Review, Stat,
@@ -284,9 +285,13 @@ class Command(BaseCommand):
                 value=v, sup=sup, note=note, order=i * 10))
 
         for i, (title, tagline, url_name, size, is_upex) in enumerate(DIRECTIONS, 1):
+            asset = ASSET_MAP.get(title)
             Direction.objects.get_or_create(title=title, defaults=dict(
                 tagline=tagline, url_name=url_name, size=size, is_upex=is_upex,
-                external_url=(s.upex_url if is_upex else ''), order=i * 10))
+                external_url=(s.upex_url if is_upex else ''), order=i * 10,
+                show_in_assets=bool(asset),
+                asset_title=(asset[0] if asset else ''),
+                asset_text=(asset[1] if asset else '')))
 
         for i, (title, city, direction, summary) in enumerate(OBJECTS, 1):
             case = case_for(title) or {}

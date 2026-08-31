@@ -41,6 +41,19 @@ class Direction(Ordered):
                             blank=True)
     is_upex = models.BooleanField('Это UPEX (особый стиль плитки)', default=False)
 
+    # --- показ в «Производственных активах» на «О группе» ---
+    show_in_assets = models.BooleanField(
+        'Показывать в «Производственных активах» (О группе)', default=False,
+        help_text='Плитка появится в блоке активов на «О группе» — с этим же фото, '
+                  'загружать второй раз не нужно')
+    asset_title = models.CharField(
+        'Заголовок в активах', max_length=120, blank=True,
+        help_text='Если в активах называется иначе — напр. «Бетонный завод» вместо '
+                  '«Бетон». Пусто — как основное название')
+    asset_text = models.CharField(
+        'Описание в активах', max_length=250, blank=True,
+        help_text='Пусто — берётся короткое описание направления')
+
     class Meta(Ordered.Meta):
         db_table = 'pages_direction'
         verbose_name = 'Направление'
@@ -48,6 +61,14 @@ class Direction(Ordered):
 
     def __str__(self):
         return self.title
+
+    @property
+    def asset_title_display(self):
+        return self.asset_title or self.title
+
+    @property
+    def asset_text_display(self):
+        return self.asset_text or self.tagline
 
 
 class ProjectObject(Ordered):

@@ -98,16 +98,28 @@ def _from_code(upex_url=''):
     return main, footer, mmenu
 
 
+_ASSET_V = None
+
+
 def _asset_version():
-    """Версия статики = время изменения site.css. Меняется при каждой правке
-    стилей → браузер и nginx подхватывают свежий файл, не держат старый из кэша."""
+    """Версия статики = короткий хеш содержимого site.css. Меняется всегда, когда
+    меняется CSS (в отличие от mtime, который при пересборке мог не обновляться) →
+    браузер гарантированно берёт свежий файл, а не старый из 30-дневного кэша."""
+    global _ASSET_V
+    if _ASSET_V is not None:
+        return _ASSET_V
+    import hashlib
+
     from django.conf import settings
     for base in [settings.BASE_DIR / 'static', settings.STATIC_ROOT]:
         try:
-            return int((base / 'assets' / 'site.css').stat().st_mtime)
+            data = (base / 'assets' / 'site.css').read_bytes()
+            _ASSET_V = hashlib.md5(data).hexdigest()[:10]
+            return _ASSET_V
         except OSError:
             continue
-    return 1
+    _ASSET_V = '1'
+    return _ASSET_V
 
 
 def nav(request):

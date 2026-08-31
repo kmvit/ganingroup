@@ -320,6 +320,11 @@ textarea.f-input{min-height:92px;resize:vertical}
   .site-cta .btn{display:none}
   header.site .tel{display:none}
   header.site .brand .word small{display:none}
+  /* контент прижимаем к верху (под шапку), чтобы верх заголовка не срезался;
+     высота растёт под контент, если он выше экрана */
+  .hero{justify-content:flex-start;height:auto;min-height:100svh}
+  .hero-geo{margin-top:clamp(14px,2svh,26px)}
+  .hero-geo div{padding:10px 14px}
 }
 /* режим экспорта в PDF: убираем привязку к высоте экрана */
 html.flat .hero{min-height:760px}

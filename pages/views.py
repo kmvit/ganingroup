@@ -81,13 +81,20 @@ def page_extras(slug: str) -> dict:
         return extras
     if slug in ('produkciya_zhbi', 'produkciya_asfalt', 'produkciya_inertnye'):
         return {'catalog': CatalogItem.objects.filter(published=True, section=slug)}
-    # кейсы на страницах решений — реальные объекты из БД (фото грузятся в «Объектах»)
-    if slug == 'reshenie_zastroyshchikam':
-        return {'objects': ProjectObject.objects.filter(published=True, direction='бетон')}
-    if slug == 'reshenie_kommercheskoe':
-        return {'objects': ProjectObject.objects.filter(published=True)}
-    if slug == 'reshenie_promyshlennost':
-        return {'objects': ProjectObject.objects.filter(published=True, direction='опалубка')}
+    if slug.startswith('reshenie_'):
+        # плитки «Продукция под сегмент» берут фото из направлений (по маршруту),
+        # чтобы не грузить фото на каждую страницу решения отдельно
+        dirs = list(Direction.objects.filter(published=True))
+        ctx = {'dir_by_url': {d.url_name: d for d in dirs if d.url_name},
+               'upex_dir': next((d for d in dirs if d.is_upex), None)}
+        # кейсы на страницах решений — реальные объекты из БД («Объекты»)
+        seg = {'reshenie_zastroyshchikam': dict(direction='бетон'),
+               'reshenie_promyshlennost': dict(direction='опалубка')}
+        if slug == 'reshenie_kommercheskoe':
+            ctx['objects'] = ProjectObject.objects.filter(published=True)
+        elif slug in seg:
+            ctx['objects'] = ProjectObject.objects.filter(published=True, **seg[slug])
+        return ctx
     return {}
 
 

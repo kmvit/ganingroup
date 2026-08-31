@@ -2,6 +2,7 @@
 """Админка: общие данные, меню и страницы."""
 from django.contrib import admin
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 
 from .models import Card, MenuItem, Page, PagePhoto, SiteSettings
 
@@ -112,26 +113,65 @@ class MenuItemAdmin(admin.ModelAdmin):
         return super().get_queryset(request).select_related('parent')
 
 
+# «Фото страницы» реально выводится не на всех страницах — только там, где в вёрстке
+# есть под него место. Для каждой такой страницы — своя подсказка, что это за фото.
+PAGE_PHOTO_HINT = {
+    'reshenie_zastroyshchikam': 'Фоновое фото в шапке страницы (за заголовком).',
+    'reshenie_kommercheskoe':   'Фоновое фото в шапке страницы (за заголовком).',
+    'reshenie_dorozhnikam':     'Фоновое фото в шапке страницы (за заголовком).',
+    'reshenie_promyshlennost':  'Фоновое фото в шапке страницы (за заголовком).',
+    'reshenie_chastnaya_zastroyka': 'Фоновое фото в шапке страницы (за заголовком).',
+    'obekt':      'Главное фото кейса в шапке (съёмка с дрона). Снимки объекта — в галерее ниже.',
+    'logistika':  'Фото слева в блоке «Что вы получаете» (автопарк).',
+    'raschet_opalubki': 'Фото слева в блоке «Что вы получаете» (инженер за расчётом).',
+    'shef_montazh':     'Фото слева в блоке «Что вы получаете» (шеф-монтаж на площадке).',
+    'laboratoriya':     'Фото слева в блоке «Что вы получаете» (лаборатория).',
+    'produkciya_kartochka': 'Главное фото товара. Доп. снимки — в галерее ниже.',
+}
+# Галерея (PagePhoto) есть только у кейса и карточки товара.
+PAGE_GALLERY_SLUGS = {'obekt', 'produkciya_kartochka'}
+# Страницы-каталоги: фото грузятся не сюда, а в «Каталог продукции» и «Направления».
+CATALOG_PAGE_SLUGS = {'produkciya_beton', 'produkciya_zhbi',
+                      'produkciya_asfalt', 'produkciya_inertnye'}
+
+
 @admin.register(Page)
 class PageAdmin(admin.ModelAdmin):
     list_display = ('admin_title', 'h1', 'slug', 'has_seo')
     search_fields = ('admin_title', 'h1', 'subtitle', 'body')
     readonly_fields = ('slug', 'admin_title')
-    inlines = [PagePhotoInline, CardInline]
-    fieldsets = (
-        ('Какая страница', {'fields': ('admin_title', 'slug')}),
-        ('Тексты', {'fields': ('h1', 'subtitle', 'body')}),
-        ('Фото', {
-            'description': 'Главное фото страницы: фон шапки у решений и кейса, '
-                           'фото слева у сервисов, главное фото товара на карточке. '
-                           'Галерея (фото кейса, галерея товара) — внизу страницы.',
-            'fields': ('photo',),
-        }),
-        ('SEO — как страница выглядит в поиске', {
+
+    def get_inline_instances(self, request, obj=None):
+        # плитки — у всех, галерея — только там, где она выводится в вёрстке
+        inlines = [CardInline(self.model, self.admin_site)]
+        if obj and obj.slug in PAGE_GALLERY_SLUGS:
+            inlines.insert(0, PagePhotoInline(self.model, self.admin_site))
+        return inlines
+
+    def get_fieldsets(self, request, obj=None):
+        fs = [
+            ('Какая страница', {'fields': ('admin_title', 'slug')}),
+            ('Тексты', {'fields': ('h1', 'subtitle', 'body')}),
+        ]
+        slug = getattr(obj, 'slug', None)
+        if slug in PAGE_PHOTO_HINT:
+            fs.append(('Фото', {'description': PAGE_PHOTO_HINT[slug], 'fields': ('photo',)}))
+        elif slug in CATALOG_PAGE_SLUGS:
+            # у страниц-каталогов «Фото страницы» не выводится — направляем в нужные разделы
+            fs.append(('Фото', {
+                'description': mark_safe(
+                    'На этой странице фото задаются не здесь: '
+                    'плитки каталога (изделия, марки) — в разделе '
+                    '<b>«Каталог продукции»</b>, а плитка направления на '
+                    'главной и в «Продукции» — в разделе '
+                    '<b>«Направления (продукция)»</b>.'),
+                'fields': (),
+            }))
+        fs.append(('SEO — как страница выглядит в поиске', {
             'description': 'Если оставить пустым, поисковик увидит заголовок страницы.',
             'fields': ('seo_title', 'seo_description'),
-        }),
-    )
+        }))
+        return fs
 
     def has_add_permission(self, request):
         return False        # набор страниц задан вёрсткой

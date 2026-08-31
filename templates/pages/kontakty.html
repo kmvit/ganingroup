@@ -30,9 +30,10 @@
       </div>
       <div>
         <div class="dmap">
-          {% for pt in map_points %}<span class="map-pt{% if pt.is_own %} f{% endif %}" style="left:{{ pt.left }}%;top:{{ pt.top }}%">{{ pt.title }}</span>
+          {% if site.map_embed_url %}<iframe src="{{ site.map_embed_url }}" title="Карта проезда — Яндекс.Карты" loading="lazy" allowfullscreen style="position:absolute;inset:0;width:100%;height:100%;border:0"></iframe>
+          {% else %}{% for pt in map_points %}<span class="map-pt{% if pt.is_own %} f{% endif %}" style="left:{{ pt.left }}%;top:{{ pt.top }}%">{{ pt.title }}</span>
           {% endfor %}
-          <span class="map-note">[ карта проезда · Яндекс.Карты ]</span>
+          <span class="map-note">[ карта проезда · Яндекс.Карты ]</span>{% endif %}
         </div>
         <div class="rows" style="margin-top:22px">
           {% if site.address_office %}<div class="rowi" style="padding:14px 0"><span class="kind">Адрес</span><div class="sub" style="font-size:14px;color:var(--silver)">{{ site.address_office }}</div></div>{% endif %}

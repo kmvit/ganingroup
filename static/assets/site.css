@@ -93,12 +93,14 @@ nav.main .dd a:hover{background:var(--ink-3);color:var(--white)}
 .hero-geo div:last-child{border-right:0}
 .hero-geo b{display:block;font-family:var(--font-h);font-weight:600;font-size:clamp(17px,1.7vw,24px);letter-spacing:.06em;text-transform:uppercase;color:var(--white)}
 .hero-geo span{font-family:var(--font-m);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-/* низкие окна (ноутбуки): первый экран = один экран без подрезки заголовка —
-   ужимаем H1 и прячем декоративный гео-бар, чтобы контент влез в 100svh */
-@media (max-height:820px){
-  .hero h1{font-size:clamp(40px,9svh,96px)}
-  .hero .sub{margin-top:clamp(12px,2svh,20px)}
-  .hero-geo{display:none}
+/* низкие окна (ноутбуки): первый экран = один экран без подрезки. Ничего не
+   убираем — подгоняем отступами и умеренным размером заголовка */
+@media (max-height:860px){
+  .hero{padding-top:clamp(84px,10svh,120px)}
+  .hero h1{font-size:clamp(44px,9.5svh,132px)}
+  .hero .sub{margin-top:clamp(10px,1.8svh,20px)}
+  .hero-geo{margin-top:clamp(16px,2.4svh,40px)}
+  .hero-geo div{padding:clamp(12px,2svh,20px) 18px}
   .scroll-hint{display:none}
 }
 .scroll-hint{position:absolute;right:var(--gut);bottom:26px;font-family:var(--font-m);font-size:11px;letter-spacing:.2em;color:var(--concrete);writing-mode:vertical-rl;display:flex;align-items:center;gap:10px}

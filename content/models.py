@@ -221,13 +221,24 @@ class TimelineEvent(Ordered):
 
 
 class MapPoint(Ordered):
-    """Точка на карте присутствия: город поставки или своя площадка."""
+    """Точка на карте присутствия: город поставки или своя площадка.
+
+    lat/lng — для настоящей Яндекс.Карты (с API-ключом). left/top — запасная
+    схематичная карта, когда ключа нет.
+    """
 
     title = models.CharField('Город / площадка', max_length=120)
+    lat = models.FloatField('Широта', null=True, blank=True,
+                            help_text='Например 44.0610 (для Яндекс.Карты). '
+                                      'Координаты можно скопировать из Яндекс.Карт: '
+                                      'правый клик по точке → «Что здесь?»')
+    lng = models.FloatField('Долгота', null=True, blank=True,
+                            help_text='Например 42.9868')
     left = models.PositiveIntegerField('Позиция слева, %', default=50,
-                                       help_text='0–100 — где точка стоит на карте')
+                                       help_text='0–100 — для схематичной карты без ключа')
     top = models.PositiveIntegerField('Позиция сверху, %', default=50)
-    is_own = models.BooleanField('Своя площадка (не просто поставка)', default=False)
+    is_own = models.BooleanField('Своя площадка (завод, карьер)', default=False,
+                                 help_text='Отмечается крупной оранжевой меткой')
 
     class Meta(Ordered.Meta):
         db_table = 'pages_mappoint'

@@ -30,7 +30,7 @@
       </div>
       <div>
         <div class="dmap">
-          {% if site.map_api_key or site.map_embed_url %}{% include "partials/map.html" with map_id="ymap-kontakty" map_zoom=15 %}
+          {% if site.map_api_key or site.map_embed_url %}{% include "partials/map.html" with map_id="ymap-kontakty" map_mode="plant" map_zoom=15 %}
           {% else %}{% for pt in map_points %}<span class="map-pt{% if pt.is_own %} f{% endif %}" style="left:{{ pt.left }}%;top:{{ pt.top }}%">{{ pt.title }}</span>
           {% endfor %}
           <span class="map-note">[ карта проезда · Яндекс.Карты ]</span>{% endif %}

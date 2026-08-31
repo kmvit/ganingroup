@@ -115,6 +115,15 @@ class TimelineEventAdmin(admin.ModelAdmin):
 
 @admin.register(MapPoint)
 class MapPointAdmin(admin.ModelAdmin):
-    list_display = ('title', 'is_own', 'left', 'top', 'order', 'published')
-    list_editable = ('is_own', 'left', 'top', 'order', 'published')
+    list_display = ('title', 'lat', 'lng', 'is_own', 'order', 'published')
+    list_editable = ('lat', 'lng', 'is_own', 'order', 'published')
     list_display_links = ('title',)
+    fieldsets = (
+        (None, {'fields': ('title', 'is_own')}),
+        ('Координаты (для Яндекс.Карты)', {'fields': ('lat', 'lng')}),
+        ('Схематичная карта без ключа', {
+            'classes': ('collapse',),
+            'fields': ('left', 'top'),
+        }),
+        ('Показ', {'fields': ('order', 'published')}),
+    )

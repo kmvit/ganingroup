@@ -1,26 +1,64 @@
 {% comment %}
 Яндекс.Карта внутри контейнера с position:relative (.dmap / .map-canvas).
-Вызов: {% include "partials/map.html" with map_id="ymap-kontakty" map_zoom=8 %}
-С API-ключом — JS-карта: метка завода + круг зоны доставки 200 км, зум колесом
-выключен. Без ключа — iframe-виджет, накрытый «щитом» от случайного скролла.
+Режимы:
+  map_mode="coverage" — главная: метка завода/карьера, точки городов, круг зоны
+                        доставки (site.delivery_radius_km), масштаб под всю зону.
+  map_mode="plant"    — контакты: крупный план завода с адресом.
+С API-ключом рисуется настоящая JS-карта; без ключа — iframe-виджет под «щитом»
+от случайного скролла; без всего — схема-заглушка (в самих шаблонах).
 {% endcomment %}
+{% load l10n %}
 {% if site.map_api_key %}
 <div id="{{ map_id }}" style="position:absolute;inset:0"></div>
+{% localize off %}
 <script>
 (function () {
+  var MODE = '{{ map_mode|default:"plant" }}';
+  var plant = [44.061033, 42.986830];
+  var radius = {{ site.delivery_radius_km|default:200 }} * 1000;
+  var points = [{% for p in map_points %}{% if p.lat and p.lng %}{lat:{{ p.lat }},lng:{{ p.lng }},title:"{{ p.title|escapejs }}",own:{{ p.is_own|yesno:"true,false" }}},{% endif %}{% endfor %}];
+
   function init() {
-    var plant = [44.061033, 42.986830];
     var map = new ymaps.Map('{{ map_id }}',
       {center: plant, zoom: {{ map_zoom|default:8 }}, controls: ['zoomControl']},
-      {suppressMapOpenBlock: true});
-    map.behaviors.disable('scrollZoom');
-    map.geoObjects.add(new ymaps.Placemark(plant,
-      {balloonContent: 'ГАНИН ГРУПП — завод: Пятигорск, Черкесское шоссе, 2'},
-      {preset: 'islands#orangeIcon'}));
-    map.geoObjects.add(new ymaps.Circle([plant, 200000],
-      {hintContent: 'Зона доставки бетона и инертных — 200 км'},
-      {fillColor: '#FF6A0012', strokeColor: '#FF6A00', strokeOpacity: .55, strokeWidth: 2}));
+      {suppressMapOpenBlock: true, yandexMapDisablePoiInteractivity: true});
+    map.behaviors.disable('scrollZoom');   // колесо листает страницу, а не зумит карту
+
+    if (MODE === 'coverage') {
+      // зона покрытия — мягкий оранжевый круг
+      var zone = new ymaps.Circle([plant, radius], {
+        hintContent: 'Зона ритмичной доставки бетона и инертных — ' + (radius / 1000) + ' км'
+      }, {
+        fillColor: '#FF6A001F', strokeColor: '#FF6A00',
+        strokeWidth: 2, strokeOpacity: 0.75
+      });
+      map.geoObjects.add(zone);
+
+      // города и площадки
+      points.forEach(function (p) {
+        var coords = [p.lat, p.lng];
+        var preset;
+        if (p.own) {
+          preset = /завод/i.test(p.title) ? 'islands#orangeIndustrialIcon' : 'islands#orangeIcon';
+          map.geoObjects.add(new ymaps.Placemark(coords,
+            {iconCaption: p.title, balloonContent: 'ГАНИН ГРУПП · ' + p.title}, {preset: preset}));
+        } else {
+          map.geoObjects.add(new ymaps.Placemark(coords,
+            {iconCaption: p.title}, {preset: 'islands#orangeCircleDotIcon'}));
+        }
+      });
+
+      // показать всю зону целиком с полями
+      map.setBounds(zone.geometry.getBounds(), {checkZoomRange: true, zoomMargin: 28});
+    } else {
+      // крупный план завода
+      map.geoObjects.add(new ymaps.Placemark(plant, {
+        balloonContentHeader: 'ГАНИН ГРУПП',
+        balloonContent: 'Завод: Пятигорск, Черкесское шоссе, 2 (промзона «Скачки»)'
+      }, {preset: 'islands#orangeIndustrialIcon'}));
+    }
   }
+
   if (window.ymaps) { ymaps.ready(init); return; }
   if (!window._ggMapsQueue) {
     window._ggMapsQueue = [];
@@ -35,6 +73,7 @@
   window._ggMapsQueue.push(init);
 })();
 </script>
+{% endlocalize %}
 {% elif site.map_embed_url %}
 <iframe src="{{ site.map_embed_url }}" title="Яндекс.Карты" loading="lazy" allowfullscreen
         style="position:absolute;inset:0;width:100%;height:100%;border:0"></iframe>

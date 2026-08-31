@@ -79,13 +79,14 @@ TIMELINE = [
      'Все направления — под единым зонтичным брендом. Один партнёр на весь монолит.'),
 ]
 
+# (название, широта, долгота, left%, top%, своя площадка)
 MAP_POINTS = [
-    ('завод · КМВ', 30, 50, False),
-    ('карьер · Зольская', 20, 64, True),
-    ('Ставрополь', 12, 30, False),
-    ('Невинномысск', 6, 44, False),
-    ('Нальчик', 52, 66, False),
-    ('Черкесск', 30, 74, False),
+    ('завод · Пятигорск', 44.061033, 42.986830, 30, 50, True),
+    ('карьер · Зольская', 44.050000, 43.280000, 20, 64, True),
+    ('Ставрополь', 45.044500, 41.969000, 12, 30, False),
+    ('Невинномысск', 44.630000, 41.945000, 6, 44, False),
+    ('Нальчик', 43.480600, 43.607000, 52, 66, False),
+    ('Черкесск', 44.226900, 42.046600, 30, 74, False),
 ]
 
 REVIEW = ('«Для нас важнее всего был <em>ритм поставок</em> на пике сезона. График монолита '
@@ -196,6 +197,7 @@ class Command(BaseCommand):
         s.requisites = 'ИНН 2632015284 · ОГРН 1022601632151'
         s.copyright_note = 'ГАНИН ГРУПП — маркетинговый бренд группы.'
         s.price_valid_from = date(2026, 7, 18)
+        s.delivery_radius_km = 200
         if not s.upex_url:
             s.upex_url = 'https://upex.pro'
         s.save()
@@ -331,9 +333,9 @@ class Command(BaseCommand):
             TimelineEvent.objects.get_or_create(title=title, defaults=dict(
                 year=year, text=txt, order=i * 10))
 
-        for i, (title, left, top, is_own) in enumerate(MAP_POINTS, 1):
+        for i, (title, lat, lng, left, top, is_own) in enumerate(MAP_POINTS, 1):
             MapPoint.objects.get_or_create(title=title, defaults=dict(
-                left=left, top=top, is_own=is_own, order=i * 10))
+                lat=lat, lng=lng, left=left, top=top, is_own=is_own, order=i * 10))
 
         self.stdout.write(self.style.SUCCESS(
             f'Готово. Цифры: {Stat.objects.count()}, направления: {Direction.objects.count()}, '

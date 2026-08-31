@@ -99,6 +99,11 @@ class SiteSettings(models.Model):
                 'База на КМВ, поставки по СКФО и всей России.')
 
     # --- карта ---
+    map_api_key = models.CharField(
+        'API-ключ Яндекс.Карт (JavaScript API)', max_length=100, blank=True,
+        help_text='С ключом карта рисуется через JS API: метка завода + круг зоны '
+                  'доставки 200 км. Бесплатный ключ — developer.tech.yandex.ru, '
+                  'сервис «JavaScript API и HTTP Геокодер». Пусто — простой виджет по ссылке ниже')
     map_embed_url = models.URLField(
         'Ссылка встройки Яндекс.Карты', max_length=500, blank=True,
         default='https://yandex.ru/map-widget/v1/?ll=42.986830%2C44.061033&z=16'

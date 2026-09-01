@@ -10,7 +10,7 @@ from .notify import notify_application, notify_hauler, notify_lead
 from calc.models import ConcreteGrade, ConstructionType, DeliveryZone
 from content.models import (CatalogItem, Department, Direction, Document, MapPoint,
                             ProjectObject, Review, Stat, TeamMember, TimelineEvent, Vacancy)
-from core.models import Page
+from core.models import Page, SiteSettings
 
 # (url_path, url_name, шаблон, active-ключ для подсветки меню)
 PAGES = [
@@ -147,6 +147,9 @@ def sitemap_xml(request):
 
 def robots_txt(request):
     base = f'{request.scheme}://{request.get_host()}'
+    if SiteSettings.get().noindex:
+        # сайт закрыт от индексации (до запуска на рабочем домене)
+        return HttpResponse('User-agent: *\nDisallow: /\n', content_type='text/plain')
     text = ('User-agent: *\n'
             'Disallow: /admin/\n'
             'Disallow: /zayavka/\n'

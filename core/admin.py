@@ -71,6 +71,11 @@ class SiteSettingsAdmin(admin.ModelAdmin):
             'fields': ('address_office', 'address_plant', 'address_quarry', 'work_hours'),
         }),
         ('Карта', {'fields': ('map_api_key', 'delivery_radius_km', 'map_embed_url')}),
+        ('Индексация в поиске', {
+            'description': 'Пока сайт готовится / до перехода на рабочий домен — '
+                           'держите галочку включённой. При запуске снимите её.',
+            'fields': ('noindex',),
+        }),
         ('Бренд и реквизиты', {
             'fields': ('slogan', 'founded_year', 'legal_name', 'requisites',
                        'copyright_note', 'footer_about'),

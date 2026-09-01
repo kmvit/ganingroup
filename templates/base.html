@@ -6,6 +6,7 @@
 <script>try{var t=localStorage.getItem('gg-theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}</script>
 {% if page.seo_title %}<title>{{ page.seo_title }}</title>{% else %}<title>{% if page.title_tag %}{{ page.title_tag }}{% else %}{% block title %}{% endblock %}{% endif %} — ГАНИН ГРУПП</title>{% endif %}
 {% if page.seo_description %}<meta name="description" content="{{ page.seo_description }}" />{% endif %}
+{% if site.noindex %}<meta name="robots" content="noindex, nofollow" />{% endif %}
 <link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}" />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="ГАНИН ГРУПП" />

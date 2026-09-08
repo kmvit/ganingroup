@@ -326,7 +326,9 @@ textarea.f-input{min-height:92px;resize:vertical}
      высота растёт под контент, если он выше экрана */
   .hero{justify-content:flex-start;height:auto;min-height:100svh}
   .hero-geo{margin-top:clamp(14px,2svh,26px)}
-  .hero-geo div{padding:10px 14px}
+  /* левый отступ строго 0: иначе первый пункт (у него :first-child
+     с более высокой специфичностью) стоит по краю, а остальные — на 14px правее */
+  .hero-geo div{padding:10px 14px 10px 0}
 }
 /* режим экспорта в PDF: убираем привязку к высоте экрана */
 html.flat .hero{min-height:760px}

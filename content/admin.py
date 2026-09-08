@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Админка: содержание сайта."""
+from django import forms
 from django.contrib import admin
 from django.utils.html import format_html
 
@@ -69,8 +70,32 @@ class ObjectPhotoInline(admin.TabularInline):
     fields = ('image', 'caption', 'order', 'published')
 
 
+class ProjectObjectForm(forms.ModelForm):
+    """Сегменты — галочками; в базе лежат через запятую (как остальные списки)."""
+
+    segments = forms.MultipleChoiceField(
+        label='Сегменты', required=False,
+        choices=ProjectObject.SEGMENT_CHOICES,
+        widget=forms.CheckboxSelectMultiple,
+        help_text='Страницы раздела «Решения», где объект попадёт в блок '
+                  '«Объекты сегмента». Можно отметить несколько или ни одной')
+
+    class Meta:
+        model = ProjectObject
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            self.initial['segments'] = self.instance.segment_list
+
+    def clean_segments(self):
+        return ','.join(self.cleaned_data['segments'])
+
+
 @admin.register(ProjectObject)
 class ProjectObjectAdmin(admin.ModelAdmin, PhotoMixin):
+    form = ProjectObjectForm
     list_display = ('title', 'preview', 'city', 'direction', 'is_featured', 'order', 'published')
     list_editable = ('is_featured', 'order', 'published')
     list_display_links = ('title',)
@@ -80,6 +105,7 @@ class ProjectObjectAdmin(admin.ModelAdmin, PhotoMixin):
     fieldsets = (
         (None, {'fields': ('title', 'summary', 'photo')}),
         ('Данные объекта', {'fields': ('city', 'direction', 'year', 'volume')}),
+        ('Где показывать', {'fields': ('segments',)}),
         ('Страница кейса', {
             'description': 'Заголовок и блок «Как это было». Пустые поля на странице '
                            'не показываются. Цифры-плашки и фото-галерея — ниже.',

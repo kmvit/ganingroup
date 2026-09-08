@@ -74,6 +74,17 @@ class Direction(Ordered):
 class ProjectObject(Ordered):
     """Реализованный объект: ЖК, дорога, промплощадка."""
 
+    # Страницы раздела «Решения», где есть блок «Объекты сегмента».
+    # Ключ = slug страницы из pages.views.PAGES, поэтому фильтр в представлении
+    # сравнивается напрямую, без отдельной таблицы соответствий.
+    SEGMENT_CHOICES = [
+        ('reshenie_zastroyshchikam', 'Застройщикам'),
+        ('reshenie_kommercheskoe', 'Коммерческое строительство'),
+        ('reshenie_dorozhnikam', 'Дорожникам'),
+        ('reshenie_promyshlennost', 'Промышленность'),
+        ('reshenie_chastnaya_zastroyka', 'Частная застройка'),
+    ]
+
     title = models.CharField('Название объекта', max_length=200)
     slug = models.SlugField('Адрес страницы', max_length=200, unique=True, blank=True)
     city = models.CharField('Город', max_length=100, blank=True)
@@ -85,6 +96,10 @@ class ProjectObject(Ordered):
     year = models.CharField('Год / период', max_length=40, blank=True)
     volume = models.CharField('Объём поставки', max_length=100, blank=True)
     is_featured = models.BooleanField('Показать на главной', default=False)
+    segments = models.CharField(
+        'Сегменты', max_length=250, blank=True,
+        help_text='На каких страницах раздела «Решения» показывать объект '
+                  'в блоке «Объекты сегмента». Можно отметить несколько')
 
     # --- страница кейса ---
     headline = models.CharField(
@@ -106,6 +121,10 @@ class ProjectObject(Ordered):
 
     def __str__(self):
         return self.title
+
+    @property
+    def segment_list(self):
+        return [x.strip() for x in self.segments.split(',') if x.strip()]
 
     def save(self, *args, **kwargs):
         if not self.slug:

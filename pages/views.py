@@ -97,13 +97,11 @@ def page_extras(slug: str) -> dict:
         dirs = list(Direction.objects.filter(published=True))
         ctx = {'dir_by_url': {d.url_name: d for d in dirs if d.url_name},
                'upex_dir': next((d for d in dirs if d.is_upex), None)}
-        # кейсы на страницах решений — реальные объекты из БД («Объекты»)
-        seg = {'reshenie_zastroyshchikam': dict(direction='бетон'),
-               'reshenie_promyshlennost': dict(direction='опалубка')}
-        if slug == 'reshenie_kommercheskoe':
-            ctx['objects'] = ProjectObject.objects.filter(published=True)
-        elif slug in seg:
-            ctx['objects'] = ProjectObject.objects.filter(published=True, **seg[slug])
+        # кейсы на страницах решений — реальные объекты из БД («Объекты»).
+        # Привязка задаётся галочками «Сегменты» в карточке объекта: одно
+        # значение = slug страницы решения, объект может идти в несколько.
+        ctx['objects'] = [o for o in ProjectObject.objects.filter(published=True)
+                          if slug in o.segment_list]
         return ctx
     return {}
 

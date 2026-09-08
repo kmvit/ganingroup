@@ -11,7 +11,7 @@
   <div class="wrap">
     <div class="mosaic">
       {% for d in directions %}<a class="mz{% if d.size %} {{ d.size }}{% endif %}{% if d.is_upex %} upex{% endif %}"{% if d.url_name %} href="{% url d.url_name %}"{% elif d.external_url %} href="{{ d.external_url }}"{% endif %}>
-        {% if d.is_upex %}<span class="glow"></span>{% endif %}{% if d.photo %}<img src="{{ d.photo.url }}" alt="{{ d.title }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" />{% else %}<span class="ph-tag">[ фото: {{ d.title|lower }} ]</span>{% endif %}
+        {% if d.is_upex %}<span class="glow"></span>{% endif %}{% if d.photo %}<img src="{{ d.photo.url }}" alt="{{ d.title }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" />{% endif %}
         <span class="cap"><h3>{{ d.title }} <em>→</em></h3><p>{{ d.tagline }}</p>{% if d.is_upex and d.external_url %}<span class="ext">перейти на сайт UPEX ↗</span>{% endif %}</span>
       </a>{% endfor %}
     </div>

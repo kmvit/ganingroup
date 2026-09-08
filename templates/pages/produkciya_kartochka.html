@@ -11,8 +11,8 @@
   <div class="wrap">
     <div class="grid c2" style="align-items:start">
       <div>
-        <div class="pcard" style="pointer-events:none"><span class="ph" style="aspect-ratio:4/3">{% if page.photo %}<img src="{{ page.photo.url }}" alt="{{ page.admin_title }}" style="width:100%;height:100%;object-fit:cover" />{% else %}<i>[ главное фото продукта ]</i>{% endif %}</span></div>
-        <div class="gal" style="margin-top:14px">{% for ph in page.gallery %}<span class="ph"><img src="{{ ph.image.url }}" alt="{{ ph.caption }}" style="width:100%;height:100%;object-fit:cover" /></span>{% empty %}<span class="ph"><i>[ 1 ]</i></span><span class="ph"><i>[ 2 ]</i></span><span class="ph"><i>[ 3 ]</i></span><span class="ph"><i>[ 4 ]</i></span>{% endfor %}</div>
+        {% if page.photo %}<div class="pcard" style="pointer-events:none"><span class="ph" style="aspect-ratio:4/3"><img src="{{ page.photo.url }}" alt="{{ page.admin_title }}" style="width:100%;height:100%;object-fit:cover" /></span></div>{% endif %}
+        {% if page.gallery %}<div class="gal"{% if page.photo %} style="margin-top:14px"{% endif %}>{% for ph in page.gallery %}<span class="ph"><img src="{{ ph.image.url }}" alt="{{ ph.caption }}" style="width:100%;height:100%;object-fit:cover" /></span>{% endfor %}</div>{% endif %}
       </div>
       <div>
         <div class="tags" style="display:flex;flex-wrap:wrap;gap:8px"><span class="chip">W4</span><span class="chip">П3–П4</span><span class="chip">F — по паспорту партии</span><span class="chip hot">ГОСТ 7473</span></div>

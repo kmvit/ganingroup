@@ -1,6 +1,6 @@
-# ГАНИН ГРУПП — сайт на Django
+# Корпоративный сайт на Django
 
-Вёрстка варианта «Монолит» (из `ganin/ganin-group/design/site/`), перенесённая на Django-шаблоны.
+Вёрстка варианта «Монолит», перенесённая на Django-шаблоны.
 
 ## Запуск
 
@@ -83,7 +83,7 @@ pages/
 Почта на сервере (пароль в коде не хранится):
 
 ```bash
-export EMAIL_HOST=smtp.yandex.ru EMAIL_HOST_USER=site@ganin-group.ru EMAIL_HOST_PASSWORD=... 
+export EMAIL_HOST=smtp.yandex.ru EMAIL_HOST_USER=site@example.ru EMAIL_HOST_PASSWORD=... 
 ```
 
 Без `EMAIL_HOST` письма печатаются в консоль — удобно для разработки.

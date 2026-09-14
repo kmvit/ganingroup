@@ -38,7 +38,7 @@ button{font:inherit;border:0;background:none;color:inherit;cursor:pointer}
 /* line-height 1.2, а не плотнее: в Oswald точки «Ё» поднимаются на 1.042em
    над базовой линией (заглавные — 0.82em), хвосты «Ц/Д/Щ» уходят на 0.157em.
    При 1.02 вторая строка с «Ё» или «Й» налезала на предыдущую. */
-h1,h2,h3{font-family:var(--font-h);font-weight:600;line-height:1.2;text-transform:uppercase;letter-spacing:.005em}
+h1,h2,h3{font-family:var(--font-h);font-weight:600;line-height:1.22;text-transform:uppercase;letter-spacing:.005em}
 .eyebrow{font-family:var(--font-m);font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:12px}
 .eyebrow::before{content:"";width:8px;height:8px;background:var(--accent)}
 .sec-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:clamp(32px,4vw,56px)}

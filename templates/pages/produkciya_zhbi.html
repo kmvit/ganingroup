@@ -10,7 +10,7 @@
   <aside class="filter"><h3>Фильтр</h3><div class="f-label" style="margin-top:0">Тип изделия</div><div class="opts"><a class="chip act" href="#">Все</a><a class="chip" href="#">ФБС и блоки</a><a class="chip" href="#">Кольца и крышки</a><a class="chip" href="#">Плиты</a><a class="chip" href="#">Перемычки</a><a class="chip" href="#">Плитка и бордюры</a></div><div class="f-label" style="margin-top:20px">Размер</div><div class="opts"><a class="chip" href="#">типовые</a><a class="chip" href="#">по нашим чертежам</a></div>
     <a class="btn btn--line btn--sm" href="#" style="margin-top:24px;width:100%">Сбросить фильтр</a>
       </aside>
-  <div><div class="grid c3">{% for item in catalog %}<a class="pcard" href="{% url 'produkciya_kartochka' %}" style="position:relative">{% if item.photo %}<span class="ph"><img src="{{ item.photo.url }}" alt="{{ item.title }}" style="width:100%;height:100%;object-fit:cover" /></span>{% endif %}<span class="body"><h3>{{ item.title }}</h3><span class="row">{% for ch in item.chip_list %}<span class="chip">{{ ch }}</span>{% endfor %}</span></span></a>{% endfor %}</div>
+  <div><div class="grid c3 rows-eq">{% for item in catalog %}<a class="pcard" href="{% url 'produkciya_kartochka' %}" style="position:relative">{% if item.photo %}<span class="ph"><img src="{{ item.photo.url }}" alt="{{ item.title }}" style="width:100%;height:100%;object-fit:cover" /></span>{% endif %}<span class="body"><h3>{{ item.title }}</h3><span class="row">{% for ch in item.chip_list %}<span class="chip">{{ ch }}</span>{% endfor %}</span></span></a>{% endfor %}</div>
     <div style="display:flex;justify-content:center;margin-top:32px"><a class="btn btn--line" href="#">Показать ещё</a></div>
   </div>
 </div></div></section><section class="final">

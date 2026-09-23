@@ -91,7 +91,10 @@ nav.main .dd a:hover{background:var(--ink-3);color:var(--white)}
 /* на мобильном показываем фото-постер вместо видео (широкое видео сильно режется) */
 @media (max-width:768px){.hero-media-video{display:none}}
 .hero-media-tag{position:absolute;top:104px;right:var(--gut);font-family:var(--font-m);font-size:11px;letter-spacing:.14em;color:#5E6164;border:1px dashed #33363A;padding:8px 12px}
-.hero-inner{position:relative;padding-bottom:clamp(28px,4svh,88px)}
+/* width:100% обязателен: .hero-inner — flex-элемент колоночного .hero,
+   без явной ширины он сжимается по содержимому и центрируется своими
+   auto-отступами, уезжая правее шапки и секций ниже (1239px вместо 1520px). */
+.hero-inner{position:relative;width:100%;padding-bottom:clamp(28px,4svh,88px)}
 .hero h1{font-size:clamp(52px,9.6vw,168px);font-weight:600;color:var(--white);max-width:12ch}
 .hero h1 em{font-style:normal;color:var(--accent)}
 .hero .sub{margin-top:clamp(16px,2.4svh,26px);max-width:56ch;font-size:clamp(15px,1.25vw,19px);color:var(--silver);line-height:1.7}

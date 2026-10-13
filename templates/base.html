@@ -14,11 +14,18 @@
 <meta property="og:title" content="{% if page.seo_title %}{{ page.seo_title }}{% elif page.title_tag %}{{ page.title_tag }} — ГАНИН ГРУПП{% else %}ГАНИН ГРУПП{% endif %}" />
 {% if page.seo_description %}<meta property="og:description" content="{{ page.seo_description }}" />{% endif %}
 <meta property="og:url" content="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}" />
+{% comment %}Картинка превью: своё фото страницы, иначе кадр первого экрана{% endcomment %}
+{% if page.photo %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ page.photo.url }}" />
+<meta name="twitter:card" content="summary_large_image" />
+{% elif site.hero_photo %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ site.hero_photo.url }}" />
+<meta name="twitter:card" content="summary_large_image" />{% endif %}
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" />
 <link rel="stylesheet" href="{% static 'assets/site.css' %}?v={{ asset_v }}" />
 <link rel="icon" type="image/svg+xml" href="{{ site.logo_mark_url }}" />
+{% if jsonld_org %}<script type="application/ld+json">{{ jsonld_org }}</script>{% endif %}
+{% if crumbs_jsonld %}<script type="application/ld+json">{{ crumbs_jsonld }}</script>{% endif %}
 {% include "partials/gtag.html" %}
 </head>
 <body>

@@ -261,6 +261,8 @@ class Page(models.Model):
 
     slug = models.CharField('Маршрут', max_length=60, unique=True,
                             help_text='Имя URL — менять не нужно')
+    updated_at = models.DateTimeField('Изменено', auto_now=True,
+                                      help_text='Служебное поле: дата в sitemap.xml')
     admin_title = models.CharField('Страница', max_length=120,
                                    help_text='Как называется в этом списке')
     h1 = models.CharField('Заголовок на странице (H1)', max_length=250, blank=True)

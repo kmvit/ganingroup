@@ -106,6 +106,45 @@ def page_extras(slug: str) -> dict:
     return {}
 
 
+def breadcrumbs(request, slug=None, current=None, parents=None):
+    """Цепочка для микроразметки BreadcrumbList: «Главная → раздел → страница».
+
+    Берётся из того же дерева MAIN, что и меню с крошками в шаблонах,
+    поэтому разойтись они не могут. Для главной возвращается пусто —
+    размечать цепочку из одного звена незачем.
+    """
+    from django.urls import reverse
+    from .nav import NAV_LABELS, NAV_PARENTS
+
+    if slug == 'home':
+        return []
+    base = f'{request.scheme}://{request.get_host()}'
+    chain = [('Главная', reverse('home'))]
+    for label, url_name in (parents if parents is not None else NAV_PARENTS.get(slug, [])):
+        chain.append((label, reverse(url_name)))
+    # подпись из меню короче SEO-заголовка и уместнее в крошках
+    name = NAV_LABELS.get(slug) or current or ''
+    if not name:
+        return []
+    chain.append((name, request.path))
+    return [{'name': n, 'url': base + u} for n, u in chain]
+
+
+def crumbs_jsonld(crumbs):
+    """BreadcrumbList из той же цепочки, что показана на странице."""
+    import json
+    from django.utils.safestring import mark_safe
+    if not crumbs:
+        return ''
+    return mark_safe(json.dumps({
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        'itemListElement': [
+            {'@type': 'ListItem', 'position': i, 'name': c['name'], 'item': c['url']}
+            for i, c in enumerate(crumbs, start=1)
+        ],
+    }, ensure_ascii=False))
+
 def make_page_view(template: str, active: str, slug: str):
     """Фабрика страниц: шаблон, активный пункт меню, тексты и контент из БД."""
     def view(request):
@@ -120,6 +159,8 @@ def make_page_view(template: str, active: str, slug: str):
             'cards': cards,
             'cards_by_section': by_section,
             'lead_form': LeadForm(),
+            'crumbs_jsonld': crumbs_jsonld(breadcrumbs(
+                request, slug, current=(page.title_tag if page else None))),
         }
         ctx.update(page_extras(slug))
         return render(request, f'pages/{template}.html', ctx)
@@ -133,10 +174,16 @@ SITEMAP_EXCLUDE = {'policy', 'consent', 'aidentika'}
 
 def sitemap_xml(request):
     base = f'{request.scheme}://{request.get_host()}'
-    locs = [p for p, name, _tpl, _active in PAGES if name not in SITEMAP_EXCLUDE]
-    locs += [f'obekty/{o.slug}/'
+    # lastmod помогает поисковикам переобходить изменённые страницы раньше прочих
+    changed = dict(Page.objects.values_list('slug', 'updated_at'))
+    locs = [(p, changed.get(name)) for p, name, _tpl, _active in PAGES
+            if name not in SITEMAP_EXCLUDE]
+    locs += [(f'obekty/{o.slug}/', o.updated_at)
              for o in ProjectObject.objects.filter(published=True)]
-    items = ''.join(f'  <url><loc>{base}/{loc}</loc></url>\n' for loc in locs)
+    items = ''
+    for loc, mod in locs:
+        stamp = f'<lastmod>{mod.date().isoformat()}</lastmod>' if mod else ''
+        items += f'  <url><loc>{base}/{loc}</loc>{stamp}</url>\n'
     xml = ('<?xml version="1.0" encoding="UTF-8"?>\n'
            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
            f'{items}</urlset>\n')
@@ -170,9 +217,12 @@ def object_detail(request, slug):
         'title_tag': obj.title,
         'h1': headline,
         'subtitle': obj.summary,
+        'photo': obj.photo,          # для og:image на странице кейса
     }
     return render(request, 'pages/obekt.html', {
         'active': 'obekty', 'page': page, 'object': obj, 'headline': headline,
+        'crumbs_jsonld': crumbs_jsonld(breadcrumbs(
+            request, current=obj.title, parents=[('Объекты', 'obekty')])),
     })
 
 

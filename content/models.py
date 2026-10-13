@@ -96,6 +96,8 @@ class ProjectObject(Ordered):
     year = models.CharField('Год / период', max_length=40, blank=True)
     volume = models.CharField('Объём поставки', max_length=100, blank=True)
     is_featured = models.BooleanField('Показать на главной', default=False)
+    updated_at = models.DateTimeField('Изменено', auto_now=True,
+                                      help_text='Служебное поле: дата в sitemap.xml')
     segments = models.CharField(
         'Сегменты', max_length=250, blank=True,
         help_text='На каких страницах раздела «Решения» показывать объект '

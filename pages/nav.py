@@ -45,6 +45,27 @@ MAIN = [
 COMPANY_COLUMN = 'Компания'      # колонка подвала из пунктов без подменю
 
 
+def _crumb_tables():
+    """Из того же дерева MAIN: подписи пунктов и цепочка предков для каждой страницы.
+
+    Нужны для микроразметки BreadcrumbList — чтобы она не разошлась с меню
+    и с крошками в шаблонах, которые строятся из этой же структуры.
+    """
+    labels, parents = {}, {}
+    for _slug, label, url_name, children, _col in MAIN:
+        if url_name:
+            labels[url_name] = label
+            parents[url_name] = []
+        for ctitle, curl, _ext in (children or []):
+            if curl:
+                labels[curl] = ctitle
+                parents[curl] = [(label, url_name)]
+    return labels, parents
+
+
+NAV_LABELS, NAV_PARENTS = _crumb_tables()
+
+
 def _item(title, url_name, external):
     return {'label': title, 'url_name': url_name or '', 'external': external or ''}
 
@@ -122,6 +143,44 @@ def _asset_version():
     return _ASSET_V
 
 
+def _jsonld_org(site, request):
+    """Микроразметка Organization: берётся из «Общих данных сайта».
+
+    Пустые поля не попадают в разметку — поисковики не любят заглушки.
+    """
+    import json
+    from django.utils.safestring import mark_safe
+
+    base = f'{request.scheme}://{request.get_host()}'
+    data = {
+        '@context': 'https://schema.org',
+        '@type': 'Organization',
+        'name': 'ГАНИН ГРУПП',
+        'url': base + '/',
+    }
+    if site.legal_name:
+        data['legalName'] = site.legal_name
+    logo = site.logo_full_url
+    if logo:
+        data['logo'] = logo if logo.startswith('http') else base + logo
+    phones = [p for p in (site.phone_main, site.phone_dispatch, site.phone_upex) if p]
+    if phones:
+        data['telephone'] = phones[0]
+        data['contactPoint'] = [{'@type': 'ContactPoint', 'telephone': p,
+                                 'contactType': 'sales', 'areaServed': 'RU'}
+                                for p in phones]
+    if site.email_main:
+        data['email'] = site.email_main
+    if site.address_office:
+        data['address'] = {'@type': 'PostalAddress',
+                           'streetAddress': site.address_office,
+                           'addressCountry': 'RU'}
+    if site.work_hours:
+        data['openingHours'] = site.work_hours
+    if site.founded_year:
+        data['foundingDate'] = str(site.founded_year)
+    return mark_safe(json.dumps(data, ensure_ascii=False))
+
 def nav(request):
     """Контекст-процессор: навигация и общие данные сайта — во всех шаблонах."""
     from core.models import SiteSettings
@@ -138,4 +197,5 @@ def nav(request):
         'phone': site.phone_link,
         'phone_label': site.phone_main,
         'asset_v': _asset_version(),
+        'jsonld_org': _jsonld_org(site, request),
     }

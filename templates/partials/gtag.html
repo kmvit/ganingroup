@@ -1,0 +1,15 @@
+{% comment %}
+Google Analytics 4, поток G-J7KYRKF7W5. Подключается в base.html внутри <head>,
+как требует документация Google. Код вставлен как выдан в интерфейсе GA —
+не переписывать вручную, при смене потока брать новый фрагмент оттуда же.
+Яндекс.Метрика живёт отдельно, в partials/metrika.html.
+{% endcomment %}
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-J7KYRKF7W5"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-J7KYRKF7W5');
+</script>

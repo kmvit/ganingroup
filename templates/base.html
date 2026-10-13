@@ -19,6 +19,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" />
 <link rel="stylesheet" href="{% static 'assets/site.css' %}?v={{ asset_v }}" />
 <link rel="icon" type="image/svg+xml" href="{{ site.logo_mark_url }}" />
+{% include "partials/gtag.html" %}
 </head>
 <body>
 {% include "partials/header.html" %}

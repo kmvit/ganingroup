@@ -36,6 +36,10 @@ class Direction(Ordered):
                                 help_text='Имя URL, например produkciya_beton. Пусто — плитка без ссылки')
     external_url = models.URLField('Внешняя ссылка', blank=True,
                                    help_text='Для UPEX — адрес отдельного сайта')
+    shop_url = models.URLField(
+        'Каталог на sd2-kmv.ru', blank=True,
+        help_text='Раздел продающего сайта с каталогом и ценами. Кнопки «Каталог и цены» '
+                  'на странице направления ведут сюда. Пусто — кнопки не показываются')
     size = models.CharField('Размер плитки', max_length=10, default='',
                             choices=[('', 'обычная'), ('big', 'большая'), ('tall', 'высокая')],
                             blank=True)

@@ -1,0 +1,6 @@
+{# Обзор ассортимента направления. Каталог с ценами — на sd2-kmv.ru (direction.shop_url) #}
+{% if catalog %}<section><div class="wrap">
+  <div class="sec-head"><h2>Что производим</h2>{% if direction.shop_url %}<a class="btn btn--line btn--sm" href="{{ direction.shop_url }}" target="_blank" rel="noopener">Каталог и цены на sd2-kmv.ru ↗</a>{% endif %}</div>
+  <div class="grid c4 rows-eq">{% for item in catalog %}<div class="pcard pcard--static">{% if item.photo %}<span class="ph"><img src="{{ item.photo.url }}" alt="{{ item.title }}" style="width:100%;height:100%;object-fit:cover" /></span>{% endif %}<span class="body"><h3>{{ item.title }}</h3><span class="row">{% for ch in item.chip_list %}<span class="chip">{{ ch }}</span>{% endfor %}</span></span></div>{% endfor %}</div>
+  {% if direction.shop_url %}<p class="shop-note">Полный каталог с ценами и характеристиками — на сайте завода <a href="{{ direction.shop_url }}" target="_blank" rel="noopener">sd2-kmv.ru ↗</a>. Объём под проект и график поставок — через ТКП.</p>{% endif %}
+</div></section>{% endif %}

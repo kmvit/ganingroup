@@ -37,7 +37,7 @@ class DirectionAdmin(admin.ModelAdmin, PhotoMixin):
     list_display_links = ('title',)
     fieldsets = (
         (None, {'fields': ('title', 'tagline', 'photo')}),
-        ('Ссылка', {'fields': ('url_name', 'external_url')}),
+        ('Ссылка', {'fields': ('url_name', 'external_url', 'shop_url')}),
         ('Вид плитки', {'fields': ('size', 'is_upex')}),
         ('Блок «Производственные активы» на «О группе»', {
             'description': 'Чтобы не загружать фото второй раз: отметьте галочку — '

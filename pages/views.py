@@ -28,7 +28,6 @@ PAGES = [
     ('produkciya/asfalt/',            'produkciya_asfalt',            'produkciya_asfalt',            'produkciya'),
     ('produkciya/inertnye/',          'produkciya_inertnye',          'produkciya_inertnye',          'produkciya'),
     ('produkciya/cement/',            'produkciya_cement',            'produkciya_cement',            'produkciya'),
-    ('produkciya/beton-m350/',        'produkciya_kartochka',         'produkciya_kartochka',         'produkciya'),
     ('uslugi/',                       'uslugi',                       'uslugi',                       'uslugi'),
     ('uslugi/logistika/',             'logistika',                    'logistika',                    'uslugi'),
     ('uslugi/raschet-opalubki/',      'raschet_opalubki',             'raschet_opalubki',             'uslugi'),
@@ -77,10 +76,10 @@ def page_extras(slug: str) -> dict:
                   'zones': DeliveryZone.objects.filter(published=True),
                   'ctypes': ConstructionType.objects.filter(published=True)}
         if slug == 'produkciya_beton':
-            extras['catalog'] = CatalogItem.objects.filter(published=True, section=slug)
+            extras.update(direction_extras(slug))
         return extras
     if slug in ('produkciya_zhbi', 'produkciya_asfalt', 'produkciya_inertnye'):
-        return {'catalog': CatalogItem.objects.filter(published=True, section=slug)}
+        return direction_extras(slug)
     if slug == 'resheniya':
         # плитки хаба берут фото из шапок страниц сегментов (Page.photo),
         # чтобы не загружать фото отдельно — грузится один раз на странице сегмента
@@ -104,6 +103,17 @@ def page_extras(slug: str) -> dict:
                           if slug in o.segment_list]
         return ctx
     return {}
+
+
+def direction_extras(slug: str) -> dict:
+    """Страница направления: обзор ассортимента без каталога и цен.
+
+    Каталог с ценами живёт на продающем sd2-kmv.ru (Direction.shop_url),
+    здесь — только что производим и куда идти за ценой, чтобы сайты
+    не дублировали друг друга и не конкурировали в выдаче.
+    """
+    return {'catalog': CatalogItem.objects.filter(published=True, section=slug),
+            'direction': Direction.objects.filter(url_name=slug).first()}
 
 
 def breadcrumbs(request, slug=None, current=None, parents=None):

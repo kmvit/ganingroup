@@ -465,6 +465,10 @@ a.chip:hover{color:var(--white);border-color:var(--accent)}
 .pcard .ph::after{content:"";position:absolute;inset:0;background-image:var(--noise)}
 .pcard .ph i{font-family:var(--font-m);font-style:normal;font-size:10px;letter-spacing:.12em;color:rgba(255,255,255,.5);text-transform:uppercase}
 .pcard .body{display:block;padding:18px 20px 22px}
+.pcard--static:hover{transform:none;border-color:var(--line-d)}
+.phero-cta{display:flex;flex-wrap:wrap;gap:14px;margin-top:28px}
+.shop-note{margin-top:28px;max-width:70ch;font-size:14px;line-height:1.6;color:var(--muted)}
+.shop-note a{color:var(--accent)}
 .pcard .meta{display:block;font-family:var(--font-m);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .pcard h3{font-size:19px;letter-spacing:.04em;color:var(--white);margin-top:8px}
 .pcard p{font-size:13.5px;color:var(--muted);margin-top:6px;line-height:1.55}

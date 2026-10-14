@@ -3,7 +3,7 @@
 from django.db import models
 
 from core.models import Ordered
-from content.utils import slugify_ru
+from content.utils import safe_reverse, slugify_ru
 
 
 class Stat(Ordered):
@@ -33,13 +33,11 @@ class Direction(Ordered):
     photo = models.ImageField('Фото', upload_to='directions/', blank=True,
                               help_text='Если пусто — покажется серая плитка-заглушка')
     url_name = models.CharField('Маршрут страницы', max_length=60, blank=True,
-                                help_text='Имя URL, например produkciya_beton. Пусто — плитка без ссылки')
+                                help_text='Имя URL внутренней страницы, например produkciya_cement. '
+                                          'Служит и ключом направления — не менять')
     external_url = models.URLField('Внешняя ссылка', blank=True,
-                                   help_text='Для UPEX — адрес отдельного сайта')
-    shop_url = models.URLField(
-        'Каталог на sd2-kmv.ru', blank=True,
-        help_text='Раздел продающего сайта с каталогом и ценами. Кнопки «Каталог и цены» '
-                  'на странице направления ведут сюда. Пусто — кнопки не показываются')
+                                   help_text='Если задана — плитка ведёт на другой сайт: '
+                                             'UPEX → upex.pro, бетон/ЖБИ/асфальт/карьер → sd2-kmv.ru')
     size = models.CharField('Размер плитки', max_length=10, default='',
                             choices=[('', 'обычная'), ('big', 'большая'), ('tall', 'высокая')],
                             blank=True)
@@ -65,6 +63,15 @@ class Direction(Ordered):
 
     def __str__(self):
         return self.title
+
+    @property
+    def href(self):
+        """Куда ведёт плитка: внешний сайт, иначе внутренняя страница, иначе никуда."""
+        return self.external_url or safe_reverse(self.url_name)
+
+    @property
+    def is_external(self):
+        return bool(self.external_url)
 
     @property
     def asset_title_display(self):

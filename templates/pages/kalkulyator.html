@@ -4,7 +4,7 @@
 {% block title %}Калькулятор бетона{% endblock %}
 
 {% block content %}
-<nav class="bc"><div class="wrap"><a href="{% url 'home' %}">Главная</a><i>/</i><a href="{% url 'produkciya_beton' %}">Бетон</a><i>/</i><span>Калькулятор</span></div></nav>
+<nav class="bc"><div class="wrap"><a href="{% url 'home' %}">Главная</a><i>/</i><a href="{% url 'produkciya' %}">Продукция</a><i>/</i><span>Калькулятор</span></div></nav>
 <section class="phero"><div class="wrap"><h1>{{ page.h1|default:"Калькулятор объёма бетона"|safe }}</h1><p class="sub">{{ page.subtitle|default:"Онлайн-расчёт объёма и марки — мгновенно, на странице. Результат переносится в заявку на ТКП. Запас 5–10% (на выбор) и округление до 0,1 м³ учтены."|safe }}</p></div></section>
 
 <section style="padding-top:0">
@@ -68,7 +68,7 @@
             <button class="btn btn--solid" type="submit" style="width:100%;margin-top:18px">Отправить расчёт менеджеру</button>
           </form>
           <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:18px">
-            <a class="btn btn--line" href="{% url 'produkciya_beton' %}">К маркам бетона</a>
+            <a class="btn btn--line" href="{{ sd2.produkciya_beton }}" target="_blank" rel="noopener">Марки и цены ↗</a>
           </div>
         </div>
         <p style="margin-top:16px;font-family:var(--font-m);font-size:10.5px;color:var(--concrete);letter-spacing:.06em;line-height:1.8">

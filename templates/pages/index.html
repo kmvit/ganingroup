@@ -87,7 +87,7 @@
         <span class="n">01 — Продукция</span>
         <h3>Что производим</h3>
         <p>Собственные заводы и карьер. Паспорт качества на каждую партию.</p>
-        <ul><li><a href="{% url 'produkciya_beton' %}">Бетон</a></li><li><a href="{% url 'produkciya_zhbi' %}">ЖБИ</a></li><li><a href="{% url 'produkciya_asfalt' %}">Асфальт</a></li><li><a href="{% url 'produkciya_inertnye' %}">Инертные</a></li></ul>
+        <ul><li><a href="{{ sd2.produkciya_beton }}" target="_blank" rel="noopener">Бетон</a></li><li><a href="{{ sd2.produkciya_zhbi }}" target="_blank" rel="noopener">ЖБИ</a></li><li><a href="{{ sd2.produkciya_asfalt }}" target="_blank" rel="noopener">Асфальт</a></li><li><a href="{{ sd2.produkciya_inertnye }}" target="_blank" rel="noopener">Инертные</a></li></ul>
       </div>
       <div class="tri">
         <span class="n">02 — Решения</span>
@@ -109,9 +109,9 @@
   <div class="wrap">
     <div class="sec-head"><h2>Направления группы</h2><span class="num">05 / 12</span></div>
     <div class="mosaic">
-      {% for d in directions %}<a class="mz{% if d.size %} {{ d.size }}{% endif %}{% if d.is_upex %} upex{% endif %}"{% if d.url_name %} href="{% url d.url_name %}"{% elif d.external_url %} href="{{ d.external_url }}"{% endif %}>
+      {% for d in directions %}<a class="mz{% if d.size %} {{ d.size }}{% endif %}{% if d.is_upex %} upex{% endif %}"{% if d.href %} href="{{ d.href }}"{% if d.is_external %} target="_blank" rel="noopener"{% endif %}{% endif %}>
         {% if d.is_upex %}<span class="glow"></span>{% endif %}{% if d.photo %}<img src="{{ d.photo.url }}" alt="{{ d.title }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" />{% else %}<span class="ph-tag">[ фото: {{ d.title|lower }} ]</span>{% endif %}
-        <span class="cap"><h3>{{ d.title }} <em>→</em></h3><p>{{ d.tagline }}</p>{% if d.is_upex and d.external_url %}<span class="ext">перейти на сайт UPEX ↗</span>{% endif %}</span>
+        <span class="cap"><h3>{{ d.title }} <em>→</em></h3><p>{{ d.tagline }}</p>{% if d.is_upex and d.external_url %}<span class="ext">перейти на сайт UPEX ↗</span>{% elif d.is_external %}<span class="ext">каталог и цены на sd2-kmv.ru ↗</span>{% endif %}</span>
       </a>{% endfor %}
     </div>
   </div>

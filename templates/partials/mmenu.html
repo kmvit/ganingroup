@@ -5,7 +5,7 @@
     <a class="burger" style="display:grid" href="#top">✕</a>
   </div>
   <nav>
-    {% for item in nav_main %}{% if item.children %}<div class="grp"><b>{{ item.label }}</b>{% for c in item.children %}<a href="{% if c.url_name %}{% url c.url_name %}{% else %}{{ c.external }}{% endif %}">{{ c.label }}</a>{% endfor %}</div>
+    {% for item in nav_main %}{% if item.children %}<div class="grp"><b>{{ item.label }}</b>{% for c in item.children %}<a href="{{ c.href }}"{% if c.is_external %} target="_blank" rel="noopener"{% endif %}>{{ c.label }}</a>{% endfor %}</div>
     {% else %}<a class="top" href="{% url item.url_name %}">{{ item.label }}</a>
     {% endif %}{% endfor %}
     <div style="display:flex;gap:12px;padding-top:22px"><a class="btn btn--solid" href="#tkp" style="flex:1">Запросить ТКП</a></div>

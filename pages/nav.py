@@ -6,6 +6,7 @@
 Структура ниже — исходная из вёрстки: используется для первичного заполнения
 (команда seed_content) и как запасной вариант, если меню в базе пустое.
 """
+from content.utils import SD2_URLS, safe_reverse
 
 RESHENIYA = [
     ('Застройщикам ЖК', 'reshenie_zastroyshchikam', None),
@@ -16,11 +17,12 @@ RESHENIYA = [
 ]
 
 PRODUKCIYA = [
-    ('Бетон', 'produkciya_beton', None),
-    ('ЖБИ', 'produkciya_zhbi', None),
-    ('Асфальт', 'produkciya_asfalt', None),
+    # каталог и цены — на продающих сайтах направлений
+    ('Бетон ↗', None, SD2_URLS['produkciya_beton']),
+    ('ЖБИ ↗', None, SD2_URLS['produkciya_zhbi']),
+    ('Асфальт ↗', None, SD2_URLS['produkciya_asfalt']),
     ('Опалубка (UPEX) ↗', None, '#'),
-    ('Инертные материалы', 'produkciya_inertnye', None),
+    ('Инертные материалы ↗', None, SD2_URLS['produkciya_inertnye']),
     ('Фасованный цемент', 'produkciya_cement', None),
 ]
 
@@ -67,7 +69,15 @@ NAV_LABELS, NAV_PARENTS = _crumb_tables()
 
 
 def _item(title, url_name, external):
-    return {'label': title, 'url_name': url_name or '', 'external': external or ''}
+    # внешняя ссылка важнее маршрута; убранный маршрут не роняет страницу
+    href = external or safe_reverse(url_name) or '#'
+    return {'label': title, 'url_name': url_name or '', 'external': external or '',
+            'href': href, 'is_external': bool(external)}
+
+
+def _upex_or(external, upex_url):
+    """Пункт UPEX в меню без адреса ('' или '#') берёт его из «Общих данных»."""
+    return upex_url if (upex_url and external in ('', '#')) else external
 
 
 def _from_db(upex_url=''):
@@ -81,7 +91,7 @@ def _from_db(upex_url=''):
 
     def kids(top):
         return [_item(c.title, c.url_name,
-                      upex_url if (upex_url and not c.url_name) else c.external_url)
+                      c.external_url if c.url_name else _upex_or(c.external_url, upex_url))
                 for c in top.children.all() if c.published]
 
     main, footer, mmenu = [], [], []
@@ -104,7 +114,7 @@ def _from_db(upex_url=''):
 def _from_code(upex_url=''):
     """Запасной вариант — структура из вёрстки."""
     def items(rows):
-        return [_item(t, u, upex_url if (upex_url and e) else e) for t, u, e in rows]
+        return [_item(t, u, _upex_or(e, upex_url) if e else e) for t, u, e in rows]
 
     main = [{'key': key, 'label': label, 'url_name': url,
              'children': items(children) if children else None}
@@ -189,11 +199,17 @@ def nav(request):
     upex = site.upex_url
     built = _from_db(upex) or _from_code(upex)
     main, footer, mmenu = built
+    from content.models import Direction
+    sd2 = dict(SD2_URLS)
+    sd2.update({d.url_name: d.external_url for d in
+                Direction.objects.filter(url_name__in=SD2_URLS, published=True)
+                .exclude(external_url='')})
     return {
         'site': site,
         'nav_main': main,
         'nav_footer': footer,
         'nav_mmenu': mmenu,
+        'sd2': sd2,           # разделы sd2-kmv.ru по направлениям — для ссылок в текстах
         'phone': site.phone_link,
         'phone_label': site.phone_main,
         'asset_v': _asset_version(),

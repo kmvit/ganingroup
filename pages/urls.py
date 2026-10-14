@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from django.urls import path
-from django.views.generic import RedirectView
 
 from . import views
 
@@ -8,8 +7,12 @@ urlpatterns = [
     path(p, views.make_page_view(tpl, active, name), name=name)
     for p, name, tpl, active in views.PAGES
 ] + [
-    # карточки товаров убраны — каталог с ценами на sd2-kmv.ru
-    path('produkciya/beton-m350/', RedirectView.as_view(pattern_name='produkciya_beton', permanent=True)),
+    # направления с каталогом и ценами живут на sd2-kmv.ru
+    path('produkciya/beton/', views.to_sd2('produkciya_beton')),
+    path('produkciya/beton-m350/', views.to_sd2('produkciya_beton')),
+    path('produkciya/zhbi/', views.to_sd2('produkciya_zhbi')),
+    path('produkciya/asfalt/', views.to_sd2('produkciya_asfalt')),
+    path('produkciya/inertnye/', views.to_sd2('produkciya_inertnye')),
     path('obekty/<slug:slug>/', views.object_detail, name='obekt'),
     path('sitemap.xml', views.sitemap_xml, name='sitemap'),
     path('robots.txt', views.robots_txt, name='robots'),

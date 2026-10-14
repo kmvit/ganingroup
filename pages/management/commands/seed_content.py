@@ -16,6 +16,7 @@ from django.db import transaction
 from calc.models import ConcreteGrade, DeliveryZone
 from content.assets_seed import ASSET_MAP
 from content.cases import case_for
+from content.utils import SD2_URLS
 from content.models import (CatalogItem, Department, Direction, Document, MapPoint,
                             ObjectPhoto, ObjectStat, ProjectObject, Review, Stat,
                             TeamMember, TimelineEvent, Vacancy)
@@ -288,7 +289,8 @@ class Command(BaseCommand):
             asset = ASSET_MAP.get(title)
             Direction.objects.get_or_create(title=title, defaults=dict(
                 tagline=tagline, url_name=url_name, size=size, is_upex=is_upex,
-                external_url=(s.upex_url if is_upex else ''), order=i * 10,
+                external_url=(s.upex_url if is_upex else SD2_URLS.get(url_name, '')),
+                order=i * 10,
                 show_in_assets=bool(asset),
                 asset_title=(asset[0] if asset else ''),
                 asset_text=(asset[1] if asset else '')))

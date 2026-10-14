@@ -12,7 +12,7 @@
           {% if site.work_hours %}<div style="color:var(--muted)">{{ site.work_hours }}</div>{% endif %}
         </div>{% endif %}
       </div>
-      {% for col in nav_footer %}<div><h4>{{ col.title }}</h4>{% for i in col.items %}<a href="{% if i.url_name %}{% url i.url_name %}{% else %}{{ i.external }}{% endif %}">{{ i.label }}</a>{% endfor %}</div>{% endfor %}
+      {% for col in nav_footer %}<div><h4>{{ col.title }}</h4>{% for i in col.items %}<a href="{{ i.href }}"{% if i.is_external %} target="_blank" rel="noopener"{% endif %}>{{ i.label }}</a>{% endfor %}</div>{% endfor %}
     </div>
     <div class="legal">
       <span>© {{ site.legal_name }}{% if site.copyright_note %}. {{ site.copyright_note }}{% endif %}</span>

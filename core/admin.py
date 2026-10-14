@@ -2,7 +2,6 @@
 """Админка: общие данные, меню и страницы."""
 from django.contrib import admin
 from django.utils.html import format_html
-from django.utils.safestring import mark_safe
 
 from .models import Card, MenuItem, Page, PagePhoto, SiteSettings
 
@@ -132,13 +131,13 @@ PAGE_PHOTO_HINT = {
     'raschet_opalubki': 'Фото слева в блоке «Что вы получаете» (инженер за расчётом).',
     'shef_montazh':     'Фото слева в блоке «Что вы получаете» (шеф-монтаж на площадке).',
     'laboratoriya':     'Фото слева в блоке «Что вы получаете» (лаборатория).',
-    'produkciya_kartochka': 'Главное фото товара. Доп. снимки — в галерее ниже.',
 }
-# Галерея (PagePhoto) есть только у кейса и карточки товара.
-PAGE_GALLERY_SLUGS = {'obekt', 'produkciya_kartochka'}
-# Страницы-каталоги: фото грузятся не сюда, а в «Каталог продукции» и «Направления».
-CATALOG_PAGE_SLUGS = {'produkciya_beton', 'produkciya_zhbi',
-                      'produkciya_asfalt', 'produkciya_inertnye'}
+# Галерея (PagePhoto) есть только у кейса.
+PAGE_GALLERY_SLUGS = {'obekt'}
+# Страницы убраны с сайта (направления ушли на sd2-kmv.ru) — в админке не показываем,
+# записи в базе остаются на случай возврата.
+RETIRED_PAGE_SLUGS = {'produkciya_beton', 'produkciya_zhbi', 'produkciya_asfalt',
+                      'produkciya_inertnye', 'produkciya_kartochka'}
 
 
 @admin.register(Page)
@@ -146,6 +145,9 @@ class PageAdmin(admin.ModelAdmin):
     list_display = ('admin_title', 'h1', 'slug', 'has_seo')
     search_fields = ('admin_title', 'h1', 'subtitle', 'body')
     readonly_fields = ('slug', 'admin_title')
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).exclude(slug__in=RETIRED_PAGE_SLUGS)
 
     def get_inline_instances(self, request, obj=None):
         # плитки — у всех, галерея — только там, где она выводится в вёрстке
@@ -162,17 +164,6 @@ class PageAdmin(admin.ModelAdmin):
         slug = getattr(obj, 'slug', None)
         if slug in PAGE_PHOTO_HINT:
             fs.append(('Фото', {'description': PAGE_PHOTO_HINT[slug], 'fields': ('photo',)}))
-        elif slug in CATALOG_PAGE_SLUGS:
-            # у страниц-каталогов «Фото страницы» не выводится — направляем в нужные разделы
-            fs.append(('Фото', {
-                'description': mark_safe(
-                    'На этой странице фото задаются не здесь: '
-                    'плитки каталога (изделия, марки) — в разделе '
-                    '<b>«Каталог продукции»</b>, а плитка направления на '
-                    'главной и в «Продукции» — в разделе '
-                    '<b>«Направления (продукция)»</b>.'),
-                'fields': (),
-            }))
         fs.append(('SEO — как страница выглядит в поиске', {
             'description': 'Если оставить пустым, поисковик увидит заголовок страницы.',
             'fields': ('seo_title', 'seo_description'),

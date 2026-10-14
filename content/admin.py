@@ -37,7 +37,7 @@ class DirectionAdmin(admin.ModelAdmin, PhotoMixin):
     list_display_links = ('title',)
     fieldsets = (
         (None, {'fields': ('title', 'tagline', 'photo')}),
-        ('Ссылка', {'fields': ('url_name', 'external_url', 'shop_url')}),
+        ('Ссылка', {'fields': ('url_name', 'external_url')}),
         ('Вид плитки', {'fields': ('size', 'is_upex')}),
         ('Блок «Производственные активы» на «О группе»', {
             'description': 'Чтобы не загружать фото второй раз: отметьте галочку — '
@@ -49,7 +49,8 @@ class DirectionAdmin(admin.ModelAdmin, PhotoMixin):
     )
 
 
-@admin.register(CatalogItem)
+# Каталог продукции снят с сайта (каталог и цены — на sd2-kmv.ru), данные в базе сохранены.
+# Вернуть раздел в админку — снова зарегистрировать.
 class CatalogItemAdmin(admin.ModelAdmin, PhotoMixin):
     list_display = ('title', 'preview', 'section', 'chips', 'order', 'published')
     list_editable = ('order', 'published')

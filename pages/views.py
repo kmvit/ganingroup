@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.contrib import messages
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponsePermanentRedirect, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
@@ -8,8 +8,9 @@ from django.views.decorators.http import require_POST
 from .forms import LeadForm, HaulerLeadForm, VacancyApplicationForm
 from .notify import notify_application, notify_hauler, notify_lead
 from calc.models import ConcreteGrade, ConstructionType, DeliveryZone
-from content.models import (CatalogItem, Department, Direction, Document, MapPoint,
+from content.models import (Department, Direction, Document, MapPoint,
                             ProjectObject, Review, Stat, TeamMember, TimelineEvent, Vacancy)
+from content.utils import SD2_URLS
 from core.models import Page, SiteSettings
 
 # (url_path, url_name, шаблон, active-ключ для подсветки меню)
@@ -23,10 +24,6 @@ PAGES = [
     ('resheniya/promyshlennost/',     'reshenie_promyshlennost',      'reshenie_promyshlennost',      'resheniya'),
     ('resheniya/chastnaya-zastroyka/','reshenie_chastnaya_zastroyka', 'reshenie_chastnaya_zastroyka', 'resheniya'),
     ('produkciya/',                   'produkciya',                   'produkciya',                   'produkciya'),
-    ('produkciya/beton/',             'produkciya_beton',             'produkciya_beton',             'produkciya'),
-    ('produkciya/zhbi/',              'produkciya_zhbi',              'produkciya_zhbi',              'produkciya'),
-    ('produkciya/asfalt/',            'produkciya_asfalt',            'produkciya_asfalt',            'produkciya'),
-    ('produkciya/inertnye/',          'produkciya_inertnye',          'produkciya_inertnye',          'produkciya'),
     ('produkciya/cement/',            'produkciya_cement',            'produkciya_cement',            'produkciya'),
     ('uslugi/',                       'uslugi',                       'uslugi',                       'uslugi'),
     ('uslugi/logistika/',             'logistika',                    'logistika',                    'uslugi'),
@@ -71,15 +68,10 @@ def page_extras(slug: str) -> dict:
         return {'vacancies': Vacancy.objects.filter(published=True)}
     if slug == 'produkciya':
         return {'directions': Direction.objects.filter(published=True)}
-    if slug in ('kalkulyator', 'produkciya_beton'):
-        extras = {'grades': ConcreteGrade.objects.filter(published=True),
-                  'zones': DeliveryZone.objects.filter(published=True),
-                  'ctypes': ConstructionType.objects.filter(published=True)}
-        if slug == 'produkciya_beton':
-            extras.update(direction_extras(slug))
-        return extras
-    if slug in ('produkciya_zhbi', 'produkciya_asfalt', 'produkciya_inertnye'):
-        return direction_extras(slug)
+    if slug == 'kalkulyator':
+        return {'grades': ConcreteGrade.objects.filter(published=True),
+                'zones': DeliveryZone.objects.filter(published=True),
+                'ctypes': ConstructionType.objects.filter(published=True)}
     if slug == 'resheniya':
         # плитки хаба берут фото из шапок страниц сегментов (Page.photo),
         # чтобы не загружать фото отдельно — грузится один раз на странице сегмента
@@ -105,15 +97,17 @@ def page_extras(slug: str) -> dict:
     return {}
 
 
-def direction_extras(slug: str) -> dict:
-    """Страница направления: обзор ассортимента без каталога и цен.
+def to_sd2(url_name):
+    """Бывшая страница направления → 301 на его раздел sd2-kmv.ru.
 
-    Каталог с ценами живёт на продающем sd2-kmv.ru (Direction.shop_url),
-    здесь — только что производим и куда идти за ценой, чтобы сайты
-    не дублировали друг друга и не конкурировали в выдаче.
+    Каталог и цены живут на продающем сайте, как опалубка на upex.pro:
+    два сайта одного юрлица на одни «купить»-запросы делят выдачу.
+    Адрес берётся из «Направлений», чтобы правка в админке меняла и редирект.
     """
-    return {'catalog': CatalogItem.objects.filter(published=True, section=slug),
-            'direction': Direction.objects.filter(url_name=slug).first()}
+    def view(request):
+        d = Direction.objects.filter(url_name=url_name).exclude(external_url='').first()
+        return HttpResponsePermanentRedirect(d.external_url if d else SD2_URLS[url_name])
+    return view
 
 
 def breadcrumbs(request, slug=None, current=None, parents=None):

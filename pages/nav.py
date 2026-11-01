@@ -23,6 +23,7 @@ PRODUKCIYA = [
     ('Асфальт ↗', None, SD2_URLS['produkciya_asfalt']),
     ('Опалубка (UPEX) ↗', None, '#'),
     ('Инертные материалы ↗', None, SD2_URLS['produkciya_inertnye']),
+    ('Минеральный порошок', 'produkciya_mineralnyy_poroshok', None),
     ('Фасованный цемент', 'produkciya_cement', None),
 ]
 
@@ -68,11 +69,11 @@ def _crumb_tables():
 NAV_LABELS, NAV_PARENTS = _crumb_tables()
 
 
-def _item(title, url_name, external):
+def _item(title, url_name, external, page=None):
     # внешняя ссылка важнее маршрута; убранный маршрут не роняет страницу
-    href = external or safe_reverse(url_name) or '#'
+    href = page.get_absolute_url() if page else (external or safe_reverse(url_name) or '#')
     return {'label': title, 'url_name': url_name or '', 'external': external or '',
-            'href': href, 'is_external': bool(external)}
+            'href': href, 'is_external': bool(external and not page)}
 
 
 def _upex_or(external, upex_url):
@@ -85,13 +86,13 @@ def _from_db(upex_url=''):
     from core.models import MenuItem
 
     tops = list(MenuItem.objects.filter(parent__isnull=True, published=True)
-                .prefetch_related('children'))
+                .prefetch_related('children__page'))
     if not tops:
         return None
 
     def kids(top):
         return [_item(c.title, c.url_name,
-                      c.external_url if c.url_name else _upex_or(c.external_url, upex_url))
+                      c.external_url if c.url_name else _upex_or(c.external_url, upex_url), c.page)
                 for c in top.children.all() if c.published]
 
     main, footer, mmenu = [], [], []
@@ -105,7 +106,7 @@ def _from_db(upex_url=''):
                 footer.append({'title': top.footer_title or top.title, 'items': children})
             mmenu.append({'title': top.title, 'items': children})
         elif top.show_in_footer:
-            plain.append(_item(top.title, top.url_name, top.external_url))
+            plain.append(_item(top.title, top.url_name, top.external_url, top.page))
     if plain:
         footer.append({'title': COMPANY_COLUMN, 'items': plain})
     return main, footer, mmenu

@@ -169,6 +169,12 @@ nav.main .dd a:hover{background:var(--ink-3);color:var(--white)}
 .mz.upex .glow{position:absolute;right:-70px;bottom:-90px;width:280px;height:280px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,106,0,.38),transparent 70%)}
 .mz.upex .cap p{color:var(--muted)}
 .mz .ext{display:inline-flex;margin-top:10px;font-family:var(--font-m);font-size:12px;letter-spacing:.08em;color:var(--accent)}
+.mineral-content{padding-top:0}
+.mineral-video{width:100%;aspect-ratio:16/9;background:var(--ink-2)}
+.mineral-video iframe{display:block;width:100%;height:100%;border:0}
+.mineral-video video{display:block;width:100%;height:100%;object-fit:contain}
+.mineral-video-link{margin-top:14px}
+.mineral-text{margin-top:36px}
 
 /* ---------- ЦИФРЫ ---------- */
 .stats{border-top:1px solid var(--line-d);border-bottom:1px solid var(--line-d)}

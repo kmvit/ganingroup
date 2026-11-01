@@ -38,6 +38,9 @@ class Direction(Ordered):
     external_url = models.URLField('Внешняя ссылка', blank=True,
                                    help_text='Если задана — плитка ведёт на другой сайт: '
                                              'UPEX → upex.pro, бетон/ЖБИ/асфальт/карьер → sd2-kmv.ru')
+    page = models.ForeignKey('core.Page', verbose_name='Страница продукции', null=True, blank=True,
+                             on_delete=models.SET_NULL, related_name='directions',
+                             help_text='Страница, созданная в админке. Если выбрана, плитка ведёт на неё.')
     size = models.CharField('Размер плитки', max_length=10, default='',
                             choices=[('', 'обычная'), ('big', 'большая'), ('tall', 'высокая')],
                             blank=True)
@@ -67,11 +70,11 @@ class Direction(Ordered):
     @property
     def href(self):
         """Куда ведёт плитка: внешний сайт, иначе внутренняя страница, иначе никуда."""
-        return self.external_url or safe_reverse(self.url_name)
+        return self.page.get_absolute_url() if self.page_id else (self.external_url or safe_reverse(self.url_name))
 
     @property
     def is_external(self):
-        return bool(self.external_url)
+        return bool(self.external_url and not self.page_id)
 
     @property
     def asset_title_display(self):

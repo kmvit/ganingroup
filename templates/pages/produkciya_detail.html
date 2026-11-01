@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page.admin_title }}{% endblock %}
+
+{% block content %}
+<nav class="bc"><div class="wrap"><a href="{% url 'home' %}">Главная</a><i>/</i><a href="{% url 'produkciya' %}">Продукция</a><i>/</i><span>{{ page.admin_title }}</span></div></nav>
+<section class="phero"><div class="wrap"><h1>{{ page.h1|default:page.admin_title }}</h1>{% if page.subtitle %}<p class="sub">{{ page.subtitle }}</p>{% endif %}</div></section>
+
+<section class="mineral-content"><div class="wrap">
+  {% if page.video_file %}
+  <div class="mineral-video"><video controls preload="metadata" playsinline><source src="{{ page.video_file.url }}" type="video/{% if page.video_file.name|slice:'-4:' == '.mp4' %}mp4{% else %}webm{% endif %}">Ваш браузер не поддерживает воспроизведение видео.</video></div>
+  {% elif page.video_embed_url %}
+  <div class="mineral-video"><iframe src="{{ page.video_embed_url }}" title="Видео о минеральном порошке" loading="lazy" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
+  <p class="mineral-video-link"><a href="{{ page.video_url }}" target="_blank" rel="noopener noreferrer">Открыть видео в Google Drive ↗</a></p>
+  {% endif %}
+  {% if page.body %}<div class="prose mineral-text">{{ page.body|linebreaks }}</div>{% endif %}
+</div></section>
+
+<section class="final"><div class="wrap" style="position:relative"><h2>Есть вопросы по продукции?</h2><p>Оставьте заявку или позвоните менеджеру.</p><div class="cta-row"><a class="btn btn--solid" href="#tkp">Запросить ТКП</a><a class="btn btn--line" href="tel:{{ site.phone_link }}">Позвонить</a></div></div></section>
+{% endblock %}

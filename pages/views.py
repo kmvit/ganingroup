@@ -24,6 +24,7 @@ PAGES = [
     ('resheniya/promyshlennost/',     'reshenie_promyshlennost',      'reshenie_promyshlennost',      'resheniya'),
     ('resheniya/chastnaya-zastroyka/','reshenie_chastnaya_zastroyka', 'reshenie_chastnaya_zastroyka', 'resheniya'),
     ('produkciya/',                   'produkciya',                   'produkciya',                   'produkciya'),
+    ('produkciya/mineralnyy-poroshok/', 'produkciya_mineralnyy_poroshok', 'produkciya_detail', 'produkciya'),
     ('produkciya/cement/',            'produkciya_cement',            'produkciya_cement',            'produkciya'),
     ('uslugi/',                       'uslugi',                       'uslugi',                       'uslugi'),
     ('uslugi/logistika/',             'logistika',                    'logistika',                    'uslugi'),
@@ -172,6 +173,15 @@ def make_page_view(template: str, active: str, slug: str):
     return view
 
 
+def product_detail(request, product_slug):
+    page = get_object_or_404(Page, product_slug=product_slug)
+    return render(request, 'pages/produkciya_detail.html', {
+        'active': 'produkciya', 'page': page,
+        'crumbs_jsonld': crumbs_jsonld(breadcrumbs(
+            request, current=page.admin_title, parents=[('Продукция', 'produkciya')])),
+    })
+
+
 # служебные страницы не отдаём поисковикам
 SITEMAP_EXCLUDE = {'policy', 'consent', 'aidentika'}
 
@@ -184,6 +194,8 @@ def sitemap_xml(request):
             if name not in SITEMAP_EXCLUDE]
     locs += [(f'obekty/{o.slug}/', o.updated_at)
              for o in ProjectObject.objects.filter(published=True)]
+    locs += [(f'produkciya/{p.product_slug}/', p.updated_at)
+             for p in Page.objects.exclude(product_slug__isnull=True)]
     items = ''
     for loc, mod in locs:
         stamp = f'<lastmod>{mod.date().isoformat()}</lastmod>' if mod else ''

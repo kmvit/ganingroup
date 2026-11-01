@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """Админка: общие данные, меню и страницы."""
+from django import forms
 from django.contrib import admin
+from django.db.models import Q
 from django.utils.html import format_html
 
 from .models import Card, MenuItem, Page, PagePhoto, SiteSettings
@@ -28,9 +30,15 @@ class MenuChildInline(admin.TabularInline):
     model = MenuItem
     fk_name = 'parent'
     extra = 0
-    fields = ('title', 'url_name', 'external_url', 'order', 'published')
+    fields = ('title', 'page', 'url_name', 'external_url', 'order', 'published')
     verbose_name = 'Подпункт'
     verbose_name_plural = 'Подпункты меню'
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == 'page':
+            kwargs['queryset'] = Page.objects.filter(
+                Q(product_slug__isnull=False) | Q(slug='produkciya_mineralnyy_poroshok'))
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 class CardInline(admin.TabularInline):
@@ -108,13 +116,19 @@ class MenuItemAdmin(admin.ModelAdmin):
     inlines = [MenuChildInline]
     fieldsets = (
         (None, {'fields': ('title', 'parent')}),
-        ('Куда ведёт', {'fields': ('url_name', 'external_url')}),
+        ('Куда ведёт', {'fields': ('page', 'url_name', 'external_url')}),
         ('Показ', {'fields': ('footer_title', 'show_in_footer', 'order', 'published')}),
     )
 
     def get_queryset(self, request):
         # в списке показываем разделы верхнего уровня и подпункты вместе, но сортировкой по дереву
         return super().get_queryset(request).select_related('parent')
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == 'page':
+            kwargs['queryset'] = Page.objects.filter(
+                Q(product_slug__isnull=False) | Q(slug='produkciya_mineralnyy_poroshok'))
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 # «Фото страницы» реально выводится не на всех страницах — только там, где в вёрстке
@@ -142,9 +156,24 @@ RETIRED_PAGE_SLUGS = {'produkciya_beton', 'produkciya_zhbi', 'produkciya_asfalt'
 
 @admin.register(Page)
 class PageAdmin(admin.ModelAdmin):
+    class PageForm(forms.ModelForm):
+        class Meta:
+            model = Page
+            fields = '__all__'
+
+        def clean_product_slug(self):
+            value = self.cleaned_data.get('product_slug')
+            if not self.instance.pk and not value:
+                raise forms.ValidationError('Укажите адрес новой страницы продукции.')
+            if value in {'cement', 'beton', 'beton-m350', 'zhbi', 'asfalt', 'inertnye',
+                         'mineralnyy-poroshok'}:
+                raise forms.ValidationError('Этот адрес уже используется на сайте.')
+            return value
+
+    form = PageForm
     list_display = ('admin_title', 'h1', 'slug', 'has_seo')
     search_fields = ('admin_title', 'h1', 'subtitle', 'body')
-    readonly_fields = ('slug', 'admin_title')
+    readonly_fields = ('slug',)
 
     def get_queryset(self, request):
         return super().get_queryset(request).exclude(slug__in=RETIRED_PAGE_SLUGS)
@@ -158,10 +187,13 @@ class PageAdmin(admin.ModelAdmin):
 
     def get_fieldsets(self, request, obj=None):
         fs = [
-            ('Какая страница', {'fields': ('admin_title', 'slug')}),
+            ('Какая страница', {'fields': ('admin_title', 'product_slug', 'slug')}
+             if obj is None or obj.product_slug else {'fields': ('admin_title', 'slug')}),
             ('Тексты', {'fields': ('h1', 'subtitle', 'body')}),
         ]
         slug = getattr(obj, 'slug', None)
+        if obj is None or obj.product_slug or slug == 'produkciya_mineralnyy_poroshok':
+            fs.append(('Видео', {'fields': ('video_url', 'video_file')}))
         if slug in PAGE_PHOTO_HINT:
             fs.append(('Фото', {'description': PAGE_PHOTO_HINT[slug], 'fields': ('photo',)}))
         fs.append(('SEO — как страница выглядит в поиске', {
@@ -171,10 +203,21 @@ class PageAdmin(admin.ModelAdmin):
         return fs
 
     def has_add_permission(self, request):
-        return False        # набор страниц задан вёрсткой
+        return True
 
     def has_delete_permission(self, request, obj=None):
-        return False
+        return bool(obj and obj.product_slug)
+
+    def get_readonly_fields(self, request, obj=None):
+        return ('slug', 'admin_title') if obj and not obj.product_slug else (
+            ('slug', 'product_slug') if obj else ('slug',))
+
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.slug = f'custom_produkciya_{obj.product_slug.replace("-", "_")}'
+            if not obj.h1:
+                obj.h1 = obj.admin_title
+        super().save_model(request, obj, form, change)
 
     @admin.display(description='SEO заполнено', boolean=True)
     def has_seo(self, obj):

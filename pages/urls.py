@@ -13,6 +13,7 @@ urlpatterns = [
     path('produkciya/zhbi/', views.to_sd2('produkciya_zhbi')),
     path('produkciya/asfalt/', views.to_sd2('produkciya_asfalt')),
     path('produkciya/inertnye/', views.to_sd2('produkciya_inertnye')),
+    path('produkciya/<slug:product_slug>/', views.product_detail, name='product_detail'),
     path('obekty/<slug:slug>/', views.object_detail, name='obekt'),
     path('sitemap.xml', views.sitemap_xml, name='sitemap'),
     path('robots.txt', views.robots_txt, name='robots'),

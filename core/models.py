@@ -7,6 +7,7 @@ from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.templatetags.static import static
 from django.utils.html import strip_tags
+from django.urls import reverse
 
 
 LOGO_EXT = FileExtensionValidator(
@@ -232,6 +233,9 @@ class MenuItem(Ordered):
                                 help_text='Имя URL, например produkciya_beton')
     external_url = models.URLField('Внешняя ссылка', blank=True,
                                    help_text='Если ведёт на другой сайт (UPEX)')
+    page = models.ForeignKey('Page', verbose_name='Страница продукции', null=True, blank=True,
+                             on_delete=models.SET_NULL, related_name='menu_items',
+                             help_text='Выберите страницу, созданную в разделе «Страницы». Для неё не нужен маршрут или внешняя ссылка.')
     footer_title = models.CharField('Заголовок колонки в подвале', max_length=120, blank=True,
                                     help_text='Если пусто — берётся название. '
                                               '«Продукция» в подвале называется «Направления»')
@@ -261,6 +265,9 @@ class Page(models.Model):
 
     slug = models.CharField('Маршрут', max_length=60, unique=True,
                             help_text='Имя URL — менять не нужно')
+    product_slug = models.SlugField('Адрес страницы продукции', max_length=36, unique=True,
+                                    null=True, blank=True,
+                                    help_text='Латинские буквы, цифры и дефис. Например: mineralnyy-poroshok.')
     updated_at = models.DateTimeField('Изменено', auto_now=True,
                                       help_text='Служебное поле: дата в sitemap.xml')
     admin_title = models.CharField('Страница', max_length=120,
@@ -269,6 +276,11 @@ class Page(models.Model):
     subtitle = models.TextField('Подзаголовок / вводный текст', blank=True)
     body = models.TextField('Основной текст', blank=True,
                             help_text='Для текстовых страниц — политика, согласие. Можно с HTML')
+    video_url = models.URLField('Ссылка на видео', blank=True,
+                                help_text='Ссылка на файл Google Drive. Заполните её или загрузите видеофайл ниже.')
+    video_file = models.FileField('Видеофайл', upload_to='pages/video/', blank=True,
+                                  validators=[FileExtensionValidator(allowed_extensions=['mp4', 'webm'])],
+                                  help_text='MP4 или WEBM. Если загружен файл, он показывается вместо ссылки Google Drive.')
     photo = models.ImageField(
         'Фото страницы', upload_to='pages/', blank=True,
         help_text='Главное фото: фон шапки у решений и кейса, фото слева у сервисов, '
@@ -286,9 +298,20 @@ class Page(models.Model):
     def __str__(self):
         return self.admin_title
 
+    def get_absolute_url(self):
+        return (reverse('product_detail', kwargs={'product_slug': self.product_slug})
+                if self.product_slug else reverse(self.slug))
+
     @property
     def gallery(self):
         return self.photos.filter(published=True)
+
+    @property
+    def video_embed_url(self):
+        """Безопасный адрес проигрывателя для ссылки на файл Google Drive."""
+        match = re.fullmatch(r'https://drive\.google\.com/file/d/([\w-]+)/(?:view|preview)/?(?:\?.*)?',
+                             self.video_url or '')
+        return f'https://drive.google.com/file/d/{match.group(1)}/preview' if match else ''
 
     @property
     def title_tag(self):

@@ -276,11 +276,11 @@ class Page(models.Model):
     subtitle = models.TextField('Подзаголовок / вводный текст', blank=True)
     body = models.TextField('Основной текст', blank=True,
                             help_text='Для текстовых страниц — политика, согласие. Можно с HTML')
-    video_url = models.URLField('Ссылка на видео', blank=True,
-                                help_text='Ссылка на файл Google Drive. Заполните её или загрузите видеофайл ниже.')
+    video_url = models.URLField('Ссылка на исходное видео', blank=True,
+                                help_text='Необязательная ссылка на исходный ролик. Для фона шапки загрузите MP4 или WEBM.')
     video_file = models.FileField('Видеофайл', upload_to='pages/video/', blank=True,
                                   validators=[FileExtensionValidator(allowed_extensions=['mp4', 'webm'])],
-                                  help_text='MP4 или WEBM. Если загружен файл, он показывается вместо ссылки Google Drive.')
+                                  help_text='Короткий MP4 или WEBM для немого зацикленного фона шапки.')
     photo = models.ImageField(
         'Фото страницы', upload_to='pages/', blank=True,
         help_text='Главное фото: фон шапки у решений и кейса, фото слева у сервисов, '

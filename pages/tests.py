@@ -37,7 +37,8 @@ class ProductPageTests(TestCase):
             admin_title='Тестовый продукт',
             h1='Тестовый продукт',
             body='Описание продукта',
-            video_url='https://drive.google.com/file/d/abc123/view',
+            video_file='pages/video/test.mp4',
+            photo='pages/test.jpg',
         )
         products = MenuItem.objects.create(title='Продукция', url_name='produkciya')
         MenuItem.objects.create(title=page.admin_title, parent=products, page=page)
@@ -45,7 +46,10 @@ class ProductPageTests(TestCase):
         response = self.client.get(reverse('product_detail', kwargs={'product_slug': page.product_slug}))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Описание продукта')
-        self.assertContains(response, 'https://drive.google.com/file/d/abc123/preview')
+        self.assertContains(response, '<video class="hero-media hero-media-video" autoplay muted loop playsinline', html=False)
+        self.assertContains(response, '/media/pages/video/test.mp4')
+        self.assertContains(response, '/media/pages/test.jpg')
+        self.assertNotContains(response, '<iframe')
         self.assertContains(response, 'href="/produkciya/testovyy-product/"')
 
     def test_missing_custom_page_returns_404(self):

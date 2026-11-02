@@ -193,7 +193,8 @@ class PageAdmin(admin.ModelAdmin):
         ]
         slug = getattr(obj, 'slug', None)
         if obj is None or obj.product_slug or slug == 'produkciya_mineralnyy_poroshok':
-            fs.append(('Видео', {'fields': ('video_url', 'video_file')}))
+            fs.append(('Фон шапки', {'description': 'Загрузите короткое MP4/WEBM для фонового видео. Фото показывается до загрузки видео и на телефонах.',
+                                     'fields': ('video_file', 'photo', 'video_url')}))
         if slug in PAGE_PHOTO_HINT:
             fs.append(('Фото', {'description': PAGE_PHOTO_HINT[slug], 'fields': ('photo',)}))
         fs.append(('SEO — как страница выглядит в поиске', {

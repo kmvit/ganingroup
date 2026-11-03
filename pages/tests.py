@@ -51,6 +51,12 @@ class ProductPageTests(TestCase):
         self.assertContains(response, '/media/pages/test.jpg')
         self.assertNotContains(response, '<iframe')
         self.assertContains(response, 'href="/produkciya/testovyy-product/"')
+        html = response.content.decode()
+        self.assertLess(html.index('<section class="product-hero">'),
+                        html.index('aria-label="Хлебные крошки"'))
+        self.assertLess(html.index('aria-label="Хлебные крошки"'),
+                        html.index('<h1>Тестовый продукт</h1>'))
+        self.assertNotIn('<nav class="bc">', html)
 
     def test_missing_custom_page_returns_404(self):
         response = self.client.get('/produkciya/net-takoy-stranicy/')

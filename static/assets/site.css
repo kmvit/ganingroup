@@ -169,7 +169,7 @@ nav.main .dd a:hover{background:var(--ink-3);color:var(--white)}
 .mz.upex .glow{position:absolute;right:-70px;bottom:-90px;width:280px;height:280px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,106,0,.38),transparent 70%)}
 .mz.upex .cap p{color:var(--muted)}
 .mz .ext{display:inline-flex;margin-top:10px;font-family:var(--font-m);font-size:12px;letter-spacing:.08em;color:var(--accent)}
-.product-hero{height:100svh;min-height:600px;position:relative;display:flex;align-items:flex-end;overflow:hidden}
+.product-hero{height:100svh;min-height:600px;padding:0;position:relative;display:flex;align-items:flex-end;overflow:hidden}
 .product-hero-inner{position:relative;z-index:2;width:100%;padding-block:clamp(120px,18svh,180px) clamp(48px,8svh,92px)}
 .product-crumbs{flex-wrap:wrap;row-gap:4px;line-height:1.6;color:#C7C8C4}
 .product-crumbs::before{flex:none}

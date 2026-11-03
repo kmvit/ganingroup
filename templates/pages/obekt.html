@@ -26,10 +26,10 @@
 </section>
 {% endif %}
 
-{% if object.stats.exists %}
+{% if stats %}
 <section class="stats">
   <div class="wrap"><div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
-    {% for s in object.stats.all %}<div class="stat"><div class="v">{{ s.value }}{% if s.sup %}<sup>{{ s.sup }}</sup>{% endif %}</div><div class="l">{{ s.label }}</div>{% if s.note %}<div class="b">{{ s.note }}</div>{% endif %}</div>{% endfor %}
+    {% for s in stats %}<div class="stat"><div class="v">{{ s.value }}{% if s.sup %}<sup>{{ s.sup }}</sup>{% endif %}</div><div class="l">{{ s.label }}</div>{% if s.note %}<div class="b">{{ s.note }}</div>{% endif %}</div>{% endfor %}
   </div></div>
 </section>
 {% endif %}

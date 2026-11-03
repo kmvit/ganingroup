@@ -1,8 +1,11 @@
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
+from django.apps import apps
+from importlib import import_module
 
 from core.models import MenuItem, Page
+from content.models import ObjectStat, ProjectObject
 
 
 class ProductPageTests(TestCase):
@@ -61,3 +64,34 @@ class ProductPageTests(TestCase):
     def test_missing_custom_page_returns_404(self):
         response = self.client.get('/produkciya/net-takoy-stranicy/')
         self.assertEqual(response.status_code, 404)
+
+
+class ObjectCorrectionTests(TestCase):
+    def test_repurposed_airport_card_has_kislovodsk_details(self):
+        obj = ProjectObject.objects.create(
+            title='Кисловодск ЖК Замковая',
+            slug='rekonstrukciya-aeroporta-mineralnye-vody',
+            city='Минеральные Воды', direction='бетон',
+            summary='24 000 м³ бетона (2024) — непрерывные круглосуточные поставки, стратегический объект региона',
+            headline='24 000 м³ бетона на реконструкцию аэропорта — круглосуточно',
+        )
+        ObjectStat.objects.create(project=obj, value='24', label='тыс м³ аэропорту')
+        import_module('content.migrations.0018_correct_object_cards').correct_cards(apps, None)
+
+        obj.refresh_from_db()
+        self.assertEqual(obj.city, 'Кисловодск')
+        self.assertEqual(obj.slug, 'kislovodsk-zhk-zamkovaya')
+        self.assertFalse(obj.stats.filter(published=True).exists())
+        response = self.client.get(reverse('obekt', args=[obj.slug]))
+        self.assertContains(response, 'ЖК «Замковая» в Кисловодске')
+        self.assertNotContains(response, 'аэропорта')
+        self.assertNotContains(response, 'тыс м³ аэропорту')
+        self.assertEqual(self.client.get('/obekty/rekonstrukciya-aeroporta-mineralnye-vody/').status_code, 404)
+
+    def test_segment_button_is_readable_on_light_background(self):
+        obj = ProjectObject.objects.create(
+            title='Санаторий Русел', slug='sanatoriy-rusel',
+            segments='reshenie_promyshlennost',
+        )
+        response = self.client.get(reverse('reshenie_promyshlennost'))
+        self.assertContains(response, 'class="btn btn--line on-light btn--sm"')

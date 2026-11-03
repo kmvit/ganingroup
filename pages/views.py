@@ -237,6 +237,7 @@ def object_detail(request, slug):
     }
     return render(request, 'pages/obekt.html', {
         'active': 'obekty', 'page': page, 'object': obj, 'headline': headline,
+        'stats': obj.stats.filter(published=True),
         'crumbs_jsonld': crumbs_jsonld(breadcrumbs(
             request, current=obj.title, parents=[('Объекты', 'obekty')])),
     })

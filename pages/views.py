@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
+import json
+
 from django.contrib import messages
 from django.http import HttpResponse, HttpResponsePermanentRedirect, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
+from django.utils.safestring import mark_safe
 from django.views.decorators.http import require_POST
 
 from .forms import LeadForm, HaulerLeadForm, VacancyApplicationForm
@@ -168,6 +171,13 @@ def make_page_view(template: str, active: str, slug: str):
                 request, slug, current=(page.title_tag if page else None))),
         }
         ctx.update(page_extras(slug))
+        if slug == 'home':
+            ctx['jsonld_website'] = mark_safe(json.dumps({
+                '@context': 'https://schema.org',
+                '@type': 'WebSite',
+                'name': 'ГАНИН ГРУПП',
+                'url': f'{request.scheme}://{request.get_host()}/',
+            }, ensure_ascii=False))
         return render(request, f'pages/{template}.html', ctx)
     view.__name__ = f'page_{template}'
     return view

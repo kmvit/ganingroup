@@ -25,6 +25,7 @@
 <link rel="stylesheet" href="{% static 'assets/site.css' %}?v={{ asset_v }}" />
 <link rel="icon" type="image/svg+xml" href="{{ site.logo_mark_url }}" />
 {% if jsonld_org %}<script type="application/ld+json">{{ jsonld_org }}</script>{% endif %}
+{% if jsonld_website %}<script type="application/ld+json">{{ jsonld_website }}</script>{% endif %}
 {% if crumbs_jsonld %}<script type="application/ld+json">{{ crumbs_jsonld }}</script>{% endif %}
 {% include "partials/gtag.html" %}
 </head>

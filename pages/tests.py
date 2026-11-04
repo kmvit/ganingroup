@@ -8,6 +8,40 @@ from core.models import MenuItem, Page
 from content.models import ObjectStat, ProjectObject
 
 
+class HomeSearchMetadataTests(TestCase):
+    def test_homepage_identifies_site_and_website_schema(self):
+        Page.objects.create(
+            slug='home', admin_title='Главная',
+            seo_title='ГАНИН ГРУПП — официальный сайт производственной группы на КМВ',
+            seo_description='ГАНИН ГРУПП — производственная группа на КМВ.',
+        )
+        response = self.client.get(reverse('home'))
+        self.assertContains(response, '<title>ГАНИН ГРУПП — официальный сайт производственной группы на КМВ</title>')
+        self.assertContains(response, 'ГАНИН ГРУПП · Кавказские Минеральные Воды')
+        self.assertContains(response, '"@type": "WebSite"')
+        self.assertContains(response, '"url": "http://testserver/"')
+
+    def test_metadata_migration_preserves_admin_edits(self):
+        old_home_title = 'ГАНИН ГРУПП — бетон, ЖБИ и опалубка | завод на КМВ'
+        home = Page.objects.create(
+            slug='home', admin_title='Главная', seo_title=old_home_title,
+            seo_description='Мой текст из админки',
+        )
+        about = Page.objects.create(
+            slug='o_gruppe', admin_title='О группе',
+            seo_title='Мой заголовок из админки',
+            seo_description='ГАНИН ГРУПП — бренд ЗАО «Стройдеталь-2»: 60+ лет производства на КМВ. Свой карьер, заводы бетона и ЖБИ, лаборатория, автопарк, опалубка UPEX.',
+        )
+        migration = import_module('core.migrations.0012_homepage_search_metadata')
+        migration.update_search_metadata(apps, None)
+        home.refresh_from_db()
+        about.refresh_from_db()
+        self.assertEqual(home.seo_title, migration.NEW['home'][0])
+        self.assertEqual(home.seo_description, 'Мой текст из админки')
+        self.assertEqual(about.seo_title, 'Мой заголовок из админки')
+        self.assertEqual(about.seo_description, migration.NEW['o_gruppe'][1])
+
+
 class ProductPageTests(TestCase):
     def test_admin_can_create_product_page(self):
         user = get_user_model().objects.create_superuser(

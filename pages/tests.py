@@ -41,6 +41,22 @@ class HomeSearchMetadataTests(TestCase):
         self.assertEqual(about.seo_title, 'Мой заголовок из админки')
         self.assertEqual(about.seo_description, migration.NEW['o_gruppe'][1])
 
+    def test_about_heading_migration_preserves_custom_heading(self):
+        old_heading = 'О группе <em style="font-style:normal;color:var(--accent)">ГАНИН ГРУПП</em>'
+        original = Page.objects.create(slug='o_gruppe', admin_title='О группе', h1=old_heading)
+        custom = Page.objects.create(slug='custom_about', admin_title='Другая страница', h1=old_heading)
+        migration = import_module('core.migrations.0013_shorten_about_heading')
+        migration.shorten_about_heading(apps, None)
+        original.refresh_from_db()
+        custom.refresh_from_db()
+        self.assertEqual(original.h1, 'О группе')
+        self.assertEqual(custom.h1, old_heading)
+        original.h1 = 'Мой заголовок из админки'
+        original.save(update_fields=['h1'])
+        migration.shorten_about_heading(apps, None)
+        original.refresh_from_db()
+        self.assertEqual(original.h1, 'Мой заголовок из админки')
+
 
 class ProductPageTests(TestCase):
     def test_admin_can_create_product_page(self):

@@ -95,14 +95,15 @@ class AssistantApiTests(TestCase):
     def test_chat_uses_sources_and_cors(self):
         with patch('assistant.views._model_reply', return_value='Доставляем по согласованию.'):
             response = self.client.post('/assistant/chat/',
-                                        data=json.dumps({'message': 'Доставка бетона 200 км?', 'consent': True}),
+                                        data=json.dumps({'message': 'Доставка бетона 200 км?'}),
                                         content_type='application/json',
                                         HTTP_ORIGIN='https://sd2-kmv.ru')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Access-Control-Allow-Origin'], 'https://sd2-kmv.ru')
         self.assertEqual(response.json()['sources'][0]['url'], 'https://sd2-kmv.ru/dostavka/')
-        self.assertEqual(ChatSession.objects.count(), 1)
-        self.assertEqual(ChatMessage.objects.count(), 2)
+        self.assertNotIn('session_id', response.json())
+        self.assertFalse(ChatSession.objects.exists())
+        self.assertFalse(ChatMessage.objects.exists())
         self.assertEqual(DailyIPUsage.objects.get().count, 1)
 
     @patch('assistant.views.search_pages')
@@ -134,19 +135,11 @@ class AssistantApiTests(TestCase):
         model.assert_not_called()
         search.assert_not_called()
 
-    def test_chat_requires_consent_and_has_shared_daily_limit(self):
+    def test_chat_without_consent_has_shared_daily_limit(self):
         headers = {'HTTP_ORIGIN': 'https://sd2-kmv.ru'}
         body = {'message': 'Доставка бетона 200 км?'}
-        response = self.client.post('/assistant/chat/', data=json.dumps(body),
-                                    content_type='application/json', **headers)
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(ChatMessage.objects.count(), 0)
-        body['consent'] = True
         with patch('assistant.views._model_reply', return_value='Да, по согласованию.'):
-            response = self.client.post('/assistant/chat/', data=json.dumps(body),
-                                        content_type='application/json', **headers)
-            body = {'message': 'Доставка бетона 200 км?', 'session_id': response.json()['session_id']}
-            for _ in range(9):
+            for _ in range(10):
                 response = self.client.post('/assistant/chat/', data=json.dumps(body),
                                             content_type='application/json', **headers)
             self.assertEqual(response.status_code, 200)
@@ -154,22 +147,20 @@ class AssistantApiTests(TestCase):
                                         content_type='application/json', **headers)
         self.assertEqual(response.status_code, 429)
         self.assertEqual(DailyIPUsage.objects.get().count, 10)
-        self.assertEqual(ChatMessage.objects.count(), 20)
+        self.assertFalse(ChatSession.objects.exists())
+        self.assertFalse(ChatMessage.objects.exists())
 
-    def test_old_consent_cannot_continue_dialogue(self):
+    def test_old_session_id_is_ignored_without_storage(self):
         with patch('assistant.views._model_reply', return_value='Ответ'):
             response = self.client.post('/assistant/chat/',
-                                        data=json.dumps({'message': 'Доставка бетона 200 км?', 'consent': True}),
+                                        data=json.dumps({'message': 'Доставка бетона 200 км?',
+                                                         'session_id': '11111111-1111-4111-8111-111111111111'}),
                                         content_type='application/json',
                                         HTTP_ORIGIN='https://sd2-kmv.ru')
-        session_id = response.json()['session_id']
-        ChatSession.objects.filter(pk=session_id).update(consent_version='2026-11-05')
-        response = self.client.post('/assistant/chat/',
-                                    data=json.dumps({'message': 'А сколько стоит?', 'session_id': session_id}),
-                                    content_type='application/json',
-                                    HTTP_ORIGIN='https://sd2-kmv.ru')
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(ChatMessage.objects.count(), 2)
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn('session_id', response.json())
+        self.assertFalse(ChatSession.objects.exists())
+        self.assertFalse(ChatMessage.objects.exists())
 
     def test_other_origin_is_rejected(self):
         response = self.client.post('/assistant/chat/', data='{}', content_type='application/json',
@@ -183,11 +174,11 @@ class AssistantApiTests(TestCase):
                                      content='Фундаментные блоки ФБС доступны в девяти типоразмерах.\nТипоразмеры: ФБС 24-5-6 т и ФБС 12-4-6 т.')
         with patch('assistant.views._model_reply', return_value='Есть девять типоразмеров.') as model:
             response = self.client.post('/assistant/chat/',
-                                        data=json.dumps({'message': 'Есть ли блоки ФБС?', 'consent': True}),
+                                        data=json.dumps({'message': 'Есть ли блоки ФБС?'}),
                                         content_type='application/json', HTTP_ORIGIN='https://sd2-kmv.ru')
             response = self.client.post('/assistant/chat/',
                                         data=json.dumps({'message': 'А какие размеры?',
-                                                         'session_id': response.json()['session_id']}),
+                                                         'previous_question': 'Есть ли блоки ФБС?'}),
                                         content_type='application/json', HTTP_ORIGIN='https://sd2-kmv.ru')
         self.assertEqual(response.status_code, 200)
         args, kwargs = model.call_args
@@ -253,7 +244,7 @@ class AssistantApiTests(TestCase):
                                         HTTP_ORIGIN='https://sd2-kmv.ru')
         self.assertEqual(response.status_code, 429)
         self.assertIn('через минуту', response.json()['error'])
-        self.assertEqual(ChatMessage.objects.count(), 2)
+        self.assertFalse(ChatMessage.objects.exists())
 
     @override_settings(ASSISTANT_API_URL='https://gateway.example', ASSISTANT_API_KEY='test-key')
     def test_model_receives_only_public_topic_words(self):

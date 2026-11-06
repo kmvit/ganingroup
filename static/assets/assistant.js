@@ -3,7 +3,8 @@
   const api = (script?.dataset.api || '/assistant').replace(/\/$/, '');
   const site = script?.dataset.site || 'ganin';
   const policy = site === 'sd2' ? `${location.origin}/soglasie/` : `${location.origin}/consent/`;
-  const recordsChat = site === 'sd2';
+  // Chat questions are answered without storing a dialogue; applications use their own consent form.
+  const recordsChat = false;
   const chatConsent = new URL('/assistant/consent/', new URL(api, location.origin)).href;
   const sessionKey = `gg-assistant-session-v2-${site}`;
   let sessionId = '';

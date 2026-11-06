@@ -198,12 +198,8 @@ def chat(request):
     if not question or len(question) > 1200:
         return _response({'error': 'Напишите вопрос до 1200 символов.'}, 400, origin)
     digest = _ip_digest(request)
+    # Chat replies are ephemeral on both sites. Only application forms persist visitor data.
     session = None
-    if site == 'sd2':
-        session = _get_session(data, site, digest)
-        if not session:
-            return _response({'error': 'Для переписки требуется согласие на запись и обработку сообщений.'}, 403, origin)
-
     session_data = {'session_id': str(session.pk)} if session else {}
 
     def reply(answer, sources=(), status=200):

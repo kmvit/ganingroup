@@ -168,32 +168,51 @@ def chat(request):
     if not question or len(question) > 1200:
         return _response({'error': 'Напишите вопрос до 1200 символов.'}, 400, origin)
     digest = _ip_digest(request)
-    session = _get_session(data, site, digest)
-    if not session:
-        return _response({'error': 'Для переписки требуется согласие на запись и обработку сообщений.'}, 403, origin)
+    session = None
+    if site == 'sd2':
+        session = _get_session(data, site, digest)
+        if not session:
+            return _response({'error': 'Для переписки требуется согласие на запись и обработку сообщений.'}, 403, origin)
+
+    session_data = {'session_id': str(session.pk)} if session else {}
+
+    def reply(answer, sources=(), status=200):
+        sources = list(sources)
+        if session:
+            ChatMessage.objects.create(session=session, role='assistant', text=answer, sources=sources)
+        payload = {'answer': answer, 'sources': sources} if status == 200 else {'error': answer}
+        return _response({**payload, **session_data}, status, origin)
+
     if not _consume_question(digest):
         return _response({'error': 'Лимит — 10 вопросов в сутки с одного IP. Попробуйте завтра или оставьте заявку.',
-                          'session_id': str(session.pk)}, 429, origin)
-    previous = (ChatMessage.objects.filter(session=session, role='user')
-                .order_by('-created_at', '-pk').first())
-    follow_up = bool(previous and len(WORDS.findall(question)) <= 4)
-    previous_question = previous.text if follow_up else ''
-    ChatMessage.objects.create(session=session, role='user', text=question)
+                          **session_data}, 429, origin)
     if PHONE.search(question) or EMAIL.search(question) or SENSITIVE.search(question):
-        answer = 'Не отправляйте личные данные в чат. Для адреса объекта и контактов используйте форму заявки.'
-        ChatMessage.objects.create(session=session, role='assistant', text=answer)
-        return _response({'answer': answer, 'sources': [], 'session_id': str(session.pk)}, origin=origin)
+        return reply('Не отправляйте личные данные в чат. Для адреса объекта и контактов используйте форму заявки.')
     if OFF_TOPIC_REQUEST.search(question):
-        answer = 'Я отвечаю на вопросы о продукции, услугах и работе этих сайтов.'
-        ChatMessage.objects.create(session=session, role='assistant', text=answer)
-        return _response({'answer': answer, 'sources': [], 'session_id': str(session.pk)}, origin=origin)
+        return reply('Я отвечаю на вопросы о продукции, услугах и работе этих сайтов.')
+
+    previous_question = ''
+    if len(WORDS.findall(question)) <= 4:
+        if session:
+            previous = (ChatMessage.objects.filter(session=session, role='user')
+                        .order_by('-created_at', '-pk').first())
+            previous_question = previous.text if previous else ''
+        else:
+            previous = data.get('previous_question')
+            if isinstance(previous, str) and len(previous) <= 1200:
+                previous_question = previous.strip()
+        if any(pattern.search(previous_question) for pattern in (PHONE, EMAIL, SENSITIVE, OFF_TOPIC_REQUEST)):
+            previous_question = ''
+
+    if session:
+        ChatMessage.objects.create(session=session, role='user', text=question)
+    follow_up = bool(previous_question)
     sources = search_pages(f'{previous_question} {question}' if follow_up else question,
                            site=site)
     if not sources:
         answer = ('Я отвечаю на вопросы о продукции, услугах и работе этих сайтов. '
                   'Если ваш вопрос о них, уточните название услуги или товара.')
-        ChatMessage.objects.create(session=session, role='assistant', text=answer)
-        return _response({'answer': answer, 'sources': [], 'session_id': str(session.pk)}, origin=origin)
+        return reply(answer)
     contact = next((s for s in sources if '/kontakty' in s['url']), None)
     if contact and re.search(r'позвон|телефон|адрес|где находится', question, re.I):
         phones = list(dict.fromkeys(re.findall(r'\+7\s*\d{3}\s*\d{3}[-\s]\d{2}[-\s]\d{2}',
@@ -207,11 +226,7 @@ def chat(request):
             if phones:
                 details.append(f'Телефоны отдела продаж: {", ".join(phones)}')
             answer = '. '.join(details) + f'. Подробнее: {contact["url"]}'
-            ChatMessage.objects.create(session=session, role='assistant', text=answer,
-                                       sources=[{'title': contact['title'], 'url': contact['url']}])
-            return _response({'answer': answer,
-                              'sources': [{'title': contact['title'], 'url': contact['url']}],
-                              'session_id': str(session.pk)}, origin=origin)
+            return reply(answer, [{'title': contact['title'], 'url': contact['url']}])
     source_text = ' '.join(f'{s["title"]} {s["excerpt"]}' for s in sources).lower()
     unknown_detail = ((re.search(r'\bкарт\w*', question, re.I)
                        and not re.search(r'\bкарт\w*', source_text))
@@ -219,33 +234,24 @@ def chat(request):
                           and not re.search(r'\bноч\w*', source_text)))
     if unknown_detail:
         answer = 'На страницах сайта не нашёл подтверждения этого условия. Уточните его у менеджера перед заказом.'
-        ChatMessage.objects.create(session=session, role='assistant', text=answer)
-        return _response({'answer': answer, 'sources': [], 'session_id': str(session.pk)}, origin=origin)
+        return reply(answer)
     try:
         answer = _model_reply(question, sources, previous_question=previous_question)
     except ValueError:
         answer = 'В материалах сайта нет точного ответа на этот вопрос. Оставьте заявку — менеджер уточнит условия.'
-        ChatMessage.objects.create(session=session, role='assistant', text=answer)
-        return _response({'answer': answer, 'sources': [], 'session_id': str(session.pk)}, origin=origin)
+        return reply(answer)
     except HTTPError as exc:
         if exc.code == 429:
             answer = 'Сейчас много обращений к ассистенту. Повторите вопрос через минуту или оставьте заявку.'
-            ChatMessage.objects.create(session=session, role='assistant', text=answer)
-            return _response({'error': answer, 'session_id': str(session.pk)}, 429, origin)
+            return reply(answer, status=429)
         log.exception('Assistant model request failed')
         answer = 'Сейчас не удалось получить ответ. Оставьте заявку — менеджер поможет.'
-        ChatMessage.objects.create(session=session, role='assistant', text=answer)
-        return _response({'error': answer, 'session_id': str(session.pk)}, 503, origin)
+        return reply(answer, status=503)
     except (RuntimeError, URLError, TimeoutError, KeyError, IndexError):
         log.exception('Assistant model request failed')
         answer = 'Сейчас не удалось получить ответ. Оставьте заявку — менеджер поможет.'
-        ChatMessage.objects.create(session=session, role='assistant', text=answer)
-        return _response({'error': answer, 'session_id': str(session.pk)}, 503, origin)
-    ChatMessage.objects.create(session=session, role='assistant', text=answer,
-                               sources=[{'title': s['title'], 'url': s['url']} for s in sources])
-    return _response({'answer': answer, 'sources': [
-        {'title': s['title'], 'url': s['url']} for s in sources],
-        'session_id': str(session.pk)}, origin=origin)
+        return reply(answer, status=503)
+    return reply(answer, [{'title': source['title'], 'url': source['url']} for source in sources])
 
 
 @csrf_exempt

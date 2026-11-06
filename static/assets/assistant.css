@@ -39,10 +39,10 @@
 .gg-assistant[data-site="ganin"] .gg-assistant__panel{border:1px solid var(--line-d2);border-radius:0;background:var(--ink-2);box-shadow:0 22px 60px #000b}
 .gg-assistant[data-site="ganin"] .gg-assistant__head{min-height:84px;padding:15px 18px;border-bottom:1px solid var(--line-d2);background:var(--ink);gap:16px}
 .gg-assistant[data-site="ganin"] .gg-assistant__head span{font:600 19px/1.2 var(--font-h);letter-spacing:.04em;text-transform:uppercase}
-.gg-assistant[data-site="ganin"] .gg-assistant__head span::before{content:"ГАНИН ГРУПП / ОНЛАЙН";display:block;margin-bottom:5px;color:var(--accent);font:500 10px/1.2 var(--font-m);letter-spacing:.12em}
+.gg-assistant[data-site="ganin"] .gg-assistant__head span::before{content:"ОНЛАЙН";display:block;margin-bottom:5px;color:var(--accent);font:500 10px/1.2 var(--font-m);letter-spacing:.12em}
 .gg-assistant[data-site="ganin"] .gg-assistant__close{display:grid;place-items:center;flex:none;width:44px;height:44px;border:1px solid var(--line-d2);font:26px/1 var(--font-t)}
 .gg-assistant[data-site="ganin"] .gg-assistant__close:hover{border-color:var(--accent);color:var(--accent)}
-.gg-assistant[data-site="ganin"] .gg-assistant__suggestions{padding:14px 18px;border-color:var(--line-d2)}
+.gg-assistant[data-site="ganin"] .gg-assistant__suggestions{padding:0;border:0}
 .gg-assistant[data-site="ganin"] .gg-assistant__suggestions-label{margin-bottom:9px;color:var(--muted);font:500 10px/1.3 var(--font-m);letter-spacing:.12em;text-transform:uppercase}
 .gg-assistant[data-site="ganin"] .gg-assistant__suggestions-list{gap:7px}
 .gg-assistant[data-site="ganin"] .gg-assistant__suggestions-list button{min-height:36px;padding:7px 10px;border:1px solid var(--line-d2);border-radius:0;background:var(--ink-3);color:var(--paper);font:12px/1.25 var(--font-t)}
@@ -54,7 +54,6 @@
 .gg-assistant[data-site="ganin"] .gg-assistant__actions{padding:10px 18px;border-color:var(--line-d2)}
 .gg-assistant[data-site="ganin"] .gg-assistant__lead-toggle{min-height:44px;padding:8px 0;color:var(--accent-2);font:600 15px/1.2 var(--font-h);letter-spacing:.05em;text-transform:uppercase}
 .gg-assistant[data-site="ganin"] .gg-assistant__lead-toggle:hover{text-decoration:underline;text-underline-offset:4px}
-.gg-assistant[data-site="ganin"] .gg-assistant__chat-consent{padding:4px 18px 12px}
 .gg-assistant[data-site="ganin"] .gg-assistant__agree{gap:9px;color:var(--silver);font:12px/1.45 var(--font-t)}
 .gg-assistant[data-site="ganin"] .gg-assistant__agree input{flex:none;width:16px;height:16px;margin:1px 0 0;accent-color:var(--accent)}
 .gg-assistant[data-site="ganin"] .gg-assistant__form{padding:0 18px 16px}

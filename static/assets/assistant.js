@@ -3,21 +3,24 @@
   const api = (script?.dataset.api || '/assistant').replace(/\/$/, '');
   const site = script?.dataset.site || 'ganin';
   const policy = site === 'sd2' ? `${location.origin}/soglasie/` : `${location.origin}/consent/`;
+  const recordsChat = site === 'sd2';
   const chatConsent = new URL('/assistant/consent/', new URL(api, location.origin)).href;
   const sessionKey = `gg-assistant-session-v2-${site}`;
   let sessionId = '';
-  try { sessionId = sessionStorage.getItem(sessionKey) || ''; } catch (_) {}
+  if (recordsChat) {
+    try { sessionId = sessionStorage.getItem(sessionKey) || ''; } catch (_) {}
+  }
   const root = document.createElement('div');
   root.className = 'gg-assistant';
   root.dataset.site = site;
   root.innerHTML = `
     <button class="gg-assistant__toggle" type="button" aria-expanded="false" aria-controls="gg-assistant-panel">Спросить ассистента</button>
     <section class="gg-assistant__panel" id="gg-assistant-panel" aria-label="Ассистент сайта">
-      <div class="gg-assistant__head"><span>${site === 'ganin' ? 'Ассистент' : 'Помощь по продукции и услугам'}</span><button class="gg-assistant__close" type="button" aria-label="Закрыть">×</button></div>
+      <div class="gg-assistant__head"><span>${site === 'ganin' ? 'Ассистент Ганин групп' : 'Помощь по продукции и услугам'}</span><button class="gg-assistant__close" type="button" aria-label="Закрыть">×</button></div>
       <div class="gg-assistant__suggestions"><span class="gg-assistant__suggestions-label">Можно спросить</span><div class="gg-assistant__suggestions-list"></div></div>
       <div class="gg-assistant__messages" role="log" aria-live="polite"></div>
       <div class="gg-assistant__actions"><button class="gg-assistant__lead-toggle" type="button">Оставить заявку →</button></div>
-      <label class="gg-assistant__agree gg-assistant__chat-consent"><input type="checkbox"><span>Согласен на запись диалога и обработку сообщения для ответа. <a href="${chatConsent}" target="_blank" rel="noopener">Условия обработки</a></span></label>
+      ${recordsChat ? `<label class="gg-assistant__agree gg-assistant__chat-consent"><input type="checkbox"><span>Согласен на запись диалога и обработку сообщения для ответа. <a href="${chatConsent}" target="_blank" rel="noopener">Условия обработки</a></span></label>` : ''}
       <form class="gg-assistant__form"><input class="gg-assistant__input" maxlength="1200" aria-label="Ваш вопрос" placeholder="Напишите ваш вопрос" required><button class="gg-assistant__send" type="submit">Отправить</button></form>
       <form class="gg-assistant__lead"><input class="gg-assistant__input" name="name" maxlength="120" placeholder="Как к вам обращаться *" required><input class="gg-assistant__input" name="phone" type="tel" maxlength="40" placeholder="Телефон *" required><textarea class="gg-assistant__input" name="details" maxlength="1500" rows="2" placeholder="Что нужно, объём, адрес и сроки"></textarea><input name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true"><label class="gg-assistant__agree"><input name="agree" type="checkbox" required><span>Согласен на обработку персональных данных. <a href="${policy}" target="_blank" rel="noopener">Текст согласия</a></span></label><button class="gg-assistant__submit" type="submit">Отправить заявку</button></form>
       <div class="gg-assistant__status" role="status"></div>
@@ -27,7 +30,9 @@
   const toggle = $('.gg-assistant__toggle');
   const messages = $('.gg-assistant__messages');
   const status = $('.gg-assistant__status');
-  const history = [];
+  const chatConsentField = $('.gg-assistant__chat-consent');
+  const chatConsentInput = chatConsentField?.querySelector('input');
+  let previousQuestion = '';
   const path = location.pathname.toLowerCase();
   const questions = (() => {
     if (site === 'sd2') {
@@ -61,16 +66,16 @@
     button.addEventListener('click', () => {
       const input = $('.gg-assistant__form .gg-assistant__input');
       input.value = question;
-      if (!sessionId && !$('.gg-assistant__chat-consent input').checked) {
+      if (chatConsentInput && !sessionId && !chatConsentInput.checked) {
         status.textContent = 'Отметьте согласие и нажмите «Отправить».';
-        $('.gg-assistant__chat-consent input').focus();
+        chatConsentInput.focus();
         return;
       }
       $('.gg-assistant__form').requestSubmit();
     });
     $('.gg-assistant__suggestions-list').append(button);
   }
-  if (sessionId) $('.gg-assistant__chat-consent').hidden = true;
+  if (sessionId) chatConsentField.hidden = true;
   function open(value) {
     root.classList.toggle('is-open', value);
     toggle.setAttribute('aria-expanded', String(value));
@@ -97,6 +102,7 @@
     messages.scrollTop = messages.scrollHeight;
   }
   addMessage('Здравствуйте! Чем могу помочь? Напишите свой вопрос или выберите подсказку.');
+  if (site === 'ganin') messages.append($('.gg-assistant__suggestions'));
   toggle.addEventListener('click', () => open(!root.classList.contains('is-open')));
   $('.gg-assistant__close').addEventListener('click', () => open(false));
   $('.gg-assistant__lead-toggle').addEventListener('click', () => {
@@ -109,7 +115,7 @@
     const input = $('.gg-assistant__form .gg-assistant__input');
     const question = input.value.trim();
     if (!question) return;
-    if (!sessionId && !$('.gg-assistant__chat-consent input').checked) {
+    if (chatConsentInput && !sessionId && !chatConsentInput.checked) {
       status.textContent = 'Сначала подтвердите согласие на запись диалога.';
       return;
     }
@@ -120,16 +126,23 @@
     const button = $('.gg-assistant__send');
     button.disabled = true;
     try {
-      const response = await fetch(`${api}/chat/`, {method: 'POST', headers: {'Content-Type': 'application/json', 'X-Assistant-Site': site}, body: JSON.stringify({message: question, session_id: sessionId || undefined, consent: !sessionId && $('.gg-assistant__chat-consent input').checked})});
+      const payload = {message: question};
+      if (recordsChat) {
+        payload.session_id = sessionId || undefined;
+        payload.consent = !sessionId && chatConsentInput.checked;
+      } else if (previousQuestion) {
+        payload.previous_question = previousQuestion;
+      }
+      const response = await fetch(`${api}/chat/`, {method: 'POST', headers: {'Content-Type': 'application/json', 'X-Assistant-Site': site}, body: JSON.stringify(payload)});
       const data = await response.json();
-      if (data.session_id) {
+      if (recordsChat && data.session_id) {
         sessionId = data.session_id;
         try { sessionStorage.setItem(sessionKey, sessionId); } catch (_) {}
-        $('.gg-assistant__chat-consent').hidden = true;
+        chatConsentField.hidden = true;
       }
       if (!response.ok) throw new Error(data.error || 'Ошибка связи');
       addMessage(data.answer, false, data.sources || []);
-      history.push({role: 'user', content: question}, {role: 'assistant', content: data.answer});
+      if (!recordsChat) previousQuestion = data.sources?.length ? question : '';
       status.textContent = '';
     } catch (error) { status.textContent = error.message || 'Не удалось ответить. Попробуйте позже.'; }
     finally { button.disabled = false; }

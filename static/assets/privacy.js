@@ -30,26 +30,35 @@
 
   if (choice === 'yes') { startAnalytics(); return; }
   if (choice === 'no') return;
-  const banner = document.createElement('div');
+  const banner = document.createElement('aside');
   banner.className = 'site-privacy-choice';
-  banner.setAttribute('role', 'dialog');
-  banner.setAttribute('aria-label', 'Настройки аналитики');
-  const text = document.createElement('span');
-  text.textContent = 'Разрешить аналитику посещений? Сайт работает и без неё. ';
+  banner.setAttribute('aria-label', 'Использование cookie');
+  const copy = document.createElement('div');
+  copy.className = 'site-privacy-choice__copy';
+  const label = document.createElement('span');
+  label.className = 'site-privacy-choice__label';
+  label.textContent = 'Cookie на сайте';
+  const message = document.createElement('p');
+  message.append('Мы используем необходимые cookie для работы сайта. Аналитические cookie включим только с вашего согласия. ');
   const link = document.createElement('a');
   link.href = policy;
   link.textContent = 'Политика обработки данных';
-  banner.append(text, link);
-  for (const [label, value] of [['Разрешить', 'yes'], ['Без аналитики', 'no']]) {
+  message.append(link);
+  copy.append(label, message);
+  const actions = document.createElement('div');
+  actions.className = 'site-privacy-choice__actions';
+  for (const [label, value] of [['Принять', 'yes'], ['Только необходимые', 'no']]) {
     const button = document.createElement('button');
     button.type = 'button';
+    button.dataset.choice = value;
     button.textContent = label;
     button.addEventListener('click', () => {
       try { localStorage.setItem(key, value); } catch (_) {}
       banner.remove();
       if (value === 'yes') startAnalytics();
     });
-    banner.append(button);
+    actions.append(button);
   }
+  banner.append(copy, actions);
   document.body.append(banner);
 })();

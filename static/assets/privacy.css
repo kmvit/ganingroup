@@ -1,4 +1,22 @@
-.site-privacy-choice{position:fixed;left:16px;bottom:16px;z-index:10001;max-width:540px;display:flex;flex-wrap:wrap;align-items:center;gap:9px;padding:14px;border:1px solid #dce4ec;border-radius:12px;background:#fff;color:#182029;box-shadow:0 8px 30px #0004;font:13px/1.45 Inter,Arial,sans-serif}
-.site-privacy-choice a{color:#145bb0}
-.site-privacy-choice button{border:1px solid #2879dc;border-radius:7px;padding:7px 10px;background:#2879dc;color:#fff;cursor:pointer;font:inherit}
-.site-privacy-choice button:last-child{background:#fff;color:#145bb0}
+.site-privacy-choice{
+  position:fixed;inset-inline:0;bottom:0;z-index:10001;
+  display:flex;align-items:center;justify-content:space-between;gap:24px;
+  padding:16px max(var(--gut),calc((100vw - var(--maxw))/2 + var(--gut)));
+  padding-bottom:max(16px,env(safe-area-inset-bottom));
+  border-top:1px solid var(--line-d2);background:#16171A;color:#F2F2F0;
+  box-shadow:0 -8px 30px rgba(0,0,0,.2);font:14px/1.45 var(--font-t);
+}
+.site-privacy-choice__copy{max-width:730px}
+.site-privacy-choice__label{display:block;margin-bottom:3px;color:#C4C4C2;font:10px/1.4 var(--font-m);letter-spacing:.13em;text-transform:uppercase}
+.site-privacy-choice__copy p{margin:0}
+.site-privacy-choice a{color:#FF8A3D;text-decoration:underline;text-underline-offset:3px}
+.site-privacy-choice__actions{display:flex;flex:none;gap:10px}
+.site-privacy-choice button{min-height:44px;padding:10px 16px;border:1px solid #3A3D41;border-radius:2px;color:#F2F2F0;background:transparent;font:600 13px/1.2 var(--font-t);white-space:nowrap;cursor:pointer}
+.site-privacy-choice button[data-choice="yes"]{border-color:#FF6A00;background:#FF6A00;color:#fff}
+.site-privacy-choice button:hover{border-color:#FF8A3D}
+.site-privacy-choice button:focus-visible,.site-privacy-choice a:focus-visible{outline:2px solid #FF8A3D;outline-offset:3px}
+@media(max-width:760px){
+  .site-privacy-choice{align-items:stretch;flex-direction:column;gap:14px;padding:15px 20px max(15px,env(safe-area-inset-bottom))}
+  .site-privacy-choice__actions{width:100%}
+  .site-privacy-choice button{flex:1;white-space:normal}
+}

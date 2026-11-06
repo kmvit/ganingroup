@@ -61,4 +61,17 @@
   }
   banner.append(copy, actions);
   document.body.append(banner);
+  const syncBannerHeight = () => document.documentElement.style.setProperty(
+    '--privacy-banner-height', `${Math.ceil(banner.getBoundingClientRect().height) + 12}px`);
+  syncBannerHeight();
+  const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(syncBannerHeight);
+  observer?.observe(banner);
+  window.addEventListener('resize', syncBannerHeight);
+  banner.addEventListener('click', event => {
+    if (event.target.closest('button[data-choice]')) {
+      observer?.disconnect();
+      window.removeEventListener('resize', syncBannerHeight);
+      document.documentElement.style.removeProperty('--privacy-banner-height');
+    }
+  });
 })();

@@ -3,7 +3,7 @@
   const api = (script?.dataset.api || '/assistant').replace(/\/$/, '');
   const site = script?.dataset.site || 'ganin';
   const policy = site === 'sd2' ? `${location.origin}/soglasie/` : `${location.origin}/consent/`;
-  const chatConsent = new URL('/assistant/consent/', api).href;
+  const chatConsent = new URL('/assistant/consent/', new URL(api, location.origin)).href;
   const sessionKey = `gg-assistant-session-v2-${site}`;
   let sessionId = '';
   try { sessionId = sessionStorage.getItem(sessionKey) || ''; } catch (_) {}

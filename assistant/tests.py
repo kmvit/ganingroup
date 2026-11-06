@@ -9,11 +9,12 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
-from content.models import ProjectObject
+from content.models import CatalogItem, Document, ProjectObject
 from leads.models import Lead
 
 from .knowledge import PageParser, normalized_url, search_pages
 from .models import ChatMessage, ChatSession, DailyIPUsage, KnowledgePage
+from .site_tools import execute_tool
 from .views import _model_reply
 
 
@@ -39,6 +40,54 @@ class KnowledgeTests(TestCase):
         result = search_pages('Доставка бетона 200 км')
         self.assertEqual(result[0]['url'], 'https://sd2-kmv.ru/dostavka/')
         self.assertIsNone(normalized_url('https://sd2-kmv.ru/', 'https://evil.example/', 'sd2-kmv.ru'))
+
+    def test_model_cannot_choose_another_site_or_read_unlisted_data(self):
+        for site, function in (
+            ('sd2', {'name': 'search_public_pages', 'arguments': '{"query":"бетон","site":"ganin"}'}),
+            ('sd2', {'name': 'read_public_catalog', 'arguments': '{"dataset":"projects"}'}),
+            ('ganin', {'name': 'read_public_catalog', 'arguments': '{"dataset":"leads"}'}),
+        ):
+            with self.subTest(site=site, function=function):
+                result, sources = execute_tool(site, function)
+                self.assertIn('error', result)
+                self.assertEqual(sources, [])
+
+    def test_product_lookup_prefers_sd2_and_uses_local_reference_as_fallback(self):
+        CatalogItem.objects.create(section='produkciya_zhbi', title='Локальные кольца КС', chips='КС15')
+        CatalogItem.objects.create(section='produkciya_zhbi', title='Скрытое изделие', published=False)
+        product_url = 'https://sd2-kmv.ru/zhelezobeton/cena-na-FBS-bloki-fundamentnye'
+        KnowledgePage.objects.create(site='sd2', url=product_url, title='Блоки ФБС',
+                                     content='ФБС 24-5-6: длина 2380 мм.')
+        KnowledgePage.objects.create(site='sd2', url='https://sd2-kmv.ru/kontakty', title='Контакты ФБС',
+                                     content='Страница вне каталога.')
+        function = {
+            'name': 'read_product_catalog', 'arguments': '{"category":"precast","query":"ФБС"}',
+        }
+        result, sources = execute_tool('ganin', function)
+        self.assertFalse(result['truncated'])
+        self.assertEqual(sources[0]['url'], product_url)
+        self.assertIn('2380 мм', sources[0]['excerpt'])
+        self.assertNotIn('Локальные кольца КС', str(result))
+        self.assertNotIn('Страница вне каталога', str(result))
+        KnowledgePage.objects.filter(url=product_url).delete()
+        result, sources = execute_tool('ganin', function)
+        self.assertIn('Локальные кольца КС', sources[0]['excerpt'])
+        self.assertNotIn('Скрытое изделие', str(result))
+
+    def test_document_lookup_returns_public_download_links(self):
+        Document.objects.create(title='Реквизиты', file='docs/details.pdf')
+        Document.objects.create(title='Черновик', published=False, file='docs/draft.pdf')
+        _, sources = execute_tool('ganin', {
+            'name': 'read_public_catalog', 'arguments': '{"dataset":"documents"}',
+        })
+        self.assertIn('https://ganin-group.ru/media/docs/details.pdf', [entry['url'] for entry in sources])
+        self.assertNotIn('Черновик', [entry['title'] for entry in sources])
+
+    def test_html_index_keeps_table_columns_separate(self):
+        parser = PageParser()
+        parser.feed('<table><tr><th>Марка</th>\n  <th>Класс</th></tr>'
+                    '<tr><td>М300<br>П3</td>\n  <td>В22,5</td></tr></table>')
+        self.assertIn('М300 / П3 | В22,5', ''.join(parser.text))
 
     def test_general_directions_do_not_return_careers(self):
         KnowledgePage.objects.create(site='ganin', url='https://ganin-group.ru/kariera/',
@@ -93,7 +142,10 @@ class AssistantApiTests(TestCase):
                                      content='Возим бетон в пункты более 200 км от завода по согласованию с диспетчерской.')
 
     def test_chat_uses_sources_and_cors(self):
-        with patch('assistant.views._model_reply', return_value='Доставляем по согласованию.'):
+        with patch('assistant.views._model_reply', return_value=(
+            'Доставляем по согласованию.',
+            [{'title': 'Доставка бетона', 'url': 'https://sd2-kmv.ru/dostavka/'}],
+        )):
             response = self.client.post('/assistant/chat/',
                                         data=json.dumps({'message': 'Доставка бетона 200 км?'}),
                                         content_type='application/json',
@@ -107,37 +159,49 @@ class AssistantApiTests(TestCase):
         self.assertFalse(DailyIPUsage.objects.exists())
 
     @override_settings(ASSISTANT_API_URL='https://gateway.example', ASSISTANT_API_KEY='test-key')
-    def test_catalog_and_complete_public_index_reach_model(self):
+    def test_model_requests_only_needed_catalog_data(self):
         ProjectObject.objects.update(published=False)
         obj = ProjectObject.objects.create(title='ЖК «Замковая»', city='Кисловодск')
         ProjectObject.objects.create(title='Черновик проекта', published=False)
         KnowledgePage.objects.create(site='ganin', url='https://ganin-group.ru/uslugi/laboratoriya/',
                                      title='Лаборатория', content='Испытание прочности бетона.')
-        KnowledgePage.objects.create(site='ganin', url='https://ganin-group.ru/kontakty/',
-                                     title='Контакты', content='АдресРоссия, Пятигорск, Черкесское шоссе, 2.')
-        gateway_answer = BytesIO(b'{"choices":[{"message":{"content":"Answer"}}]}')
+        tool_call = {
+            'id': 'catalog-1', 'type': 'function',
+            'function': {'name': 'read_public_catalog', 'arguments': '{"dataset":"projects"}'},
+        }
+        responses = [
+            {'role': 'assistant', 'content': None, 'tool_calls': [tool_call]},
+            {'role': 'assistant', 'content': 'Кисловодск — 1 объект.'},
+        ]
 
-        with patch('assistant.views.urlopen', return_value=gateway_answer) as gateway:
+        def gateway_response(request, timeout):
+            requests.append(json.loads(request.data))
+            return BytesIO(json.dumps({'choices': [{'message': responses.pop(0)}]}).encode())
+
+        requests = []
+        with patch('assistant.views.urlopen', side_effect=gateway_response):
             response = self.client.post('/assistant/chat/',
                                         data=json.dumps({'message': 'В каком городе больше всего ваших объектов?'}),
                                         content_type='application/json',
                                         HTTP_ORIGIN='https://ganin-group.ru')
         self.assertEqual(response.status_code, 200)
-        messages = json.loads(gateway.call_args.args[0].data)['messages']
-        self.assertIn('в каком городе больше всего ваших объектов?', messages[1]['content'])
-        context = messages[0]['content']
-        self.assertIn('Кисловодск — 1', context)
-        self.assertIn('https://ganin-group.ru' + reverse('obekt', args=[obj.slug]), context)
-        self.assertIn('Испытание прочности бетона.', context)
-        self.assertIn('Черкесское шоссе, 2.', context)
-        self.assertNotIn('Черновик проекта', context)
-        self.assertNotIn('https://sd2-kmv.ru', context)
+        first = requests[0]['messages']
+        self.assertIn('в каком городе больше всего ваших объектов?', first[1]['content'])
+        self.assertNotIn('ЖК «Замковая»', first[0]['content'])
+        result = requests[1]['messages'][-1]
+        self.assertEqual(result['tool_call_id'], 'catalog-1')
+        self.assertIn('Кисловодск — 1', result['content'])
+        self.assertNotIn('Испытание прочности бетона.', result['content'])
+        self.assertNotIn('Черновик проекта', result['content'])
+        self.assertEqual(response.json()['sources'], [{
+            'title': obj.title, 'url': 'https://ganin-group.ru' + reverse('obekt', args=[obj.slug]),
+        }])
 
     @override_settings(ASSISTANT_DAILY_LIMIT_ENABLED=True)
     def test_chat_without_consent_has_shared_daily_limit(self):
         headers = {'HTTP_ORIGIN': 'https://sd2-kmv.ru'}
         body = {'message': 'Доставка бетона 200 км?'}
-        with patch('assistant.views._model_reply', return_value='Да, по согласованию.'):
+        with patch('assistant.views._model_reply', return_value=('Да, по согласованию.', [])):
             for _ in range(10):
                 response = self.client.post('/assistant/chat/', data=json.dumps(body),
                                             content_type='application/json', **headers)
@@ -150,7 +214,7 @@ class AssistantApiTests(TestCase):
         self.assertFalse(ChatMessage.objects.exists())
 
     def test_old_session_id_is_ignored_without_storage(self):
-        with patch('assistant.views._model_reply', return_value='Ответ'):
+        with patch('assistant.views._model_reply', return_value=('Ответ', [])):
             response = self.client.post('/assistant/chat/',
                                         data=json.dumps({'message': 'Доставка бетона 200 км?',
                                                          'session_id': '11111111-1111-4111-8111-111111111111'}),
@@ -171,7 +235,7 @@ class AssistantApiTests(TestCase):
                                      url='https://sd2-kmv.ru/zhelezobeton/cena-na-FBS-bloki-fundamentnye',
                                      title='Блоки ФБС',
                                      content='Фундаментные блоки ФБС доступны в девяти типоразмерах.\nТипоразмеры: ФБС 24-5-6 т и ФБС 12-4-6 т.')
-        with patch('assistant.views._model_reply', return_value='Есть девять типоразмеров.') as model:
+        with patch('assistant.views._model_reply', return_value=('Есть девять типоразмеров.', [])) as model:
             response = self.client.post('/assistant/chat/',
                                         data=json.dumps({'message': 'Есть ли блоки ФБС?'}),
                                         content_type='application/json', HTTP_ORIGIN='https://sd2-kmv.ru')
@@ -224,12 +288,12 @@ class AssistantApiTests(TestCase):
 
         def fake_urlopen(request, timeout):
             captured.append(json.loads(request.data))
-            return BytesIO(b'{"choices":[{"message":{"content":"Answer"}}]}')
+            return BytesIO(b'{"choices":[{"message":{"role":"assistant","content":"Answer"}}]}')
 
         sources = [{'title': 'Доставка бетона', 'url': 'https://sd2-kmv.ru/dostavka/',
                     'excerpt': 'Возим бетон в Кисловодск по согласованию.'}]
         with patch('assistant.views.urlopen', fake_urlopen):
-            self.assertEqual(_model_reply('Я Иван, нужен бетон в Кисловодск', sources), 'Answer')
+            self.assertEqual(_model_reply('Я Иван, нужен бетон в Кисловодск', sources, site='sd2'), ('Answer', []))
         sent = json.dumps(captured, ensure_ascii=False)
         self.assertNotIn('Иван', sent)
         self.assertIn('Кисловодск'.lower(), sent.lower())
@@ -238,7 +302,7 @@ class AssistantApiTests(TestCase):
         sources = [{'title': 'Доставка бетона', 'url': 'https://sd2-kmv.ru/dostavka/',
                     'excerpt': 'Миксеры на 3, 5 и 7 м³. Есть автобетононасосы.'}]
         with patch('assistant.views.urlopen', fake_urlopen):
-            _model_reply('Какие объёмы миксеров и есть ли бетононасос?', sources)
+            _model_reply('Какие объёмы миксеров и есть ли бетононасос?', sources, site='sd2')
         topic = captured[0]['messages'][1]['content']
         self.assertIn('миксеры', topic)
         self.assertIn('автобетононасосы', topic)
@@ -247,7 +311,7 @@ class AssistantApiTests(TestCase):
         sources = [{'title': 'Бетон — цена за куб', 'url': 'https://sd2-kmv.ru/cena-betona-s-dostavkoj',
                     'excerpt': 'Цена бетона зависит от марки, объёма и адреса доставки.'}]
         with patch('assistant.views.urlopen', fake_urlopen):
-            _model_reply('А сколько стоит?', sources, previous_question='Какой минимальный заказ бетона?')
+            _model_reply('А сколько стоит?', sources, site='sd2', previous_question='Какой минимальный заказ бетона?')
         topic = captured[0]['messages'][1]['content']
         self.assertIn('цена', topic)
         self.assertIn('бетон', topic)

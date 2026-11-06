@@ -6,16 +6,27 @@ from html.parser import HTMLParser
 from urllib.parse import urldefrag, urljoin, urlparse
 from urllib.request import Request, urlopen
 
+from django.db.models import Q
 from django.utils import timezone
 from django.urls import reverse
+from django.utils.html import strip_tags
 
-from calc.models import DeliveryZone
-from content.models import ProjectObject
+from calc.models import ConcreteGrade, DeliveryZone
+from content.models import CatalogItem, Direction, Document, ProjectObject, Vacancy
+from content.utils import SD2_URLS
 
 from .models import KnowledgePage
 
 ROOTS = {'ganin': 'https://ganin-group.ru/', 'sd2': 'https://sd2-kmv.ru/'}
-FULL_CONTEXT_CHAR_LIMIT = 150_000
+PRODUCT_SECTIONS = {
+    'concrete': 'produkciya_beton', 'precast': 'produkciya_zhbi',
+    'asphalt': 'produkciya_asfalt', 'aggregates': 'produkciya_inertnye',
+}
+GANIN_PRODUCT_ROUTES = {
+    'cement': ('produkciya_cement',),
+    'mineral_powder': ('produkciya_mineralnyy_poroshok',),
+    'formwork': ('raschet_opalubki', 'shef_montazh'),
+}
 SKIP_PREFIXES = ('/admin/', '/zayavka/', '/assistant/', '/static/', '/media/')
 WORDS = re.compile(r'[а-яёa-z0-9]{3,}', re.I)
 STOP_WORDS = {'какие', 'какую', 'какой', 'сколько', 'есть', 'ли', 'где', 'куда', 'как', 'что', 'она',
@@ -36,24 +47,24 @@ def project_url(slug):
     return urljoin(ROOTS['ganin'], reverse('obekt', args=[slug]))
 
 
-def structured_knowledge(site):
-    """Give the model complete public datasets that fit alongside the page excerpts."""
-    if site != 'ganin':
-        return []
+def delivery_knowledge():
     zones = list(DeliveryZone.objects.filter(published=True).values_list('title', flat=True))
+    return [{
+        'site': 'ganin', 'title': 'Зоны доставки бетона',
+        'url': urljoin(ROOTS['ganin'], reverse('logistika')),
+        'excerpt': ('Населённые пункты из справочника доставки бетона:\n'
+                    + ('\n'.join(zones) or 'Зоны не указаны.')
+                    + '\nДля остальных населённых пунктов условия уточняются отдельно.'),
+    }]
+
+
+def project_knowledge():
     objects = list(ProjectObject.objects.filter(published=True).values('title', 'slug', 'city', 'summary'))
     cities = Counter(obj['city'].strip() for obj in objects if obj['city'].strip())
     city_counts = ', '.join(f'{city} — {count}' for city, count in cities.most_common()) or 'города не указаны'
     return [
         {
-            'site': site, 'title': 'Зоны доставки бетона',
-            'url': urljoin(ROOTS[site], reverse('logistika')),
-            'excerpt': ('Населённые пункты из справочника доставки бетона:\n'
-                        + ('\n'.join(zones) or 'Зоны не указаны.')
-                        + '\nДля остальных населённых пунктов условия уточняются отдельно.'),
-        },
-        {
-            'site': site, 'title': 'Итоги по опубликованным объектам',
+            'site': 'ganin', 'title': 'Итоги по опубликованным объектам',
             'url': '',
             'excerpt': (f'Всего опубликовано карточек: {len(objects)}. По указанным городам: {city_counts}. '
                         f'Без указания города: {len(objects) - sum(cities.values())}. '
@@ -61,11 +72,104 @@ def structured_knowledge(site):
                         'Отдельного статуса завершения строительства в каталоге нет.'),
         },
         *[
-            {'site': site, 'title': obj['title'], 'url': project_url(obj['slug']),
+            {'site': 'ganin', 'title': obj['title'], 'url': project_url(obj['slug']),
              'excerpt': f'Город: {obj["city"].strip() or "не указан"}. {obj["summary"]}'}
             for obj in objects
         ],
     ]
+
+
+def product_directions(formwork_only=False):
+    directions = Direction.objects.filter(published=True).select_related('page')
+    if formwork_only:
+        directions = directions.filter(is_upex=True)
+    entries = []
+    for row in directions:
+        href = row.href
+        if row.is_upex or row.url_name in SD2_URLS or href.startswith('/produkciya/'):
+            entries.append({'site': 'ganin', 'title': row.title,
+                            'url': urljoin(ROOTS['ganin'], href) if href else '',
+                            'excerpt': row.tagline})
+    return entries
+
+
+def product_reference(section):
+    section_title = dict(CatalogItem.SECTIONS)[section]
+    rows = CatalogItem.objects.filter(published=True, section=section).values_list('title', 'chips')
+    lines = [f'{title} — {chips}' if chips else title for title, chips in rows]
+    if section == PRODUCT_SECTIONS['concrete']:
+        grades = ConcreteGrade.objects.filter(published=True).values_list('title', 'grade_class', 'note')
+        lines.extend(' · '.join(filter(None, row)) for row in grades)
+    if not lines:
+        return []
+    return [{
+        'site': 'ganin', 'title': f'Справочные позиции ГАНИН — {section_title}', 'url': SD2_URLS[section],
+        'excerpt': ('Позиции локального справочника. Текущий ассортимент и характеристики сверяй '
+                    'с опубликованным каталогом СД2. Доступность и цены этот справочник не подтверждает.\n'
+                    + '\n'.join(lines)),
+    }]
+
+
+def product_knowledge(site, category, query=''):
+    if category == 'overview' and site == 'ganin':
+        return product_directions()
+    if category in GANIN_PRODUCT_ROUTES:
+        if site != 'ganin':
+            return []
+        urls = [urljoin(ROOTS[site], reverse(route)) for route in GANIN_PRODUCT_ROUTES[category]]
+        entries = product_directions(formwork_only=True) if category == 'formwork' else []
+        entries.extend(_indexed_entry(page) for page in KnowledgePage.objects.filter(
+            site=site, url__in=urls, fetched_at__gte=timezone.now() - timedelta(days=7)))
+        return entries
+    sections = PRODUCT_SECTIONS.values() if category == 'overview' else [PRODUCT_SECTIONS[category]]
+    pages = KnowledgePage.objects.filter(site='sd2', fetched_at__gte=timezone.now() - timedelta(days=7))
+    urls = [SD2_URLS[section] for section in sections]
+    main_pages = pages.filter(url__in=[variant for url in urls for variant in (url, url + '/')])
+    entries = [
+        {'site': 'sd2', 'title': page.title, 'url': page.url,
+         'excerpt': page.content if category != 'overview' else 'Раздел каталога СД2'}
+        for page in main_pages
+    ]
+    if category == 'precast':
+        details = list(pages.filter(url__startswith=ROOTS['sd2'] + 'zhelezobeton/'))
+        terms = _terms(query)
+        matching = sorted((page for page in details if terms & _terms(page.title)),
+                          key=lambda page: len(terms & _terms(page.title)), reverse=True)
+        if matching:
+            entries = [_indexed_entry(page) for page in matching[:3]] + entries
+        else:
+            entries.extend(_indexed_entry(page, 'Карточка изделия ЖБИ') for page in details)
+    if not entries and site == 'ganin':
+        entries.extend(product_reference(PRODUCT_SECTIONS[category]))
+    return entries
+
+
+def _indexed_entry(page, excerpt=None):
+    return {'site': page.site, 'title': page.title, 'url': page.url,
+            'excerpt': page.content if excerpt is None else excerpt}
+
+
+def document_knowledge():
+    entries = []
+    for document in Document.objects.filter(published=True):
+        link = urljoin(ROOTS['ganin'], document.file.url) if document.file else ''
+        entries.append({
+            'site': 'ganin', 'title': document.title, 'url': link,
+            'excerpt': ' · '.join(filter(None, (document.kind, strip_tags(document.summary))))
+                       or 'Опубликованный документ ГАНИН ГРУПП.',
+        })
+    return entries
+
+
+def vacancy_knowledge():
+    url = urljoin(ROOTS['ganin'], reverse('kariera'))
+    return [
+        {'site': 'ganin', 'title': row.title, 'url': url,
+         'excerpt': ' · '.join(strip_tags(value) for value in
+                               (row.kind, row.salary, row.summary, row.description) if value)}
+        for row in Vacancy.objects.filter(published=True)
+    ] or [{'site': 'ganin', 'title': 'Вакансии ГАНИН ГРУПП', 'url': url,
+           'excerpt': 'Сейчас на сайте нет опубликованных вакансий.'}]
 
 
 def _key(word):
@@ -91,18 +195,22 @@ def matches_knowledge(question, entries):
     return any(terms & _terms(f'{entry["title"]} {entry["excerpt"]}') for entry in entries)
 
 
-def site_knowledge(question, site):
-    """Use the whole public index while it fits the request budget."""
-    public_data = structured_knowledge(site)
-    pages = [
-        {'site': site, 'title': page.title, 'url': page.url, 'excerpt': page.content}
-        for page in KnowledgePage.objects.filter(
-            site=site, fetched_at__gte=timezone.now() - timedelta(days=7)).order_by('url')
-    ]
+def question_vocabulary(question, site):
+    """Read public terms locally to filter the visitor's question."""
+    public_data = []
+    if site == 'ganin':
+        public_data = delivery_knowledge() + project_knowledge() + product_directions()
+        public_data += document_knowledge() + vacancy_knowledge()
+        for section in PRODUCT_SECTIONS.values():
+            public_data.extend(product_reference(section))
+    sites = Q(site=site)
+    if site == 'ganin':
+        product_urls = [variant for url in SD2_URLS.values() for variant in (url, url + '/')]
+        sites |= Q(site='sd2') & (Q(url__in=product_urls)
+                                | Q(url__startswith=ROOTS['sd2'] + 'zhelezobeton/'))
+    pages = [_indexed_entry(page) for page in KnowledgePage.objects.filter(
+        sites, fetched_at__gte=timezone.now() - timedelta(days=7)).order_by('url')]
     entries = public_data + pages
-    if sum(len(entry['excerpt']) + len(entry['title']) + len(entry['url'])
-           for entry in entries) > FULL_CONTEXT_CHAR_LIMIT:
-        entries = public_data + search_pages(question, site=site)
     return entries if matches_knowledge(question, entries) else []
 
 
@@ -111,6 +219,8 @@ class PageParser(HTMLParser):
         super().__init__(convert_charrefs=True)
         self.skip = 0
         self.in_title = False
+        self.in_row = False
+        self.in_cell = False
         self.title = []
         self.text = []
         self.links = []
@@ -123,7 +233,13 @@ class PageParser(HTMLParser):
             self.in_title = True
         if tag == 'a' and attrs.get('href'):
             self.links.append(attrs['href'])
-        if tag in ('p', 'h1', 'h2', 'h3', 'li', 'tr', 'section', 'article', 'br'):
+        if tag == 'tr':
+            self.in_row = True
+        if tag in ('td', 'th'):
+            self.in_cell = True
+        if tag == 'br' and self.in_cell:
+            self.text.append(' / ')
+        elif tag in ('p', 'h1', 'h2', 'h3', 'li', 'tr', 'section', 'article', 'br'):
             self.text.append('\n')
 
     def handle_endtag(self, tag):
@@ -131,12 +247,21 @@ class PageParser(HTMLParser):
             self.skip = max(0, self.skip - 1)
         if tag == 'title':
             self.in_title = False
+        if tag == 'tr':
+            self.in_row = False
+        if tag in ('td', 'th'):
+            self.in_cell = False
+            if not self.skip:
+                self.text.append(' | ')
 
     def handle_data(self, data):
         if self.in_title:
             self.title.append(data)
         if not self.skip:
-            self.text.append(data)
+            if not self.in_row:
+                self.text.append(data)
+            elif self.in_cell:
+                self.text.append(re.sub(r'\s+', ' ', data))
 
 
 def normalized_url(base, href, host):

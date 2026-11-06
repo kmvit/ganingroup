@@ -34,7 +34,8 @@ OFF_TOPIC_REQUEST = re.compile(r'\b(?:напиши\s+(?:стих|рассказ)
 OUTSIDE_SITE_REPLY = 'Я отвечаю только на вопросы о продукции, услугах и работе этих сайтов.'
 DAILY_QUESTION_LIMIT = 15
 MAX_CONTEXT_QUESTIONS = 5
-CONSENT_VERSION = '2026-11-06'
+RECORDING_VERSION = 'recording-v1'
+REDACTED_MESSAGE = '[Личные данные скрыты]'
 # Fixed vocabulary preserves question structure without sending visitor text.
 QUESTION_WORDS = set(
     'а без в во вы ваши ваших где до за и из как какие какой каком каких какую когда кто куда ли на не '
@@ -99,18 +100,14 @@ def _consume_question(digest):
                 .update(count=F('count') + 1))
 
 
-def _get_session(data, site, digest):
-    raw_id = data.get('session_id')
+def _get_session(raw_id, site, digest):
     if raw_id:
         try:
             session_id = uuid.UUID(str(raw_id))
         except (ValueError, TypeError):
             return None
         return ChatSession.objects.filter(pk=session_id, site=site, ip_digest=digest,
-                                          consent_version=CONSENT_VERSION).first()
-    if data.get('consent') is True:
-        return ChatSession.objects.create(site=site, ip_digest=digest,
-                                          consent_version=CONSENT_VERSION)
+                                          consent_version=RECORDING_VERSION).first()
     return None
 
 
@@ -252,33 +249,35 @@ def chat(request):
     question = data.get('message', '').strip() if data and isinstance(data.get('message'), str) else ''
     if not question or len(question) > 1200:
         return _response({'error': 'Напишите вопрос до 1200 символов.'}, 400, origin)
-    # Chat replies are ephemeral on both sites. Only application forms persist visitor data.
-    session = None
-    session_data = {'session_id': str(session.pk)} if session else {}
+    digest = _ip_digest(request)
+    if settings.ASSISTANT_DAILY_LIMIT_ENABLED and not _consume_question(digest):
+        return _response({'error': f'Лимит — {DAILY_QUESTION_LIMIT} вопросов в сутки с одного IP. '
+                                   'Попробуйте завтра или оставьте заявку.'}, 429, origin)
+    session = _get_session(data.get('session_id'), site, digest)
+    if session is None:
+        session = ChatSession.objects.create(site=site, ip_digest=digest,
+                                             consent_version=RECORDING_VERSION, consent_at=None)
 
     def reply(answer, sources=(), status=200):
         sources = list(sources)
-        if session:
-            ChatMessage.objects.create(session=session, role='assistant', text=answer, sources=sources)
+        ChatMessage.objects.create(session=session, role='assistant', text=answer, sources=sources)
         payload = {'answer': answer, 'sources': sources} if status == 200 else {'error': answer}
-        return _response({**payload, **session_data}, status, origin)
+        return _response({**payload, 'session_id': str(session.pk)}, status, origin)
 
-    if settings.ASSISTANT_DAILY_LIMIT_ENABLED and not _consume_question(_ip_digest(request)):
-        return _response({'error': f'Лимит — {DAILY_QUESTION_LIMIT} вопросов в сутки с одного IP. '
-                                   'Попробуйте завтра или оставьте заявку.',
-                          **session_data}, 429, origin)
     if PHONE.search(question) or EMAIL.search(question) or SENSITIVE.search(question):
+        ChatMessage.objects.create(session=session, role='user', text=REDACTED_MESSAGE)
         return reply('Не отправляйте личные данные в чат. Для адреса объекта и контактов используйте форму заявки.')
     if OFF_TOPIC_REQUEST.search(question):
+        ChatMessage.objects.create(session=session, role='user', text=question)
         return reply(OUTSIDE_SITE_REPLY)
     previous_questions = []
     # Brevity alone does not make an independent question a follow-up.
     question_terms = set(QUESTION_TOKENS.findall(question.lower()))
     if question_terms & FOLLOW_UP_DETAILS and question_terms <= FOLLOW_UP_DETAILS | FOLLOW_UP_CONNECTORS:
-        if session:
-            recent = ChatMessage.objects.filter(session=session, role='user').order_by('-created_at', '-pk')
-            history = list(recent.values_list('text', flat=True)[:MAX_CONTEXT_QUESTIONS])[::-1]
-        else:
+        recent = session.messages.filter(role='user').exclude(text=REDACTED_MESSAGE)
+        history = list(recent.order_by('-created_at', '-pk').values_list('text', flat=True)[:MAX_CONTEXT_QUESTIONS])[::-1]
+        if not history:
+            # Cached widgets can still send context without a session ID.
             history = data.get('previous_questions')
             if not isinstance(history, list):
                 history = [data.get('previous_question')]
@@ -288,8 +287,7 @@ def chat(request):
             and not any(pattern.search(previous) for pattern in (PHONE, EMAIL, SENSITIVE, OFF_TOPIC_REQUEST))
         ]
 
-    if session:
-        ChatMessage.objects.create(session=session, role='user', text=question)
+    ChatMessage.objects.create(session=session, role='user', text=question)
     vocabulary_sources = question_vocabulary(site)
     try:
         answer, sources = _model_reply(question, vocabulary_sources, site=site,

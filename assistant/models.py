@@ -24,7 +24,7 @@ class ChatSession(models.Model):
     site = models.CharField(max_length=12)
     ip_digest = models.CharField(max_length=64)
     consent_version = models.CharField(max_length=20)
-    consent_at = models.DateTimeField(default=timezone.now)
+    consent_at = models.DateTimeField(default=timezone.now, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

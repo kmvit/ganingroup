@@ -7,6 +7,7 @@
 (команда seed_content) и как запасной вариант, если меню в базе пустое.
 """
 from content.utils import SD2_URLS, safe_reverse
+from django.conf import settings
 
 RESHENIYA = [
     ('Застройщикам ЖК', 'reshenie_zastroyshchikam', None),
@@ -134,9 +135,7 @@ _ASSET_V = None
 
 
 def _asset_version():
-    """Версия статики = короткий хеш содержимого site.css. Меняется всегда, когда
-    меняется CSS (в отличие от mtime, который при пересборке мог не обновляться) →
-    браузер гарантированно берёт свежий файл, а не старый из 30-дневного кэша."""
+    """Версия статики меняется при обновлении CSS или скриптов сайта."""
     global _ASSET_V
     if _ASSET_V is not None:
         return _ASSET_V
@@ -145,7 +144,8 @@ def _asset_version():
     from django.conf import settings
     for base in [settings.BASE_DIR / 'static', settings.STATIC_ROOT]:
         try:
-            data = (base / 'assets' / 'site.css').read_bytes()
+            data = b''.join((base / 'assets' / name).read_bytes() for name in
+                            ('site.css', 'assistant.css', 'assistant.js', 'privacy.css', 'privacy.js'))
             _ASSET_V = hashlib.md5(data).hexdigest()[:10]
             return _ASSET_V
         except OSError:
@@ -214,5 +214,6 @@ def nav(request):
         'phone': site.phone_link,
         'phone_label': site.phone_main,
         'asset_v': _asset_version(),
+        'assistant_enabled': settings.ASSISTANT_ENABLED,
         'jsonld_org': _jsonld_org(site, request),
     }

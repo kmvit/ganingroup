@@ -14,7 +14,7 @@
       <input class="f-input" id="tkp-company" name="company" />
       <label class="f-label" for="tkp-details">Объект / объём / сроки</label>
       <textarea class="f-input" id="tkp-details" name="details" placeholder="Например: ЖК, 12 000 м³, старт в марте"></textarea>
-      <label class="f-agree"><input type="checkbox" name="agree" checked /> <span>Согласен на обработку персональных данных — <a href="{% url 'consent' %}">текст согласия</a></span></label>
+      <label class="f-agree"><input type="checkbox" name="agree" required /> <span>Согласен на обработку персональных данных — <a href="{% url 'consent' %}">текст согласия</a></span></label>
       <button class="btn btn--solid" type="submit" style="width:100%;margin-top:22px">Отправить заявку</button>
     </form>
   </div>

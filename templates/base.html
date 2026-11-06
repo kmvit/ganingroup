@@ -23,11 +23,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" />
 <link rel="stylesheet" href="{% static 'assets/site.css' %}?v={{ asset_v }}" />
+<link rel="stylesheet" href="{% static 'assets/privacy.css' %}?v={{ asset_v }}" />
+{% if assistant_enabled %}<link rel="stylesheet" href="{% static 'assets/assistant.css' %}?v={{ asset_v }}" />{% endif %}
 <link rel="icon" type="image/svg+xml" href="{{ site.logo_mark_url }}" />
 {% if jsonld_org %}<script type="application/ld+json">{{ jsonld_org }}</script>{% endif %}
 {% if jsonld_website %}<script type="application/ld+json">{{ jsonld_website }}</script>{% endif %}
 {% if crumbs_jsonld %}<script type="application/ld+json">{{ crumbs_jsonld }}</script>{% endif %}
-{% include "partials/gtag.html" %}
 </head>
 <body>
 {% include "partials/header.html" %}
@@ -37,6 +38,7 @@
 {% include "partials/modals.html" %}
 {% include "partials/mmenu.html" %}
 {% include "partials/theme_js.html" %}
-{% include "partials/metrika.html" %}
+<script src="{% static 'assets/privacy.js' %}?v={{ asset_v }}" data-metrika="112656175" data-google="G-J7KYRKF7W5" data-policy="{% url 'policy' %}" defer></script>
+{% if assistant_enabled %}<script src="{% static 'assets/assistant.js' %}?v={{ asset_v }}" data-api="/assistant" data-site="ganin" defer></script>{% endif %}
 </body>
 </html>

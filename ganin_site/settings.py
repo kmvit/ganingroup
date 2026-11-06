@@ -11,10 +11,33 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 import os
+import re
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+def _load_dotenv(path):
+    """Load simple KEY=VALUE entries; real environment values take precedence."""
+    if not path.is_file():
+        return
+    values = {}
+    for line in path.read_text(encoding='utf-8').splitlines():
+        line = line.strip()
+        if not line or line.startswith('#') or '=' not in line:
+            continue
+        key, value = (part.strip() for part in line.split('=', 1))
+        if not re.fullmatch(r'[A-Z][A-Z0-9_]*', key):
+            continue
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in ('"', "'"):
+            value = value[1:-1]
+        values[key] = value
+    for key, value in values.items():
+        os.environ.setdefault(key, value)
+
+
+_load_dotenv(BASE_DIR / '.env')
 
 
 # Quick-start development settings - unsuitable for production
@@ -53,7 +76,14 @@ INSTALLED_APPS = [
     'calc',
     'leads',
     'pages',
+    'assistant',
 ]
+
+ASSISTANT_API_URL = os.environ.get('ASSISTANT_API_URL', '').rstrip('/')
+ASSISTANT_API_KEY = os.environ.get('ASSISTANT_API_KEY', '')
+ASSISTANT_MODEL = os.environ.get('ASSISTANT_MODEL', 'openai/gpt-4.1-nano')
+ASSISTANT_TRUST_X_REAL_IP = os.environ.get('ASSISTANT_TRUST_X_REAL_IP', '0') == '1'
+ASSISTANT_ENABLED = os.environ.get('ASSISTANT_ENABLED', '0') == '1'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

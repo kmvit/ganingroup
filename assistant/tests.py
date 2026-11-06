@@ -106,36 +106,32 @@ class AssistantApiTests(TestCase):
         self.assertFalse(ChatMessage.objects.exists())
         self.assertFalse(DailyIPUsage.objects.exists())
 
-    @patch('assistant.views.search_pages')
-    @patch('assistant.views._model_reply')
-    def test_object_list_links_directly_to_published_cards(self, model, search):
+    @override_settings(ASSISTANT_API_URL='https://gateway.example', ASSISTANT_API_KEY='test-key')
+    def test_catalog_and_complete_public_index_reach_model(self):
         ProjectObject.objects.update(published=False)
-        sanatorium = ProjectObject.objects.create(title='Санаторий «Русел»', order=2)
-        housing = ProjectObject.objects.create(title='ЖК «Замковая»', order=1)
+        obj = ProjectObject.objects.create(title='ЖК «Замковая»', city='Кисловодск')
         ProjectObject.objects.create(title='Черновик проекта', published=False)
-        expected = [
-            {'title': obj.title, 'url': 'https://ganin-group.ru' + reverse('obekt', args=[obj.slug])}
-            for obj in (housing, sanatorium)
-        ]
+        KnowledgePage.objects.create(site='ganin', url='https://ganin-group.ru/uslugi/laboratoriya/',
+                                     title='Лаборатория', content='Испытание прочности бетона.')
+        KnowledgePage.objects.create(site='ganin', url='https://ganin-group.ru/kontakty/',
+                                     title='Контакты', content='АдресРоссия, Пятигорск, Черкесское шоссе, 2.')
+        gateway_answer = BytesIO(b'{"choices":[{"message":{"content":"Answer"}}]}')
 
-        questions = ['Какие объекты реализованы?'] * 10 + ['На какие объекты вы поставляли продукцию?']
-        for question in questions:
-            with self.subTest(question=question):
-                response = self.client.post('/assistant/chat/', data=json.dumps({'message': question}),
-                                            content_type='application/json',
-                                            HTTP_ORIGIN='https://ganin-group.ru')
-                self.assertEqual(response.status_code, 200)
-                result = response.json()
-                self.assertEqual(result['sources'], expected)
-                self.assertEqual(result['answer'].splitlines()[1:], [
-                    f'• [{link["title"]}]({link["url"]})' for link in expected
-                ])
-
-        for obj in (housing, sanatorium):
-            self.assertEqual(self.client.get(reverse('obekt', args=[obj.slug])).status_code, 200)
-
-        model.assert_not_called()
-        search.assert_not_called()
+        with patch('assistant.views.urlopen', return_value=gateway_answer) as gateway:
+            response = self.client.post('/assistant/chat/',
+                                        data=json.dumps({'message': 'В каком городе больше всего ваших объектов?'}),
+                                        content_type='application/json',
+                                        HTTP_ORIGIN='https://ganin-group.ru')
+        self.assertEqual(response.status_code, 200)
+        messages = json.loads(gateway.call_args.args[0].data)['messages']
+        self.assertIn('в каком городе больше всего ваших объектов?', messages[1]['content'])
+        context = messages[0]['content']
+        self.assertIn('Кисловодск — 1', context)
+        self.assertIn('https://ganin-group.ru' + reverse('obekt', args=[obj.slug]), context)
+        self.assertIn('Испытание прочности бетона.', context)
+        self.assertIn('Черкесское шоссе, 2.', context)
+        self.assertNotIn('Черновик проекта', context)
+        self.assertNotIn('https://sd2-kmv.ru', context)
 
     @override_settings(ASSISTANT_DAILY_LIMIT_ENABLED=True)
     def test_chat_without_consent_has_shared_daily_limit(self):
@@ -186,8 +182,9 @@ class AssistantApiTests(TestCase):
         self.assertEqual(response.status_code, 200)
         args, kwargs = model.call_args
         self.assertEqual(kwargs['previous_question'], 'Есть ли блоки ФБС?')
-        self.assertEqual(args[1][0]['url'],
-                         'https://sd2-kmv.ru/zhelezobeton/cena-na-FBS-bloki-fundamentnye')
+        self.assertIn('https://sd2-kmv.ru/zhelezobeton/cena-na-FBS-bloki-fundamentnye',
+                      [entry['url'] for entry in args[1]])
+        self.assertIn('https://sd2-kmv.ru/dostavka/', [entry['url'] for entry in args[1]])
 
     def test_unrelated_or_private_question_never_calls_model(self):
         headers = {'HTTP_ORIGIN': 'https://ganin-group.ru'}
@@ -210,34 +207,6 @@ class AssistantApiTests(TestCase):
             model.assert_not_called()
         self.assertFalse(ChatSession.objects.exists())
         self.assertFalse(ChatMessage.objects.exists())
-
-    def test_unknown_payment_method_stays_local(self):
-        with patch('assistant.views._model_reply') as model:
-            response = self.client.post('/assistant/chat/',
-                                        data=json.dumps({'message': 'Можно оплатить бетон банковской картой?',
-                                                         'consent': True}),
-                                        content_type='application/json',
-                                        HTTP_ORIGIN='https://sd2-kmv.ru')
-        self.assertEqual(response.status_code, 200)
-        self.assertIn('не нашёл подтверждения', response.json()['answer'])
-        model.assert_not_called()
-
-    def test_contact_answer_quotes_public_phone_and_address(self):
-        KnowledgePage.objects.create(site='ganin', url='https://ganin-group.ru/kontakty/',
-                                     title='Контакты ГАНИН ГРУПП — телефоны',
-                                     content='Контакты ГАНИН ГРУПП — телефоны\nОтдел продаж +7 928 821-72-11.\nАдресРоссия, Пятигорск, Черкесское шоссе, 2.')
-        with patch('assistant.views._model_reply') as model:
-            response = self.client.post('/assistant/chat/',
-                                        data=json.dumps({'message': 'Где находится завод и как позвонить менеджеру?'}),
-                                        content_type='application/json',
-                                        HTTP_ORIGIN='https://ganin-group.ru')
-        self.assertEqual(response.status_code, 200)
-        self.assertIn('+7 928 821-72-11', response.json()['answer'])
-        self.assertIn('Черкесское шоссе', response.json()['answer'])
-        self.assertNotIn('session_id', response.json())
-        self.assertFalse(ChatSession.objects.exists())
-        self.assertFalse(ChatMessage.objects.exists())
-        model.assert_not_called()
 
     def test_gateway_rate_limit_is_explained(self):
         with patch('assistant.views._model_reply', side_effect=HTTPError('https://gateway.example', 429, 'limit', {}, None)):

@@ -1,19 +1,24 @@
 """Small, auditable index of the two public sites."""
 import re
-from collections import deque
+from collections import Counter, deque
 from datetime import timedelta
 from html.parser import HTMLParser
 from urllib.parse import urldefrag, urljoin, urlparse
 from urllib.request import Request, urlopen
 
 from django.utils import timezone
+from django.urls import reverse
+
+from calc.models import DeliveryZone
+from content.models import ProjectObject
 
 from .models import KnowledgePage
 
 ROOTS = {'ganin': 'https://ganin-group.ru/', 'sd2': 'https://sd2-kmv.ru/'}
+FULL_CONTEXT_CHAR_LIMIT = 150_000
 SKIP_PREFIXES = ('/admin/', '/zayavka/', '/assistant/', '/static/', '/media/')
 WORDS = re.compile(r'[а-яёa-z0-9]{3,}', re.I)
-STOP_WORDS = {'какие', 'какую', 'какой', 'сколько', 'есть', 'ли', 'где', 'как', 'что', 'она',
+STOP_WORDS = {'какие', 'какую', 'какой', 'сколько', 'есть', 'ли', 'где', 'куда', 'как', 'что', 'она',
               'они', 'для', 'или', 'можно', 'либо', 'вас', 'ваши', 'ваших',
               'ганин', 'групп', 'стройдеталь', 'завод', 'сайт', 'сайте'}
 ALIASES = {'ваканс': ('работ', 'карьер', 'позиц'),
@@ -21,7 +26,46 @@ ALIASES = {'ваканс': ('работ', 'карьер', 'позиц'),
            'позвон': ('контак', 'телефо'),
            'менедж': ('контак', 'телефо'),
            'наход': ('адрес', 'контак'),
-           'стоит': ('цен', 'стоимо')}
+           'стоит': ('цен', 'стоимо'),
+           'возите': ('достав', 'логист'), 'везете': ('достав', 'логист'),
+           'везёте': ('достав', 'логист'), 'привез': ('достав', 'логист'),
+           'достав': ('логист',)}
+
+
+def project_url(slug):
+    return urljoin(ROOTS['ganin'], reverse('obekt', args=[slug]))
+
+
+def structured_knowledge(site):
+    """Give the model complete public datasets that fit alongside the page excerpts."""
+    if site != 'ganin':
+        return []
+    zones = list(DeliveryZone.objects.filter(published=True).values_list('title', flat=True))
+    objects = list(ProjectObject.objects.filter(published=True).values('title', 'slug', 'city', 'summary'))
+    cities = Counter(obj['city'].strip() for obj in objects if obj['city'].strip())
+    city_counts = ', '.join(f'{city} — {count}' for city, count in cities.most_common()) or 'города не указаны'
+    return [
+        {
+            'site': site, 'title': 'Зоны доставки бетона',
+            'url': urljoin(ROOTS[site], reverse('logistika')),
+            'excerpt': ('Населённые пункты из справочника доставки бетона:\n'
+                        + ('\n'.join(zones) or 'Зоны не указаны.')
+                        + '\nДля остальных населённых пунктов условия уточняются отдельно.'),
+        },
+        {
+            'site': site, 'title': 'Итоги по опубликованным объектам',
+            'url': '',
+            'excerpt': (f'Всего опубликовано карточек: {len(objects)}. По указанным городам: {city_counts}. '
+                        f'Без указания города: {len(objects) - sum(cities.values())}. '
+                        'Карточки без города входят в общий список. '
+                        'Отдельного статуса завершения строительства в каталоге нет.'),
+        },
+        *[
+            {'site': site, 'title': obj['title'], 'url': project_url(obj['slug']),
+             'excerpt': f'Город: {obj["city"].strip() or "не указан"}. {obj["summary"]}'}
+            for obj in objects
+        ],
+    ]
 
 
 def _key(word):
@@ -40,6 +84,26 @@ def _terms(text, expand=False):
             if key in result:
                 result.update(aliases)
     return result
+
+
+def matches_knowledge(question, entries):
+    terms = _terms(question, expand=True)
+    return any(terms & _terms(f'{entry["title"]} {entry["excerpt"]}') for entry in entries)
+
+
+def site_knowledge(question, site):
+    """Use the whole public index while it fits the request budget."""
+    public_data = structured_knowledge(site)
+    pages = [
+        {'site': site, 'title': page.title, 'url': page.url, 'excerpt': page.content}
+        for page in KnowledgePage.objects.filter(
+            site=site, fetched_at__gte=timezone.now() - timedelta(days=7)).order_by('url')
+    ]
+    entries = public_data + pages
+    if sum(len(entry['excerpt']) + len(entry['title']) + len(entry['url'])
+           for entry in entries) > FULL_CONTEXT_CHAR_LIMIT:
+        entries = public_data + search_pages(question, site=site)
+    return entries if matches_knowledge(question, entries) else []
 
 
 class PageParser(HTMLParser):
@@ -148,16 +212,17 @@ def search_pages(question, limit=3, site=None):
             continue
         if page.url.rstrip('/').endswith(('/policy', '/consent', '/politika', '/soglasie')) and not privacy_query:
             continue
-        title_hits = len(terms & _terms(page.title))
+        title_terms = terms & _terms(page.title)
         paragraphs = [p.strip() for p in page.content.split('\n') if len(p.strip()) > 25]
         for index, paragraph in enumerate(paragraphs):
             if paragraph == page.title:
                 continue
-            paragraph_hits = len(terms & _terms(paragraph))
-            if not paragraph_hits and not title_hits:
+            paragraph_terms = terms & _terms(paragraph)
+            if not paragraph_terms and not title_terms:
                 continue
-            score = paragraph_hits * 3 + title_hits * 8
-            start = 0 if title_hits >= 2 else page.content.find(paragraph)
+            score = len(paragraph_terms | title_terms) * 8 + len(paragraph_terms) * 3 + len(title_terms)
+            # Nearby lines often carry the answer under a short heading or label.
+            start = page.content.find(paragraphs[max(0, index - 1)])
             excerpt = page.content[start:start + 1500] if start >= 0 else paragraph[:1500]
             ranked.append((score, page, excerpt))
     ranked.sort(key=lambda row: row[0], reverse=True)

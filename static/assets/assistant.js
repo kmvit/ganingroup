@@ -14,6 +14,7 @@
     <button class="gg-assistant__toggle" type="button" aria-expanded="false" aria-controls="gg-assistant-panel">Спросить ассистента</button>
     <section class="gg-assistant__panel" id="gg-assistant-panel" aria-label="Ассистент сайта">
       <div class="gg-assistant__head"><span>Помощь по продукции и услугам</span><button class="gg-assistant__close" type="button" aria-label="Закрыть">×</button></div>
+      <div class="gg-assistant__suggestions"><span class="gg-assistant__suggestions-label">Можно спросить</span><div class="gg-assistant__suggestions-list"></div></div>
       <div class="gg-assistant__messages" role="log" aria-live="polite"></div>
       <div class="gg-assistant__actions"><button class="gg-assistant__lead-toggle" type="button">Оставить заявку →</button></div>
       <label class="gg-assistant__agree gg-assistant__chat-consent"><input type="checkbox"><span>Согласен на запись диалога и обработку сообщения для ответа. <a href="${chatConsent}" target="_blank" rel="noopener">Условия обработки</a></span></label>
@@ -27,6 +28,48 @@
   const messages = $('.gg-assistant__messages');
   const status = $('.gg-assistant__status');
   const history = [];
+  const path = location.pathname.toLowerCase();
+  const questions = (() => {
+    if (site === 'sd2') {
+      if (path.startsWith('/dostavka/')) return ['Куда доставляете бетон?', 'Какие объёмы миксеров?', 'Есть ли бетононасосы?'];
+      if (path.includes('zhelezobeton') || path.includes('zhb')) return ['Какие ЖБИ производите?', 'Есть ли блоки ФБС?', 'Как получить расчёт?'];
+      if (path.includes('asfalt')) return ['Какие асфальтовые смеси есть?', 'Как заказать асфальт?', 'Куда доставляете?'];
+      if (path.includes('karer')) return ['Какие инертные материалы есть?', 'Как заказать щебень?', 'Есть ли доставка?'];
+      if (path.includes('kontakty')) return ['Где находится завод?', 'Как связаться с отделом продаж?', 'Какой график работы?'];
+      return ['Какой бетон производите?', 'Куда доставляете?', 'Как получить расчёт?'];
+    }
+    if (path.startsWith('/uslugi/logistika/')) return ['Куда доставляете?', 'Какая техника есть?', 'Есть бетононасосы?'];
+    if (path.startsWith('/uslugi/raschet-opalubki/')) return ['Как рассчитывают опалубку?', 'Какие данные нужны для расчёта?', 'Как запросить предложение?'];
+    if (path.startsWith('/uslugi/shef-montazh/')) return ['Что входит в шеф-монтаж?', 'Где доступен шеф-монтаж?', 'Как заказать услугу?'];
+    if (path.startsWith('/uslugi/laboratoriya/')) return ['Какие услуги у лаборатории?', 'Выдаёте паспорт качества?', 'Как обратиться?'];
+    if (path.startsWith('/produkciya/mineralnyy-poroshok/')) return ['Какие марки порошка есть?', 'Где применяют порошок?', 'Как заказать?'];
+    if (path.startsWith('/produkciya/cement/')) return ['Какой цемент поставляете?', 'Есть ли доставка цемента?', 'Как заказать?'];
+    if (path.startsWith('/produkciya/')) {
+      const product = document.querySelector('h1')?.textContent.trim().replace(/\s+/g, ' ').slice(0, 60) || 'продукции';
+      return [`Какие характеристики у ${product}?`, `Как заказать ${product}?`, 'Есть ли доставка?'];
+    }
+    if (path.startsWith('/kariera/')) return ['Есть ли вакансии?', 'Как откликнуться?', 'Где находится завод?'];
+    if (path.startsWith('/kontakty/')) return ['Как связаться с отделом продаж?', 'Где находится завод?', 'Какой график работы?'];
+    if (path.startsWith('/obekty/')) return ['Какие объекты реализованы?', 'С какими задачами помогаете?', 'Как запросить предложение?'];
+    if (path.startsWith('/resheniya/')) return ['Что можете поставить на объект?', 'Есть ли доставка и насосы?', 'Как получить ТКП?'];
+    return ['Что производите?', 'Куда доставляете?', 'Как получить расчёт?'];
+  })();
+  for (const question of questions) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = question;
+    button.addEventListener('click', () => {
+      const input = $('.gg-assistant__form .gg-assistant__input');
+      input.value = question;
+      if (!sessionId && !$('.gg-assistant__chat-consent input').checked) {
+        status.textContent = 'Отметьте согласие и нажмите «Отправить».';
+        $('.gg-assistant__chat-consent input').focus();
+        return;
+      }
+      $('.gg-assistant__form').requestSubmit();
+    });
+    $('.gg-assistant__suggestions-list').append(button);
+  }
   if (sessionId) $('.gg-assistant__chat-consent').hidden = true;
   function open(value) {
     root.classList.toggle('is-open', value);
@@ -53,7 +96,7 @@
     messages.append(box);
     messages.scrollTop = messages.scrollHeight;
   }
-  addMessage('Здравствуйте! Спросите о продукции, доставке или услугах. Для расчёта заказа можно оставить заявку.');
+  addMessage('Здравствуйте! Помогу с продукцией, доставкой и услугами.');
   toggle.addEventListener('click', () => open(!root.classList.contains('is-open')));
   $('.gg-assistant__close').addEventListener('click', () => open(false));
   $('.gg-assistant__lead-toggle').addEventListener('click', () => {
@@ -71,6 +114,7 @@
       return;
     }
     input.value = '';
+    $('.gg-assistant__suggestions').hidden = true;
     addMessage(question, true);
     status.textContent = 'Ищу ответ…';
     const button = $('.gg-assistant__send');

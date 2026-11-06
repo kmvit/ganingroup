@@ -197,7 +197,6 @@ def chat(request):
     question = data.get('message', '').strip() if data and isinstance(data.get('message'), str) else ''
     if not question or len(question) > 1200:
         return _response({'error': 'Напишите вопрос до 1200 символов.'}, 400, origin)
-    digest = _ip_digest(request)
     # Chat replies are ephemeral on both sites. Only application forms persist visitor data.
     session = None
     session_data = {'session_id': str(session.pk)} if session else {}
@@ -209,7 +208,7 @@ def chat(request):
         payload = {'answer': answer, 'sources': sources} if status == 200 else {'error': answer}
         return _response({**payload, **session_data}, status, origin)
 
-    if not _consume_question(digest):
+    if settings.ASSISTANT_DAILY_LIMIT_ENABLED and not _consume_question(_ip_digest(request)):
         return _response({'error': 'Лимит — 10 вопросов в сутки с одного IP. Попробуйте завтра или оставьте заявку.',
                           **session_data}, 429, origin)
     if PHONE.search(question) or EMAIL.search(question) or SENSITIVE.search(question):

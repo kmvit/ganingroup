@@ -85,7 +85,7 @@ class KnowledgeTests(TestCase):
         self.assertEqual(response.status_code, 404)
 
 
-@override_settings(ASSISTANT_ENABLED=True)
+@override_settings(ASSISTANT_ENABLED=True, ASSISTANT_DAILY_LIMIT_ENABLED=False)
 class AssistantApiTests(TestCase):
     def setUp(self):
         KnowledgePage.objects.create(site='sd2', url='https://sd2-kmv.ru/dostavka/',
@@ -104,7 +104,7 @@ class AssistantApiTests(TestCase):
         self.assertNotIn('session_id', response.json())
         self.assertFalse(ChatSession.objects.exists())
         self.assertFalse(ChatMessage.objects.exists())
-        self.assertEqual(DailyIPUsage.objects.get().count, 1)
+        self.assertFalse(DailyIPUsage.objects.exists())
 
     @patch('assistant.views.search_pages')
     @patch('assistant.views._model_reply')
@@ -118,7 +118,8 @@ class AssistantApiTests(TestCase):
             for obj in (housing, sanatorium)
         ]
 
-        for question in ('Какие объекты реализованы?', 'На какие объекты вы поставляли продукцию?'):
+        questions = ['Какие объекты реализованы?'] * 10 + ['На какие объекты вы поставляли продукцию?']
+        for question in questions:
             with self.subTest(question=question):
                 response = self.client.post('/assistant/chat/', data=json.dumps({'message': question}),
                                             content_type='application/json',
@@ -129,12 +130,14 @@ class AssistantApiTests(TestCase):
                 self.assertEqual(result['answer'].splitlines()[1:], [
                     f'• [{link["title"]}]({link["url"]})' for link in expected
                 ])
-                for obj in (housing, sanatorium):
-                    self.assertEqual(self.client.get(reverse('obekt', args=[obj.slug])).status_code, 200)
+
+        for obj in (housing, sanatorium):
+            self.assertEqual(self.client.get(reverse('obekt', args=[obj.slug])).status_code, 200)
 
         model.assert_not_called()
         search.assert_not_called()
 
+    @override_settings(ASSISTANT_DAILY_LIMIT_ENABLED=True)
     def test_chat_without_consent_has_shared_daily_limit(self):
         headers = {'HTTP_ORIGIN': 'https://sd2-kmv.ru'}
         body = {'message': 'Доставка бетона 200 км?'}

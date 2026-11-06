@@ -55,7 +55,7 @@
     }
     if (path.startsWith('/kariera/')) return ['Есть ли вакансии?', 'Как откликнуться?', 'Где находится завод?'];
     if (path.startsWith('/kontakty/')) return ['Как связаться с отделом продаж?', 'Где находится завод?', 'Какой график работы?'];
-    if (path.startsWith('/obekty/')) return ['Какие объекты реализованы?', 'С какими задачами помогаете?', 'Как запросить предложение?'];
+    if (path.startsWith('/obekty/')) return ['На какие объекты вы поставляли продукцию?', 'С какими задачами помогаете?', 'Как запросить предложение?'];
     if (path.startsWith('/resheniya/')) return ['Что можете поставить на объект?', 'Есть ли доставка и насосы?', 'Как получить ТКП?'];
     return ['Что производите?', 'Куда доставляете?', 'Как получить расчёт?'];
   })();
@@ -84,19 +84,28 @@
   function addMessage(text, user = false, sources = []) {
     const box = document.createElement('div');
     box.className = 'gg-assistant__message' + (user ? ' gg-assistant__message--user' : '');
-    box.textContent = text;
-    if (!user && sources.length) {
-      const title = document.createElement('strong');
-      title.textContent = '\nИсточники:';
-      box.append(title);
-      sources.slice(0, 3).forEach(source => {
-        const link = document.createElement('a');
-        link.href = source.url;
-        link.target = '_blank';
-        link.rel = 'noopener';
-        link.textContent = source.title;
-        box.append(link);
-      });
+    if (user) {
+      box.textContent = text;
+    } else {
+      const allowedUrls = new Set(sources.map(source => source.url));
+      let end = 0;
+      for (const match of text.matchAll(/\[((?:\\[\\\[\]]|[^\\\[\]\n])+)\]\(([^\s)]*)\)/g)) {
+        const [token, label, url] = match;
+        box.append(text.slice(end, match.index));
+        const title = label.replace(/\\([\\\[\]])/g, '$1');
+        if (url.startsWith('https://') && allowedUrls.has(url)) {
+          const link = document.createElement('a');
+          link.href = url;
+          link.target = '_blank';
+          link.rel = 'noopener';
+          link.textContent = title;
+          box.append(link);
+        } else {
+          box.append(title);
+        }
+        end = match.index + token.length;
+      }
+      box.append(text.slice(end));
     }
     messages.append(box);
     messages.scrollTop = messages.scrollHeight;

@@ -15,7 +15,7 @@
 .gg-assistant__messages{flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:12px}
 .gg-assistant__message{max-width:94%;padding:10px 12px;border-radius:12px;background:#eef3f8;white-space:pre-wrap;overflow-wrap:anywhere}
 .gg-assistant__message--user{align-self:flex-end;background:#2879dc;color:#fff}
-.gg-assistant__message a{color:#145bb0;display:block;margin-top:6px;text-decoration:underline}
+.gg-assistant__message a{color:#145bb0;text-decoration:underline}
 .gg-assistant__actions{border-top:1px solid #e3e9ef;padding:10px 12px}
 .gg-assistant__lead-toggle{border:0;background:transparent;color:#145bb0;font-weight:700;cursor:pointer;padding:4px 0}
 .gg-assistant__form{display:flex;gap:8px;padding:0 12px 12px}

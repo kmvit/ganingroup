@@ -6,8 +6,10 @@ from unittest.mock import patch
 
 from django.core.management import call_command
 from django.test import TestCase, override_settings
+from django.urls import reverse
 from django.utils import timezone
 
+from content.models import ProjectObject
 from leads.models import Lead
 
 from .knowledge import PageParser, normalized_url, search_pages
@@ -102,6 +104,35 @@ class AssistantApiTests(TestCase):
         self.assertEqual(ChatSession.objects.count(), 1)
         self.assertEqual(ChatMessage.objects.count(), 2)
         self.assertEqual(DailyIPUsage.objects.get().count, 1)
+
+    @patch('assistant.views.search_pages')
+    @patch('assistant.views._model_reply')
+    def test_object_list_links_directly_to_published_cards(self, model, search):
+        ProjectObject.objects.update(published=False)
+        sanatorium = ProjectObject.objects.create(title='Санаторий «Русел»', order=2)
+        housing = ProjectObject.objects.create(title='ЖК «Замковая»', order=1)
+        ProjectObject.objects.create(title='Черновик проекта', published=False)
+        expected = [
+            {'title': obj.title, 'url': 'https://ganin-group.ru' + reverse('obekt', args=[obj.slug])}
+            for obj in (housing, sanatorium)
+        ]
+
+        for question in ('Какие объекты реализованы?', 'На какие объекты вы поставляли продукцию?'):
+            with self.subTest(question=question):
+                response = self.client.post('/assistant/chat/', data=json.dumps({'message': question}),
+                                            content_type='application/json',
+                                            HTTP_ORIGIN='https://ganin-group.ru')
+                self.assertEqual(response.status_code, 200)
+                result = response.json()
+                self.assertEqual(result['sources'], expected)
+                self.assertEqual(result['answer'].splitlines()[1:], [
+                    f'• [{link["title"]}]({link["url"]})' for link in expected
+                ])
+                for obj in (housing, sanatorium):
+                    self.assertEqual(self.client.get(reverse('obekt', args=[obj.slug])).status_code, 200)
+
+        model.assert_not_called()
+        search.assert_not_called()
 
     def test_chat_requires_consent_and_has_shared_daily_limit(self):
         headers = {'HTTP_ORIGIN': 'https://sd2-kmv.ru'}

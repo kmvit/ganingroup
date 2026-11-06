@@ -12,14 +12,16 @@ from django.conf import settings
 from django.db.models import F
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
+from content.models import ProjectObject
 from leads.models import Lead
 from pages.forms import LeadForm
 from pages.notify import notify_lead
 
-from .knowledge import ALIASES, WORDS, _key, search_pages
+from .knowledge import ALIASES, ROOTS, WORDS, _key, search_pages
 from .models import ChatMessage, ChatSession, DailyIPUsage
 
 log = logging.getLogger(__name__)
@@ -29,6 +31,14 @@ PHONE = re.compile(r'(?<!\w)(?:\+?7|8)[\d\s()\-]{9,20}')
 EMAIL = re.compile(r'[\w.+-]+@[\w.-]+\.[a-z]{2,}', re.I)
 SENSITIVE = re.compile(r'(?:\b\d[\d -]{14,22}\d\b|\b(?:ул\.|улица|квартира|кв\.)\s+[^,]{2,50}\d+)', re.I)
 OFF_TOPIC_REQUEST = re.compile(r'\b(?:напиши\s+(?:стих|рассказ)|сочини|игнорируй\s+инструкции|забудь\s+правила|назови\s+(?:пароль|токен))\b', re.I)
+OBJECT_LIST_REQUEST = re.compile(
+    r'(?:какие (?:у вас )?(?:реализованные )?объекты'
+    r'(?: (?:реализованы|вы реализовали|у вас есть|есть у вас|есть))?'
+    r'|на какие объекты (?:вы )?поставляли продукцию'
+    r'|(?:покажи(?:те)? |дайте )?(?:(?:все |реализованные )?объекты'
+    r'|(?:список|примеры) (?:реализованных )?объектов))\s*[?!.]*',
+    re.I,
+)
 CONSENT_VERSION = '2026-11-06'
 
 
@@ -90,6 +100,21 @@ def _get_session(data, site, digest):
     return None
 
 
+def _object_list_reply():
+    objects = ProjectObject.objects.filter(published=True).values('title', 'slug')
+    links = [
+        {'title': obj['title'], 'url': ROOTS['ganin'].rstrip('/') + reverse('obekt', args=[obj['slug']])}
+        for obj in objects
+    ]
+    if not links:
+        return 'Сейчас на сайте нет опубликованных карточек объектов.', []
+    lines = []
+    for link in links:
+        label = re.sub(r'([\\\[\]])', r'\\\1', link['title'])
+        lines.append(f'• [{label}]({link["url"]})')
+    return 'Объекты, на которые ГАНИН ГРУПП поставляла продукцию:\n' + '\n'.join(lines), links
+
+
 def _model_reply(question, sources, previous_question=''):
     if not settings.ASSISTANT_API_URL or not settings.ASSISTANT_API_KEY:
         raise RuntimeError('Assistant model gateway is not configured')
@@ -106,7 +131,12 @@ def _model_reply(question, sources, previous_question=''):
         'и предложи оставить заявку. Не обещай наличие, точную цену, срок или доставку '
         'в конкретный адрес без подтверждения менеджера. Для доставки свыше 200 км '
         'нужно согласование с диспетчерской. Не проси номер телефона в переписке: '
-        'для заявки есть отдельная форма. Укажи полезные ссылки из источников.\n\n'
+        'для заявки есть отдельная форма. Когда ссылка помогает ответить, сделай название '
+        'товара, услуги или объекта ссылкой прямо в ответе в формате [название](URL). '
+        'Используй только точные URL из источников. Название объекта связывай только '
+        'со страницей именно этого объекта. Не добавляй отдельные блоки «Источники» '
+        'или «Полезные ссылки». Для списка начинай строки с «• », не используй '
+        'заголовки, таблицы и выделение Markdown.\n\n'
         f'ИСТОЧНИКИ:\n{context}'
     )
     public_words = {}
@@ -190,6 +220,8 @@ def chat(request):
         return reply('Не отправляйте личные данные в чат. Для адреса объекта и контактов используйте форму заявки.')
     if OFF_TOPIC_REQUEST.search(question):
         return reply('Я отвечаю на вопросы о продукции, услугах и работе этих сайтов.')
+    if site == 'ganin' and OBJECT_LIST_REQUEST.fullmatch(' '.join(question.split())):
+        return reply(*_object_list_reply())
 
     previous_question = ''
     if len(WORDS.findall(question)) <= 4:
@@ -225,7 +257,7 @@ def chat(request):
                 details.append(f'Адрес: {address}')
             if phones:
                 details.append(f'Телефоны отдела продаж: {", ".join(phones)}')
-            answer = '. '.join(details) + f'. Подробнее: {contact["url"]}'
+            answer = '. '.join(details) + f'. [Контакты отдела продаж]({contact["url"]})'
             return reply(answer, [{'title': contact['title'], 'url': contact['url']}])
     source_text = ' '.join(f'{s["title"]} {s["excerpt"]}' for s in sources).lower()
     unknown_detail = ((re.search(r'\bкарт\w*', question, re.I)

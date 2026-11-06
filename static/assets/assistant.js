@@ -9,6 +9,7 @@
   try { sessionId = sessionStorage.getItem(sessionKey) || ''; } catch (_) {}
   const root = document.createElement('div');
   root.className = 'gg-assistant';
+  root.dataset.site = site;
   root.innerHTML = `
     <button class="gg-assistant__toggle" type="button" aria-expanded="false" aria-controls="gg-assistant-panel">Спросить ассистента</button>
     <section class="gg-assistant__panel" id="gg-assistant-panel" aria-label="Ассистент сайта">

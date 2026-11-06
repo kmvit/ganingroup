@@ -2,7 +2,7 @@
 .gg-assistant *{box-sizing:border-box}
 .gg-assistant button,.gg-assistant input,.gg-assistant textarea{font:inherit}
 .gg-assistant__toggle{border:0;border-radius:100px;background:#2879dc;color:#fff;padding:14px 20px;box-shadow:0 8px 30px #0004;cursor:pointer;font-weight:700}
-.gg-assistant__panel{display:none;position:absolute;right:0;bottom:62px;width:min(390px,calc(100vw - 24px));height:min(610px,calc(100dvh - 95px - var(--privacy-banner-height, 0px)));background:#fff;border:1px solid #dce4ec;border-radius:16px;box-shadow:0 16px 55px #0005;overflow:hidden;flex-direction:column}
+.gg-assistant__panel{display:none;position:absolute;right:0;bottom:62px;width:min(390px,calc(100vw - 24px));height:min(560px,calc(100dvh - 95px - var(--privacy-banner-height, 0px)));padding:0;background:#fff;border:1px solid #dce4ec;border-radius:16px;box-shadow:0 16px 55px #0005;overflow:hidden;flex-direction:column}
 .gg-assistant.is-open .gg-assistant__panel{display:flex}
 .gg-assistant__head{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:#122231;color:#fff;font-weight:700}
 .gg-assistant__close{background:transparent;border:0;color:#fff;font-size:24px;line-height:1;cursor:pointer}
@@ -25,3 +25,38 @@
 .gg-assistant__chat-consent[hidden]{display:none}
 .gg-assistant__status{font-size:12px;color:#9c351d;min-height:16px;padding:0 12px 5px}
 @media(max-width:480px){.gg-assistant{right:12px;bottom:calc(12px + var(--privacy-banner-height, 0px))}.gg-assistant__panel{bottom:60px;width:calc(100vw - 24px);height:calc(100dvh - 84px - var(--privacy-banner-height, 0px))}}
+
+/* ГАНИН ГРУПП: оформление чата в палитре и типографике сайта. */
+.gg-assistant[data-site="ganin"]{font:14px/1.5 var(--font-t);color:var(--paper)}
+.gg-assistant[data-site="ganin"] .gg-assistant__toggle{min-height:48px;padding:11px 18px;border:1px solid var(--accent);border-radius:0;background:var(--accent);color:#111;font:600 17px/1.2 var(--font-h);letter-spacing:.05em;text-transform:uppercase;box-shadow:0 10px 30px #0008;transition:background .2s,border-color .2s,transform .2s}
+.gg-assistant[data-site="ganin"] .gg-assistant__toggle:hover{background:var(--accent-2);border-color:var(--accent-2);transform:translateY(-2px)}
+.gg-assistant[data-site="ganin"] .gg-assistant__panel{border:1px solid var(--line-d2);border-radius:0;background:var(--ink-2);box-shadow:0 22px 60px #000b}
+.gg-assistant[data-site="ganin"] .gg-assistant__head{min-height:84px;padding:15px 18px;border-bottom:1px solid var(--line-d2);background:var(--ink);gap:16px}
+.gg-assistant[data-site="ganin"] .gg-assistant__head span{font:600 19px/1.2 var(--font-h);letter-spacing:.04em;text-transform:uppercase}
+.gg-assistant[data-site="ganin"] .gg-assistant__head span::before{content:"ГАНИН ГРУПП / ОНЛАЙН";display:block;margin-bottom:5px;color:var(--accent);font:500 10px/1.2 var(--font-m);letter-spacing:.12em}
+.gg-assistant[data-site="ganin"] .gg-assistant__close{display:grid;place-items:center;flex:none;width:44px;height:44px;border:1px solid var(--line-d2);font:26px/1 var(--font-t)}
+.gg-assistant[data-site="ganin"] .gg-assistant__close:hover{border-color:var(--accent);color:var(--accent)}
+.gg-assistant[data-site="ganin"] .gg-assistant__messages{padding:18px;gap:12px}
+.gg-assistant[data-site="ganin"] .gg-assistant__message{max-width:92%;padding:12px 14px;border:1px solid var(--line-d2);border-radius:0;background:var(--ink-3);color:var(--paper);font-size:14px;line-height:1.5}
+.gg-assistant[data-site="ganin"] .gg-assistant__message--user{border-color:var(--accent);background:var(--accent);color:#111}
+.gg-assistant[data-site="ganin"] .gg-assistant__message a,.gg-assistant[data-site="ganin"] .gg-assistant__agree a{color:var(--accent-2);text-underline-offset:3px}
+.gg-assistant[data-site="ganin"] .gg-assistant__actions{padding:10px 18px;border-color:var(--line-d2)}
+.gg-assistant[data-site="ganin"] .gg-assistant__lead-toggle{min-height:44px;padding:8px 0;color:var(--accent-2);font:600 15px/1.2 var(--font-h);letter-spacing:.05em;text-transform:uppercase}
+.gg-assistant[data-site="ganin"] .gg-assistant__lead-toggle:hover{text-decoration:underline;text-underline-offset:4px}
+.gg-assistant[data-site="ganin"] .gg-assistant__chat-consent{padding:4px 18px 12px}
+.gg-assistant[data-site="ganin"] .gg-assistant__agree{gap:9px;color:var(--silver);font:12px/1.45 var(--font-t)}
+.gg-assistant[data-site="ganin"] .gg-assistant__agree input{flex:none;width:16px;height:16px;margin:1px 0 0;accent-color:var(--accent)}
+.gg-assistant[data-site="ganin"] .gg-assistant__form{padding:0 18px 16px}
+.gg-assistant[data-site="ganin"] .gg-assistant__input{min-height:44px;border:1px solid var(--line-d2);border-radius:0;background:var(--ink-3);color:var(--paper);font:14px/1.4 var(--font-t)}
+.gg-assistant[data-site="ganin"] .gg-assistant__input::placeholder{color:var(--silver)}
+.gg-assistant[data-site="ganin"] .gg-assistant__input:focus{border-color:var(--accent);outline:1px solid var(--accent)}
+.gg-assistant[data-site="ganin"] .gg-assistant__send,.gg-assistant[data-site="ganin"] .gg-assistant__submit{min-height:44px;padding:10px 14px;border:1px solid var(--accent);border-radius:0;background:var(--accent);color:#111;font:600 14px/1.2 var(--font-h);letter-spacing:.04em;text-transform:uppercase}
+.gg-assistant[data-site="ganin"] .gg-assistant__send:hover,.gg-assistant[data-site="ganin"] .gg-assistant__submit:hover{background:var(--accent-2);border-color:var(--accent-2)}
+.gg-assistant[data-site="ganin"] .gg-assistant__lead{padding:14px 18px;border-color:var(--line-d2)}
+.gg-assistant[data-site="ganin"] .gg-assistant__lead textarea{resize:vertical}
+.gg-assistant[data-site="ganin"] .gg-assistant__status{padding:0 18px 8px;color:#ffb299}
+.gg-assistant[data-site="ganin"] button:focus-visible,.gg-assistant[data-site="ganin"] a:focus-visible{outline:2px solid var(--accent-2);outline-offset:3px}
+@media(max-width:480px){.gg-assistant[data-site="ganin"] .gg-assistant__panel{max-height:calc(100dvh - 84px - var(--privacy-banner-height, 0px))}.gg-assistant[data-site="ganin"] .gg-assistant__head{min-height:72px;padding:11px 14px}.gg-assistant[data-site="ganin"] .gg-assistant__messages{padding:14px}}
+@media(prefers-reduced-motion:reduce){.gg-assistant[data-site="ganin"] .gg-assistant__toggle{transition:none}}
+
+:root[data-theme="light"] .gg-assistant[data-site="ganin"] .gg-assistant__head span::before,:root[data-theme="light"] .gg-assistant[data-site="ganin"] .gg-assistant__message a,:root[data-theme="light"] .gg-assistant[data-site="ganin"] .gg-assistant__agree a,:root[data-theme="light"] .gg-assistant[data-site="ganin"] .gg-assistant__lead-toggle{color:#a83f00}

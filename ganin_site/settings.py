@@ -84,7 +84,7 @@ ASSISTANT_API_KEY = os.environ.get('ASSISTANT_API_KEY', '')
 ASSISTANT_MODEL = os.environ.get('ASSISTANT_MODEL', 'openai/gpt-4.1-nano')
 ASSISTANT_TRUST_X_REAL_IP = os.environ.get('ASSISTANT_TRUST_X_REAL_IP', '0') == '1'
 ASSISTANT_ENABLED = os.environ.get('ASSISTANT_ENABLED', '0') == '1'
-ASSISTANT_DAILY_LIMIT_ENABLED = os.environ.get('ASSISTANT_DAILY_LIMIT_ENABLED', '0') == '1'
+ASSISTANT_DAILY_LIMIT_ENABLED = os.environ.get('ASSISTANT_DAILY_LIMIT_ENABLED', '1') == '1'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

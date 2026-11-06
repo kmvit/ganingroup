@@ -33,7 +33,7 @@
   const status = $('.gg-assistant__status');
   const chatConsentField = $('.gg-assistant__chat-consent');
   const chatConsentInput = chatConsentField?.querySelector('input');
-  let previousQuestion = '';
+  const previousQuestions = [];
   const path = location.pathname.toLowerCase();
   const questions = (() => {
     if (site === 'sd2') {
@@ -140,8 +140,8 @@
       if (recordsChat) {
         payload.session_id = sessionId || undefined;
         payload.consent = !sessionId && chatConsentInput.checked;
-      } else if (previousQuestion) {
-        payload.previous_question = previousQuestion;
+      } else if (previousQuestions.length) {
+        payload.previous_questions = previousQuestions;
       }
       const response = await fetch(`${api}/chat/`, {method: 'POST', headers: {'Content-Type': 'application/json', 'X-Assistant-Site': site}, body: JSON.stringify(payload)});
       const data = await response.json();
@@ -152,7 +152,10 @@
       }
       if (!response.ok) throw new Error(data.error || 'Ошибка связи');
       addMessage(data.answer, false, data.sources || []);
-      if (!recordsChat) previousQuestion = data.sources?.length ? question : '';
+      if (!recordsChat && data.sources?.length) {
+        previousQuestions.push(question);
+        if (previousQuestions.length > 5) previousQuestions.shift();
+      }
       status.textContent = '';
     } catch (error) { status.textContent = error.message || 'Не удалось ответить. Попробуйте позже.'; }
     finally { button.disabled = false; }

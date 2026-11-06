@@ -31,6 +31,9 @@ PHONE = re.compile(r'(?<!\w)(?:\+?7|8)[\d\s()\-]{9,20}')
 EMAIL = re.compile(r'[\w.+-]+@[\w.-]+\.[a-z]{2,}', re.I)
 SENSITIVE = re.compile(r'(?:\b\d[\d -]{14,22}\d\b|\b(?:ул\.|улица|квартира|кв\.)\s+[^,]{2,50}\d+)', re.I)
 OFF_TOPIC_REQUEST = re.compile(r'\b(?:напиши\s+(?:стих|рассказ)|сочини|игнорируй\s+инструкции|забудь\s+правила|назови\s+(?:пароль|токен))\b', re.I)
+OUTSIDE_SITE_REPLY = 'Я отвечаю только на вопросы о продукции, услугах и работе этих сайтов.'
+DAILY_QUESTION_LIMIT = 15
+MAX_CONTEXT_QUESTIONS = 5
 CONSENT_VERSION = '2026-11-06'
 # Fixed vocabulary preserves question structure without sending visitor text.
 QUESTION_WORDS = set(
@@ -42,6 +45,15 @@ QUESTION_WORDS = set(
     'покажи покажите перечисли перечислите все весь список ссылка ссылки ссылками подробнее'.split()
 )
 QUESTION_TOKENS = re.compile(r'[а-яёa-z0-9]+', re.I)
+FOLLOW_UP_DETAILS = set(
+    'цена цены стоимость стоит стоить размеры размер габариты объём объем объёмы объемы '
+    'срок сроки наличие доставку доставка доставкой вес масса класс марка '
+    'телефон адрес подробнее заказать оплатить'.split()
+)
+FOLLOW_UP_CONNECTORS = set(
+    'а и по со с за как где куда когда какие какой какая какое сколько что '
+    'можно есть ли у вас них него неё на это эти их его её пожалуйста'.split()
+)
 
 
 def _origin(request):
@@ -83,7 +95,7 @@ def _ip_digest(request):
 def _consume_question(digest):
     day = timezone.localdate()
     DailyIPUsage.objects.get_or_create(day=day, ip_digest=digest)
-    return bool(DailyIPUsage.objects.filter(day=day, ip_digest=digest, count__lt=10)
+    return bool(DailyIPUsage.objects.filter(day=day, ip_digest=digest, count__lt=DAILY_QUESTION_LIMIT)
                 .update(count=F('count') + 1))
 
 
@@ -102,10 +114,11 @@ def _get_session(data, site, digest):
     return None
 
 
-def _model_reply(question, vocabulary_sources, *, site, previous_question=''):
+def _model_reply(question, vocabulary_sources, *, site, previous_questions=()):
     instructions = (
-        'Ты консультант только сайтов ГАНИН ГРУПП и Стройдеталь-2. На вопросы вне '
-        'тематики двух сайтов отвечай только: «Я отвечаю на вопросы о продукции, услугах и работе этих сайтов». '
+        'Ты консультант сайтов ГАНИН ГРУПП и Стройдеталь-2. На вопросы вне '
+        f'тематики двух сайтов отвечай дословно: «{OUTSIDE_SITE_REPLY}» '
+        'В этом случае не вызывай инструменты и не проси уточнений. '
         'Отвечай по-русски, '
         'кратко и по делу, обычно в одном или двух предложениях. Сначала ответь прямо на заданный вопрос; не добавляй '
         'неотносящиеся к нему сведения. Для вопросов о компании сначала вызови инструмент, '
@@ -121,7 +134,9 @@ def _model_reply(question, vocabulary_sources, *, site, previous_question=''):
         'Для остальных вопросов ищи по страницам текущего сайта. '
         'Отвечай от лица компании, без фраз «в источниках», '
         '«по предоставленным данным» и без перечисления страниц. '
-        'Предыдущий вопрос учитывай только если он нужен для понимания текущего. '
+        'Для уточнения используй самый недавний относящийся к нему предыдущий вопрос. '
+        'Если в новом вопросе после фильтрации остались только общие слова и […], '
+        'без темы сайта, используй ответ для вопросов вне тематики. '
         'На вопрос о месте назови место, на вопрос о количестве назови число. '
         'При сравнении назови лидера и его значение, если оно известно. '
         'На вопрос об общем количестве или сравнении не перечисляй отдельные позиции, '
@@ -168,12 +183,11 @@ def _model_reply(question, vocabulary_sources, *, site, previous_question=''):
                 topic_words.append('[…]')
         return ' '.join(topic_words)[:1200]
 
-    topic = public_topic(question)
-    previous_topic = public_topic(previous_question) if previous_question else ''
-    if not topic or topic == '[…]':
-        raise ValueError('No public topic terms')
-    user_prompt = (f'Предыдущий вопрос: {previous_topic}?\nТекущий вопрос: {topic}?'
-                   if previous_topic else f'Вопрос: {topic}?')
+    topic = public_topic(question) or '[…]'
+    history = [public_topic(previous) for previous in previous_questions]
+    history = '\n'.join(f'• {item}?' for item in history if item and item != '[…]')
+    user_prompt = (f'Предыдущие вопросы (от старого к новому):\n{history}\nТекущий вопрос: {topic}?'
+                   if history else f'Вопрос: {topic}?')
     messages = [{'role': 'system', 'content': instructions},
                 {'role': 'user', 'content': user_prompt}]
     tools = available_tools(site)
@@ -250,37 +264,36 @@ def chat(request):
         return _response({**payload, **session_data}, status, origin)
 
     if settings.ASSISTANT_DAILY_LIMIT_ENABLED and not _consume_question(_ip_digest(request)):
-        return _response({'error': 'Лимит — 10 вопросов в сутки с одного IP. Попробуйте завтра или оставьте заявку.',
+        return _response({'error': f'Лимит — {DAILY_QUESTION_LIMIT} вопросов в сутки с одного IP. '
+                                   'Попробуйте завтра или оставьте заявку.',
                           **session_data}, 429, origin)
     if PHONE.search(question) or EMAIL.search(question) or SENSITIVE.search(question):
         return reply('Не отправляйте личные данные в чат. Для адреса объекта и контактов используйте форму заявки.')
     if OFF_TOPIC_REQUEST.search(question):
-        return reply('Я отвечаю на вопросы о продукции, услугах и работе этих сайтов.')
-    previous_question = ''
-    if len(WORDS.findall(question)) <= 4:
+        return reply(OUTSIDE_SITE_REPLY)
+    previous_questions = []
+    # Brevity alone does not make an independent question a follow-up.
+    question_terms = set(QUESTION_TOKENS.findall(question.lower()))
+    if question_terms & FOLLOW_UP_DETAILS and question_terms <= FOLLOW_UP_DETAILS | FOLLOW_UP_CONNECTORS:
         if session:
-            previous = (ChatMessage.objects.filter(session=session, role='user')
-                        .order_by('-created_at', '-pk').first())
-            previous_question = previous.text if previous else ''
+            recent = ChatMessage.objects.filter(session=session, role='user').order_by('-created_at', '-pk')
+            history = list(recent.values_list('text', flat=True)[:MAX_CONTEXT_QUESTIONS])[::-1]
         else:
-            previous = data.get('previous_question')
-            if isinstance(previous, str) and len(previous) <= 1200:
-                previous_question = previous.strip()
-        if any(pattern.search(previous_question) for pattern in (PHONE, EMAIL, SENSITIVE, OFF_TOPIC_REQUEST)):
-            previous_question = ''
+            history = data.get('previous_questions')
+            if not isinstance(history, list):
+                history = [data.get('previous_question')]
+        previous_questions = [
+            previous.strip() for previous in history[-MAX_CONTEXT_QUESTIONS:]
+            if isinstance(previous, str) and 0 < len(previous) <= 1200 and previous.strip()
+            and not any(pattern.search(previous) for pattern in (PHONE, EMAIL, SENSITIVE, OFF_TOPIC_REQUEST))
+        ]
 
     if session:
         ChatMessage.objects.create(session=session, role='user', text=question)
-    follow_up = bool(previous_question)
-    query = f'{previous_question} {question}' if follow_up else question
-    vocabulary_sources = question_vocabulary(query, site)
-    if not vocabulary_sources:
-        answer = ('Я отвечаю на вопросы о продукции, услугах и работе этих сайтов. '
-                  'Если ваш вопрос о них, уточните название услуги или товара.')
-        return reply(answer)
+    vocabulary_sources = question_vocabulary(site)
     try:
         answer, sources = _model_reply(question, vocabulary_sources, site=site,
-                                       previous_question=previous_question)
+                                       previous_questions=previous_questions)
     except ValueError:
         answer = 'В материалах сайта нет точного ответа на этот вопрос. Оставьте заявку — менеджер уточнит условия.'
         return reply(answer)

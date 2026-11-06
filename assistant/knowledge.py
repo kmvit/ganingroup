@@ -29,7 +29,8 @@ GANIN_PRODUCT_ROUTES = {
 }
 SKIP_PREFIXES = ('/admin/', '/zayavka/', '/assistant/', '/static/', '/media/')
 WORDS = re.compile(r'[а-яёa-z0-9]{3,}', re.I)
-STOP_WORDS = {'какие', 'какую', 'какой', 'сколько', 'есть', 'ли', 'где', 'куда', 'как', 'что', 'она',
+STOP_WORDS = {'какие', 'какую', 'какой', 'какая', 'какое', 'каких', 'каком', 'кто', 'когда',
+              'почему', 'зачем', 'сколько', 'есть', 'ли', 'где', 'куда', 'как', 'что', 'она',
               'они', 'для', 'или', 'можно', 'либо', 'вас', 'ваши', 'ваших',
               'ганин', 'групп', 'стройдеталь', 'завод', 'сайт', 'сайте'}
 ALIASES = {'ваканс': ('работ', 'карьер', 'позиц'),
@@ -190,12 +191,7 @@ def _terms(text, expand=False):
     return result
 
 
-def matches_knowledge(question, entries):
-    terms = _terms(question, expand=True)
-    return any(terms & _terms(f'{entry["title"]} {entry["excerpt"]}') for entry in entries)
-
-
-def question_vocabulary(question, site):
+def question_vocabulary(site):
     """Read public terms locally to filter the visitor's question."""
     public_data = []
     if site == 'ganin':
@@ -210,8 +206,7 @@ def question_vocabulary(question, site):
                                 | Q(url__startswith=ROOTS['sd2'] + 'zhelezobeton/'))
     pages = [_indexed_entry(page) for page in KnowledgePage.objects.filter(
         sites, fetched_at__gte=timezone.now() - timedelta(days=7)).order_by('url')]
-    entries = public_data + pages
-    return entries if matches_knowledge(question, entries) else []
+    return public_data + pages
 
 
 class PageParser(HTMLParser):

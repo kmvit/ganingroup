@@ -13,7 +13,7 @@
   root.innerHTML = `
     <button class="gg-assistant__toggle" type="button" aria-expanded="false" aria-controls="gg-assistant-panel">Спросить ассистента</button>
     <section class="gg-assistant__panel" id="gg-assistant-panel" aria-label="Ассистент сайта">
-      <div class="gg-assistant__head"><span>Помощь по продукции и услугам</span><button class="gg-assistant__close" type="button" aria-label="Закрыть">×</button></div>
+      <div class="gg-assistant__head"><span>${site === 'ganin' ? 'Ассистент' : 'Помощь по продукции и услугам'}</span><button class="gg-assistant__close" type="button" aria-label="Закрыть">×</button></div>
       <div class="gg-assistant__suggestions"><span class="gg-assistant__suggestions-label">Можно спросить</span><div class="gg-assistant__suggestions-list"></div></div>
       <div class="gg-assistant__messages" role="log" aria-live="polite"></div>
       <div class="gg-assistant__actions"><button class="gg-assistant__lead-toggle" type="button">Оставить заявку →</button></div>

@@ -96,7 +96,7 @@
     messages.append(box);
     messages.scrollTop = messages.scrollHeight;
   }
-  addMessage('Здравствуйте! Помогу с продукцией, доставкой и услугами.');
+  addMessage('Здравствуйте! Чем могу помочь? Напишите свой вопрос или выберите подсказку.');
   toggle.addEventListener('click', () => open(!root.classList.contains('is-open')));
   $('.gg-assistant__close').addEventListener('click', () => open(false));
   $('.gg-assistant__lead-toggle').addEventListener('click', () => {

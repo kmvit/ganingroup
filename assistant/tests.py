@@ -42,6 +42,9 @@ class KnowledgeTests(TestCase):
         KnowledgePage.objects.create(site='ganin', url='https://ganin-group.ru/kariera/',
                                      title='Работа в ГАНИН ГРУПП',
                                      content='Направления работы компании и открытые вакансии.')
+        KnowledgePage.objects.create(site='ganin', url='https://ganin-group.ru/consent/',
+                                     title='Согласие на обработку данных',
+                                     content='Работа компании с обращениями и направления обработки.')
         KnowledgePage.objects.create(site='ganin', url='https://ganin-group.ru/',
                                      title='ГАНИН ГРУПП — производство',
                                      content='Направления: бетон, ЖБИ, асфальт и карьер.')

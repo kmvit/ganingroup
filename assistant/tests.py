@@ -38,6 +38,16 @@ class KnowledgeTests(TestCase):
         self.assertEqual(result[0]['url'], 'https://sd2-kmv.ru/dostavka/')
         self.assertIsNone(normalized_url('https://sd2-kmv.ru/', 'https://evil.example/', 'sd2-kmv.ru'))
 
+    def test_general_directions_do_not_return_careers(self):
+        KnowledgePage.objects.create(site='ganin', url='https://ganin-group.ru/kariera/',
+                                     title='Работа в ГАНИН ГРУПП',
+                                     content='Направления работы компании и открытые вакансии.')
+        KnowledgePage.objects.create(site='ganin', url='https://ganin-group.ru/',
+                                     title='ГАНИН ГРУПП — производство',
+                                     content='Направления: бетон, ЖБИ, асфальт и карьер.')
+        sources = search_pages('Какие направления работы у ГАНИН ГРУПП?', site='ganin')
+        self.assertEqual([source['url'] for source in sources], ['https://ganin-group.ru/'])
+
     def test_search_prefers_relevant_page_on_requested_site(self):
         KnowledgePage.objects.create(site='ganin', url='https://ganin-group.ru/kariera/',
                                      title='Работа в ГАНИН ГРУПП',

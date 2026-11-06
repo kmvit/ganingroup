@@ -138,10 +138,13 @@ def search_pages(question, limit=3, site=None):
     if not terms:
         return []
     ranked = []
+    career_query = bool(re.search(r'ваканс|работат|трудоустр|резюме|сотрудник|персонал|должност|работ[ауе]\s+в\s+', question, re.I))
     pages = KnowledgePage.objects.filter(fetched_at__gte=timezone.now() - timedelta(days=7))
     if site:
         pages = pages.filter(site=site)
     for page in pages.iterator():
+        if page.url.endswith('/kariera/') and not career_query:
+            continue
         title_hits = len(terms & _terms(page.title))
         paragraphs = [p.strip() for p in page.content.split('\n') if len(p.strip()) > 25]
         for index, paragraph in enumerate(paragraphs):

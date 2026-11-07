@@ -205,7 +205,7 @@ class AssistantApiTests(TestCase):
         first = requests[0]['messages']
         self.assertEqual('В каком городе больше всего ваших объектов?', first[1]['content'])
         self.assertNotIn('ЖК «Замковая»', first[0]['content'])
-        result = requests[1]['messages'][-1]
+        result = next(message for message in requests[1]['messages'] if message['role'] == 'tool')
         self.assertEqual(result['tool_call_id'], 'catalog-1')
         self.assertIn('Кисловодск — 1', result['content'])
         self.assertNotIn('Испытание прочности бетона.', result['content'])

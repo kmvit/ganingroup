@@ -6,7 +6,6 @@ from html.parser import HTMLParser
 from urllib.parse import urldefrag, urljoin, urlparse
 from urllib.request import Request, urlopen
 
-from django.db.models import Q
 from django.utils import timezone
 from django.urls import reverse
 from django.utils.html import strip_tags
@@ -90,7 +89,8 @@ def product_directions(formwork_only=False):
         if row.is_upex or row.url_name in SD2_URLS or href.startswith('/produkciya/'):
             entries.append({'site': 'ganin', 'title': row.title,
                             'url': urljoin(ROOTS['ganin'], href) if href else '',
-                            'excerpt': row.tagline})
+                            'excerpt': row.tagline if formwork_only else
+                                       'Направление продукции. Характеристики и цены — в подробном каталоге.'})
     return entries
 
 
@@ -189,24 +189,6 @@ def _terms(text, expand=False):
             if key in result:
                 result.update(aliases)
     return result
-
-
-def question_vocabulary(site):
-    """Read public terms locally to filter the visitor's question."""
-    public_data = []
-    if site == 'ganin':
-        public_data = delivery_knowledge() + project_knowledge() + product_directions()
-        public_data += document_knowledge() + vacancy_knowledge()
-        for section in PRODUCT_SECTIONS.values():
-            public_data.extend(product_reference(section))
-    sites = Q(site=site)
-    if site == 'ganin':
-        product_urls = [variant for url in SD2_URLS.values() for variant in (url, url + '/')]
-        sites |= Q(site='sd2') & (Q(url__in=product_urls)
-                                | Q(url__startswith=ROOTS['sd2'] + 'zhelezobeton/'))
-    pages = [_indexed_entry(page) for page in KnowledgePage.objects.filter(
-        sites, fetched_at__gte=timezone.now() - timedelta(days=7)).order_by('url')]
-    return public_data + pages
 
 
 class PageParser(HTMLParser):

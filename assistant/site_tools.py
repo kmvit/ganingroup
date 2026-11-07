@@ -1,6 +1,11 @@
 """Read-only site data available to the assistant model."""
 import json
+from datetime import timedelta
+from urllib.parse import urlparse
 
+from django.utils import timezone
+
+from .models import KnowledgePage
 from .knowledge import (
     GANIN_PRODUCT_ROUTES, PRODUCT_SECTIONS, delivery_knowledge, document_knowledge, product_knowledge,
     project_knowledge, search_pages, vacancy_knowledge,
@@ -43,6 +48,24 @@ CATALOG = _function(
     {'dataset': {'type': 'string', 'enum': list(DATASETS)}},
     ['dataset'],
 )
+READ_PAGE = _function(
+    'read_public_page',
+    'Прочитать полную публичную страницу по точной ссылке на ganin-group.ru или sd2-kmv.ru. '
+    'Используй, когда посетитель дал ссылку или нужен полный текст найденной страницы.',
+    {'url': {'type': 'string', 'description': 'Точный HTTPS-адрес публичной страницы одного из двух сайтов.'}},
+    ['url'],
+)
+DIRECT_REPLY = _function(
+    'reply_without_lookup',
+    'Ответить без поиска можно только на приветствие/благодарность, самостоятельный посторонний вопрос '
+    'или уточнить непонятный запрос. Для любых фактов о компании сначала нужны инструменты чтения. '
+    'Не выбирай уточнение, если сведения уже есть в истории.',
+    {
+        'kind': {'type': 'string', 'enum': ['smalltalk', 'off_topic', 'clarification']},
+        'text': {'type': 'string', 'description': 'Короткий ответ без фактических сведений о компании.'},
+    },
+    ['kind', 'text'],
+)
 def _product_categories(site):
     return ['overview', *PRODUCT_SECTIONS, *(GANIN_PRODUCT_ROUTES if site == 'ganin' else ())]
 
@@ -63,7 +86,10 @@ def available_tools(site):
         },
         ['category'],
     )
-    return [SEARCH, products, CATALOG] if site == 'ganin' else [SEARCH, products]
+    tools = [SEARCH, READ_PAGE, products, DIRECT_REPLY]
+    if site == 'ganin':
+        tools.append(CATALOG)
+    return tools
 
 
 def execute_tool(site, function):
@@ -77,7 +103,20 @@ def execute_tool(site, function):
         return {'error': 'Некорректные параметры инструмента.'}, []
 
     query = arguments.get('query')
-    if name == 'search_public_pages' and arguments.keys() == {'query'} and isinstance(query, str):
+    if name == 'read_public_page' and arguments.keys() == {'url'}:
+        url = arguments['url']
+        if not isinstance(url, str) or len(url) > 500:
+            return {'error': 'Некорректная ссылка.'}, []
+        parsed = urlparse(url)
+        if (parsed.scheme != 'https' or parsed.netloc not in ('ganin-group.ru', 'sd2-kmv.ru')
+                or parsed.query):
+            return {'error': 'Допустимы только публичные страницы двух сайтов.'}, []
+        canonical = url.split('#', 1)[0].rstrip('/')
+        pages = KnowledgePage.objects.filter(
+            url__in=(canonical, canonical + '/'), fetched_at__gte=timezone.now() - timedelta(days=7))
+        entries = [{'site': row.site, 'title': row.title, 'url': row.url, 'excerpt': row.content}
+                   for row in pages]
+    elif name == 'search_public_pages' and arguments.keys() == {'query'} and isinstance(query, str):
         query = query.strip()
         if not query or len(query) > 240:
             return {'error': 'Для поиска нужны ключевые слова до 240 символов.'}, []

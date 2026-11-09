@@ -9,7 +9,7 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
-from content.models import CatalogItem, Document, ProjectObject
+from content.models import CatalogItem, Department, Document, ProjectObject, TeamMember
 from leads.models import Lead
 
 from .knowledge import PageParser, normalized_url, search_pages
@@ -19,6 +19,30 @@ from .views import _model_reply
 
 
 class KnowledgeTests(TestCase):
+    def test_team_contacts_are_shared_and_only_published(self):
+        TeamMember.objects.create(name='Руководитель', position='Директор')
+        Department.objects.create(title='Отдел снабжения', person='Сотрудник снабжения',
+                                  phone='+7 800 555-01-23', email='supply@example.org')
+        Department.objects.create(title='Неопубликованный отдел', phone='скрытый телефон', published=False)
+        TeamMember.objects.create(name='Неопубликованный сотрудник', published=False)
+        KnowledgePage.objects.create(site='sd2', url='https://sd2-kmv.ru/kontakty',
+                                     title='Контакты', content='Общий сотрудник: +7 800 555-00-11')
+        KnowledgePage.objects.create(site='sd2', url='https://sd2-kmv.ru/other',
+                                     title='Другой раздел', content='Не относится к общей команде')
+        results = []
+        for site in ('ganin', 'sd2'):
+            result, sources = execute_tool(site, {'name': 'read_company_team', 'arguments': '{}'})
+            self.assertIn('+7 800 555-01-23', str(result))
+            self.assertIn('supply@example.org', str(result))
+            self.assertIn('Руководитель', str(result))
+            self.assertIn('+7 800 555-00-11', str(result))
+            self.assertNotIn('Не относится к общей команде', str(result))
+            self.assertNotIn('Неопубликованный', str(result))
+            self.assertNotIn('скрытый телефон', str(result))
+            self.assertIn('https://ganin-group.ru/kontakty/', [source['url'] for source in sources])
+            results.append(result)
+        self.assertEqual(*results)
+
     def test_daily_cleanup_keeps_dialogues(self):
         session = ChatSession.objects.create(site='sd2', ip_digest='a' * 64,
                                              consent_version='2026-11-05')

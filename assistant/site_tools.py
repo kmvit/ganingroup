@@ -8,7 +8,7 @@ from django.utils import timezone
 from .models import KnowledgePage
 from .knowledge import (
     GANIN_PRODUCT_ROUTES, PRODUCT_SECTIONS, delivery_knowledge, document_knowledge, product_knowledge,
-    project_knowledge, search_pages, vacancy_knowledge,
+    project_knowledge, search_pages, team_knowledge, vacancy_knowledge,
 )
 
 MAX_RESULT_CHARS = 16_000
@@ -55,6 +55,13 @@ READ_PAGE = _function(
     {'url': {'type': 'string', 'description': 'Точный HTTPS-адрес публичной страницы одного из двух сайтов.'}},
     ['url'],
 )
+TEAM = _function(
+    'read_company_team',
+    'Общая команда ГАНИН ГРУПП и Стройдеталь-2: сотрудники, должности, отделы, '
+    'опубликованные рабочие телефоны и почта. Единый справочник из базы ГАНИН ГРУПП '
+    'для обоих сайтов. Используй для связи с сотрудником или отделом.',
+    {}, [],
+)
 DIRECT_REPLY = _function(
     'reply_without_lookup',
     'Ответить без поиска можно только на приветствие/благодарность, самостоятельный посторонний вопрос '
@@ -87,7 +94,7 @@ def available_tools(site):
         },
         ['category'],
     )
-    tools = [SEARCH, READ_PAGE, products, DIRECT_REPLY]
+    tools = [SEARCH, READ_PAGE, products, TEAM, DIRECT_REPLY]
     if site == 'ganin':
         tools.append(CATALOG)
     return tools
@@ -104,7 +111,9 @@ def execute_tool(site, function):
         return {'error': 'Некорректные параметры инструмента.'}, []
 
     query = arguments.get('query')
-    if name == 'read_public_page' and arguments.keys() == {'url'}:
+    if name == 'read_company_team' and not arguments:
+        entries = team_knowledge()
+    elif name == 'read_public_page' and arguments.keys() == {'url'}:
         url = arguments['url']
         if not isinstance(url, str) or len(url) > 500:
             return {'error': 'Некорректная ссылка.'}, []

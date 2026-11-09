@@ -11,7 +11,7 @@ from django.urls import reverse
 from django.utils.html import strip_tags
 
 from calc.models import ConcreteGrade, DeliveryZone
-from content.models import CatalogItem, Direction, Document, ProjectObject, Vacancy
+from content.models import CatalogItem, Department, Direction, Document, ProjectObject, TeamMember, Vacancy
 from content.utils import SD2_URLS
 
 from .models import KnowledgePage
@@ -45,6 +45,33 @@ ALIASES = {'ваканс': ('работ', 'карьер', 'позиц'),
 
 def project_url(slug):
     return urljoin(ROOTS['ganin'], reverse('obekt', args=[slug]))
+
+
+def team_knowledge():
+    """Public staff and department contacts shared by both brands."""
+    entries = [{
+        'site': 'ganin', 'title': member.name,
+        'url': urljoin(ROOTS['ganin'], reverse('o_gruppe')) + '#komanda',
+        'excerpt': f'Общая команда ГАНИН ГРУПП и Стройдеталь-2. {member.name}. {member.position}',
+    } for member in TeamMember.objects.filter(published=True)]
+    for department in Department.objects.filter(published=True):
+        details = [department.title, department.person, department.position]
+        if department.phone:
+            details.append(f'Телефон: {department.phone}')
+        if department.email:
+            details.append(f'Электронная почта: {department.email}')
+        entries.append({
+            'site': 'ganin', 'title': department.title,
+            'url': urljoin(ROOTS['ganin'], reverse('kontakty')),
+            'excerpt': 'Общие отделы и контакты ГАНИН ГРУПП и Стройдеталь-2. '
+                       + '. '.join(detail for detail in details if detail),
+        })
+    contact_urls = [urljoin(root, 'kontakty') + suffix
+                    for root in ROOTS.values() for suffix in ('', '/')]
+    pages = KnowledgePage.objects.filter(
+        url__in=contact_urls, fetched_at__gte=timezone.now() - timedelta(days=7))
+    entries.extend(_indexed_entry(page) for page in pages)
+    return entries
 
 
 def delivery_knowledge():

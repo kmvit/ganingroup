@@ -28,7 +28,7 @@ log = logging.getLogger(__name__)
 ORIGINS = {'https://ganin-group.ru': 'ganin', 'https://www.ganin-group.ru': 'ganin',
            'https://sd2-kmv.ru': 'sd2', 'https://www.sd2-kmv.ru': 'sd2'}
 SITE_NAMES = {'ganin': 'ГАНИН ГРУПП', 'sd2': 'Стройдеталь-2'}
-DAILY_QUESTION_LIMIT = 15
+DAILY_QUESTION_LIMIT = 100
 MAX_CONTEXT_MESSAGES = 10
 RECORDING_VERSION = 'recording-v1'
 MARKDOWN_LINK = re.compile(r'\[((?:\\[\\\[\]]|[^\\\[\]\n])+)\]\(([^\s)]*)\)')

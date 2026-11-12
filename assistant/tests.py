@@ -243,20 +243,20 @@ class AssistantApiTests(TestCase):
     def test_chat_without_consent_has_shared_daily_limit(self, model):
         body = json.dumps({'message': 'Напиши стих про бетон'})
         origins = ('https://ganin-group.ru', 'https://sd2-kmv.ru')
-        for i in range(15):
+        for i in range(100):
             response = self.client.post('/assistant/chat/', data=body, content_type='application/json',
                                         HTTP_ORIGIN=origins[i % 2], REMOTE_ADDR='192.0.2.1')
             self.assertEqual(response.status_code, 200, i)
         response = self.client.post('/assistant/chat/', data=body, content_type='application/json',
                                     HTTP_ORIGIN=origins[1], REMOTE_ADDR='192.0.2.1')
         self.assertEqual(response.status_code, 429)
-        self.assertIn('15 вопросов', response.json()['error'])
-        self.assertEqual(DailyIPUsage.objects.get().count, 15)
+        self.assertIn('100 вопросов', response.json()['error'])
+        self.assertEqual(DailyIPUsage.objects.get().count, 100)
         response = self.client.post('/assistant/chat/', data=body, content_type='application/json',
                                     HTTP_ORIGIN=origins[1], REMOTE_ADDR='192.0.2.2')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(ChatSession.objects.count(), 16)
-        self.assertEqual(ChatMessage.objects.count(), 32)
+        self.assertEqual(ChatSession.objects.count(), 101)
+        self.assertEqual(ChatMessage.objects.count(), 202)
 
     def test_invalid_session_id_starts_a_new_recorded_dialogue(self):
         with patch('assistant.views._model_reply', return_value=('Ответ', [])):

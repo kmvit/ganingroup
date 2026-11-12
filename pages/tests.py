@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from django.apps import apps
 from importlib import import_module
 
-from core.models import MenuItem, Page
+from core.models import Card, MenuItem, Page
 from content.models import ObjectStat, ProjectObject
 
 
@@ -56,6 +56,32 @@ class HomeSearchMetadataTests(TestCase):
         migration.shorten_about_heading(apps, None)
         original.refresh_from_db()
         self.assertEqual(original.h1, 'Мой заголовок из админки')
+
+
+class DeveloperSolutionCardTests(TestCase):
+    def test_card_copy_updates_without_overwriting_admin_edits(self):
+        page = Page.objects.create(slug='reshenie_zastroyshchikam',
+                                   admin_title='Застройщикам ЖК')
+        volume = Card.objects.create(
+            page=page, section='grid1', title='Объёмы на пике сезона',
+            text='Поставка с двух смесительных узлов — пиковая подача до 4000 м³ в сутки')
+        pumps = Card.objects.create(
+            page=page, section='grid1', title='Насосы на площадке',
+            text='8 бетононасосов группы — подача на высоту без субподряда')
+        custom = Card.objects.create(
+            page=page, section='grid1', title='Насосы на площадке',
+            text='Текст, изменённый в админке')
+
+        migration = import_module('core.migrations.0014_update_developer_solution_cards')
+        migration.update_developer_solution_cards(apps, None)
+        volume.refresh_from_db()
+        pumps.refresh_from_db()
+        custom.refresh_from_db()
+        self.assertEqual(volume.text,
+                         'Поставка с 4 смесительных узлов — пиковая подача до 4000 м³ в сутки.')
+        self.assertEqual(pumps.text,
+                         '10 бетононасосов группы — подача на высоту без субподряда')
+        self.assertEqual(custom.text, 'Текст, изменённый в админке')
 
 
 class ProductPageTests(TestCase):

@@ -67,6 +67,20 @@
     toggle.setAttribute('aria-expanded', String(value));
     if (value) $('.gg-assistant__input').focus();
   }
+  function appendTextWithPhones(box, text) {
+    const phonePattern = /(^|[^\d+])((?:\+7|8)[ \t\u00a0\u202f-]*(?:\(\d{3}\)|\d{3})[ \t\u00a0\u202f-]*\d{3}[ \t\u00a0\u202f\u2010-\u2013-]*\d{2}[ \t\u00a0\u202f\u2010-\u2013-]*\d{2})(?!\d)/g;
+    let end = 0;
+    for (const match of text.matchAll(phonePattern)) {
+      const [token, prefix, phone] = match;
+      box.append(text.slice(end, match.index) + prefix);
+      const link = document.createElement('a');
+      link.href = 'tel:+7' + phone.replace(/\D/g, '').slice(1);
+      link.textContent = phone;
+      box.append(link);
+      end = match.index + token.length;
+    }
+    box.append(text.slice(end));
+  }
   function addMessage(text, user = false, sources = []) {
     const box = document.createElement('div');
     box.className = 'gg-assistant__message' + (user ? ' gg-assistant__message--user' : '');
@@ -77,7 +91,7 @@
       let end = 0;
       for (const match of text.matchAll(/\[((?:\\[\\\[\]]|[^\\\[\]\n])+)\]\(([^\s)]*)\)/g)) {
         const [token, label, url] = match;
-        box.append(text.slice(end, match.index));
+        appendTextWithPhones(box, text.slice(end, match.index));
         const title = label.replace(/\\([\\\[\]])/g, '$1');
         if (url.startsWith('https://') && allowedUrls.has(url)) {
           const link = document.createElement('a');
@@ -87,11 +101,11 @@
           link.textContent = title;
           box.append(link);
         } else {
-          box.append(title);
+          appendTextWithPhones(box, title);
         }
         end = match.index + token.length;
       }
-      box.append(text.slice(end));
+      appendTextWithPhones(box, text.slice(end));
     }
     messages.append(box);
     messages.scrollTop = messages.scrollHeight;

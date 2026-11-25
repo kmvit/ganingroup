@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 from django.urls import path
 
-from . import views
+from . import delivery, views
 
 urlpatterns = [
     path(p, views.make_page_view(tpl, active, name), name=name)
     for p, name, tpl, active in views.PAGES
 ] + [
+    path('zayavka/beton/', delivery.delivery_quote, name='delivery_quote'),
     # направления с каталогом и ценами живут на sd2-kmv.ru
     path('produkciya/beton/', views.to_sd2('produkciya_beton')),
     path('produkciya/beton-m350/', views.to_sd2('produkciya_beton')),

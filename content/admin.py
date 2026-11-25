@@ -5,7 +5,7 @@ from django.contrib import admin
 from django.utils.html import format_html
 
 from .models import (CatalogItem, Department, Direction, Document, MapPoint,
-                     ObjectPhoto, ObjectStat, ProjectObject, Review, Stat,
+                     ObjectPhoto, ObjectStat, ProjectObject, ProjectSupply, Review, Stat,
                      TeamMember, TimelineEvent, Vacancy)
 
 
@@ -71,6 +71,11 @@ class ObjectPhotoInline(admin.TabularInline):
     fields = ('image', 'caption', 'order', 'published')
 
 
+class ProjectSupplyInline(admin.StackedInline):
+    model = ProjectSupply
+    extra = 0
+
+
 class ProjectObjectForm(forms.ModelForm):
     """Сегменты — галочками; в базе лежат через запятую (как остальные списки)."""
 
@@ -102,7 +107,7 @@ class ProjectObjectAdmin(admin.ModelAdmin, PhotoMixin):
     list_display_links = ('title',)
     list_filter = ('is_featured', 'published', 'direction')
     search_fields = ('title', 'city', 'summary')
-    inlines = [ObjectStatInline, ObjectPhotoInline]
+    inlines = [ProjectSupplyInline, ObjectStatInline, ObjectPhotoInline]
     fieldsets = (
         (None, {'fields': ('title', 'summary', 'photo')}),
         ('Данные объекта', {'fields': ('city', 'direction', 'year', 'volume')}),

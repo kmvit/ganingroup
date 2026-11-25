@@ -69,7 +69,8 @@ def notify(subject: str, lines: list[str]) -> None:
 
 
 def notify_lead(lead) -> None:
-    notify('Новая заявка ТКП — ГАНИН ГРУПП', [
+    subject = 'Бетон с доставкой' if lead.submission_id else 'Новая заявка ТКП'
+    notify(f'{subject} — ГАНИН ГРУПП', [
         f'Имя: {lead.name}',
         f'Телефон: {lead.phone}',
         f'Компания: {lead.company or "—"}',

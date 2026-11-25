@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Узнать цену с доставкой{% endblock %}
+{% block content %}
+<section><div class="wrap" style="max-width:680px">
+  <h1>Бетон с доставкой</h1>
+  <p>Менеджер рассчитает стоимость бетона, доставки и подачи насосом, если он нужен.</p>
+  <p id="delivery-ok" role="status" {% if not accepted %}hidden{% endif %}>Заявка принята. Менеджер свяжется с вами для расчёта.</p>
+  {% if form %}
+  <form method="post" id="delivery-form" class="form-card" style="margin-top:24px">
+    {% csrf_token %}
+    {% for field in form.hidden_fields %}{{ field }}{{ field.errors }}{% endfor %}
+    {% for field in form.visible_fields %}
+      {% if field.name == 'agree' %}
+        <label class="f-agree">{{ field }} <span>Согласен на обработку персональных данных — <a href="{% url 'consent' %}" target="_blank" rel="noopener">текст согласия</a></span></label>
+      {% else %}
+        <label class="f-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}
+      {% endif %}
+      {{ field.errors }}
+    {% endfor %}
+    <p role="alert" id="delivery-error"></p>
+    <button class="btn btn--solid" style="margin-top:18px" type="submit">Отправить заявку</button>
+  </form>
+  <script>
+  document.getElementById('delivery-form').addEventListener('submit', async function (event) {
+    event.preventDefault();
+    const button = this.querySelector('button');
+    if (button.disabled) return;
+    button.disabled = true;
+    const error = document.getElementById('delivery-error');
+    error.textContent = '';
+    try {
+      const response = await fetch(this.action, {
+        method: 'POST', body: new FormData(this), headers: {'Accept': 'application/json'}
+      });
+      const result = await response.json();
+      if (!response.ok || !result.accepted) throw new Error((result.errors || []).join(' '));
+      this.hidden = true;
+      document.getElementById('delivery-ok').hidden = false;
+    } catch (err) {
+      error.textContent = 'Проверьте данные и повторите отправку. ' + (err.message || '');
+      button.disabled = false;
+    }
+  });
+  </script>
+  {% endif %}
+</div></section>
+{% endblock %}

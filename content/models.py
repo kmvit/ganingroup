@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 """Содержание сайта: цифры, направления, объекты, люди, вакансии."""
+from decimal import Decimal
+
+from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator
 from django.db import models
 
 from core.models import Ordered
@@ -161,6 +165,33 @@ class ProjectObject(Ordered):
     @property
     def gallery(self):
         return self.gallery_photos.filter(published=True)
+
+
+class ProjectSupply(models.Model):
+    project = models.OneToOneField(ProjectObject, related_name='supply', on_delete=models.CASCADE)
+    period = models.CharField('Период поставок', max_length=100)
+    grades = models.CharField('Основные классы бетона', max_length=120)
+    total = models.DecimalField('Отгружено с учётом возвратов и корректировок, м³',
+                                max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
+    pour_date = models.DateField('Дата крупнейшей непрерывной заливки за смену')
+    pour_volume = models.DecimalField('Объём этой заливки, м³', max_digits=10, decimal_places=2,
+                                      validators=[MinValueValidator(Decimal('0.01'))])
+    minutes = models.PositiveIntegerField('Продолжительность подачи, минут', null=True, blank=True,
+                                          validators=[MinValueValidator(1)])
+    confirmed = models.BooleanField('Данные сверены с продажами и диспетчером, опубликовать', default=False)
+
+    def clean(self):
+        if self.total and self.pour_volume and self.pour_volume > self.total:
+            raise ValidationError({'pour_volume': 'Объём заливки превышает общую отгрузку.'})
+
+    @property
+    def rate(self):
+        if self.minutes:
+            return round(self.pour_volume * 60 / self.minutes, 2)
+
+    class Meta:
+        verbose_name = 'Показатели поставок'
+        verbose_name_plural = 'Показатели поставок'
 
 
 class ObjectStat(Ordered):

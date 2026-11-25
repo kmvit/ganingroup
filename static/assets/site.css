@@ -524,6 +524,8 @@ a.chip:hover{color:var(--white);border-color:var(--accent)}
 .form-card h3{font-size:24px;color:var(--white)}
 
 /* ---------- КЕЙС: КОНТЕКСТ → РЕЗУЛЬТАТ ---------- */
+.supply-table{width:100%;border-collapse:collapse;margin-top:24px}
+.supply-table th,.supply-table td{text-align:left;vertical-align:top;padding:12px 8px;border-bottom:1px solid var(--line-d)}
 .case-rows{border-top:1px solid var(--line-d)}
 .case-row{display:grid;grid-template-columns:180px 1fr;gap:clamp(16px,3vw,48px);padding:clamp(20px,2.4vw,32px) 0;border-bottom:1px solid var(--line-d)}
 .case-row b{font-family:var(--font-m);font-weight:500;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent)}

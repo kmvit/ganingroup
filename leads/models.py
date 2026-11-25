@@ -6,6 +6,7 @@ from django.db import models
 class Lead(models.Model):
     """Заявка «Запросить ТКП» — основная конверсия сайта."""
 
+    submission_id = models.UUIDField(unique=True, null=True, editable=False)
     name = models.CharField('Имя', max_length=120)
     phone = models.CharField('Телефон', max_length=40)
     company = models.CharField('Компания', max_length=200, blank=True)

@@ -34,6 +34,21 @@
 </section>
 {% endif %}
 
+{% with supply=object.supply %}{% if supply.confirmed %}
+<section><div class="wrap">
+  <h2>Фактические поставки</h2>
+  <table class="supply-table">
+    <tbody>
+      <tr><th scope="row">Период поставок</th><td>{{ supply.period }}</td></tr>
+      <tr><th scope="row">Основные классы бетона</th><td>{{ supply.grades }}</td></tr>
+      <tr><th scope="row">Отгружено</th><td>{{ supply.total }} м³</td></tr>
+      <tr><th scope="row">Крупнейшая заливка за смену</th><td>{{ supply.pour_date }} · {{ supply.pour_volume }} м³</td></tr>
+      {% if supply.minutes %}<tr><th scope="row">Темп подачи</th><td>{{ supply.rate }} м³/ч</td></tr>{% endif %}
+    </tbody>
+  </table>
+</div></section>
+{% endif %}{% endwith %}
+
 {% if object.gallery %}
 <section>
   <div class="wrap">

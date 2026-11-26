@@ -7,7 +7,7 @@
         <p>{{ site.footer_about }}</p>
         {% if site.address_office or site.phone_main or site.email_main %}<div style="margin-top:18px;font-size:13.5px;line-height:1.9;color:var(--silver)">
           {% if site.address_office %}<div>{{ site.address_office }}</div>{% endif %}
-          {% if site.phone_main %}<div><a href="tel:{{ site.phone_link }}">{{ site.phone_main }}</a></div>{% endif %}
+          {% for display, number in site.phone_list %}<div><a href="tel:{{ number }}">{{ display }}</a></div>{% endfor %}
           {% if site.email_main %}<div><a href="mailto:{{ site.email_main }}">{{ site.email_main }}</a></div>{% endif %}
           {% if site.work_hours %}<div style="color:var(--muted)">{{ site.work_hours }}</div>{% endif %}
         </div>{% endif %}

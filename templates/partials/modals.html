@@ -12,6 +12,8 @@
       <input class="f-input" id="tkp-phone" name="phone" placeholder="+7 ___ ___-__-__" required />
       <label class="f-label" for="tkp-company">Компания</label>
       <input class="f-input" id="tkp-company" name="company" />
+      <p data-calculation-preview hidden></p>
+      <input type="hidden" name="calculation">
       <label class="f-label" for="tkp-details">Объект / объём / сроки</label>
       <textarea class="f-input" id="tkp-details" name="details" placeholder="Например: ЖК, 12 000 м³, старт в марте"></textarea>
       <label class="f-agree"><input type="checkbox" name="agree" required /> <span>Согласен на обработку персональных данных — <a href="{% url 'consent' %}">текст согласия</a></span></label>

@@ -96,14 +96,11 @@
   var reserve = 1.05;                     // запас 5–10% — на выбор клиента
 
 
-  // размеры не могут быть отрицательными: минус даёт отрицательный объём
-  var num = function (el) {
-    var v = parseFloat(String(el.value).replace(',', '.')) || 0;
-    return v > 0 ? v : 0;
-  };
   var fmt = function (n) { return n.toFixed(1).replace('.', ','); };
   var reservePct = function () { return Math.round((reserve - 1) * 100); };
 
+  const baseUrl = quote.href;
+  const saved = new Map();
   function applyType() {
     var d = current.dataset;
     labA.textContent = d.la;
@@ -117,30 +114,53 @@
 
   function calc() {
     var d = current.dataset;
-    var n = 1;
-    if (d.count) {
-      n = Math.max(1, Math.round(num(N)));
-      if (String(n) !== N.value) N.value = n;      // чтобы поле совпадало с расчётом
+    const fields = [A, B];
+    if (d.lc) fields.push(C);
+    const values = fields.map(el => {
+      const text = el.value.trim().replace(',', '.');
+      return /^(?:\d+(?:\.\d+)?|\.\d+)$/.test(text) ? Number(text) : NaN;
+    });
+    const count = d.count ? Number(N.value) : 1;
+    const valid = values.every(value => Number.isFinite(value) && value > 0)
+      && Number.isSafeInteger(count) && count > 0;
+    const raw = valid ? FORMULAS[d.formula](values[0], values[1], values[2], count) : 0;
+    const scaled = raw * reserve * 10;
+    const volume = Math.ceil(scaled - Number.EPSILON * scaled) / 10;
+    const url = new URL(baseUrl);
+    let summary = '';
+    if (volume > 0 && Number.isFinite(volume)) {
+      const mark = grade.grade || 'Нужна помощь';
+      const dimensions = fields.map((el, i) =>
+        [d.la, d.lb, d.lc][i] + ' ' + el.value.trim() + ' м');
+      if (d.count) dimensions.push(count + ' шт.');
+      summary = d.title + ' (' + dimensions.join(', ') + '), ' + mark + ', ' +
+        fmt(volume) + ' м³ с запасом ' + reservePct() + '%';
+      url.searchParams.set('volume', volume.toFixed(1));
+      url.searchParams.set('grade', mark);
+      url.searchParams.set('calculation', summary);
+      outVol.textContent = fmt(volume);
+      note.textContent = 'Без запаса: ' + raw.toLocaleString('ru-RU', {maximumFractionDigits: 3}) +
+        ' м³ · запас ' + reservePct() + '% · ' + mark;
+    } else {
+      outVol.textContent = '—';
+      note.textContent = 'Введите размеры конструкции и количество, если оно требуется.';
     }
-    var formula = FORMULAS[d.formula] || FORMULAS.box;
-    var v = formula(num(A), num(B), num(C), n) * reserve;
-    v = Math.ceil(v * 10) / 10;                    // округление до 0,1 м³ вверх
-
-    outVol.textContent = fmt(v);
-
-    note.textContent = 'С запасом +' + reservePct() + '% · округление до 0,1 м³'
-      + (grade.grade ? ' · ' + (/^М\d/.test(grade.grade) ? 'марка ' : '') + grade.grade : '');
-
-    var url = new URL(quote.href);
-    url.searchParams.set('volume', v > 0 ? v.toFixed(1) : '');
-    url.searchParams.set('grade', grade.grade || 'Нужна помощь');
     quote.href = url.href;
+    quote.dataset.calculation = summary;
+    document.querySelectorAll('[data-calculation-preview]').forEach(el => {
+      el.textContent = summary;
+      el.hidden = !summary;
+    });
+    const hidden = document.querySelector('#tkp input[name="calculation"]');
+    if (hidden) hidden.value = summary;
   }
 
   typeBtns.forEach(function (btn) {
     btn.addEventListener('click', function () {
       typeBtns.forEach(function (b) { b.classList.remove('act'); });
       btn.classList.add('act');
+      saved.set(current, [A.value, B.value, C.value, N.value]);
+      [A.value, B.value, C.value, N.value] = saved.get(btn) || ['', '', '', '1'];
       current = btn;
       applyType();
     });
@@ -167,6 +187,7 @@
   [A, B, C, N].forEach(function (el) { el.addEventListener('input', calc); });
 
   applyType();
+  document.addEventListener('DOMContentLoaded', calc);
 })();
 </script>
 
@@ -177,7 +198,7 @@
     <p>Отправьте результат с контактами: подтвердим объём по проекту и вернёмся с ТКП.</p>
     <div class="cta-row">
       <a class="btn btn--solid" href="#tkp">Запросить ТКП</a>
-      <a class="btn btn--line" href="tel:{{ site.phone_link }}">Заказать звонок</a>
+      <a class="btn btn--line" href="tel:{{ site.phone_link }}">Позвонить в отдел продаж</a>
     </div>
   </div>
 </section>

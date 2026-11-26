@@ -25,6 +25,7 @@ class DeliveryForm(forms.Form):
     date = forms.DateField(label='Дата заливки (если известна)', required=False,
                            widget=forms.DateInput(attrs={'type': 'date'}))
     agree = forms.BooleanField()
+    calculation = forms.CharField(required=False, max_length=600, widget=forms.HiddenInput)
     submission_id = forms.UUIDField(widget=forms.HiddenInput)
     origin = forms.ChoiceField(widget=forms.HiddenInput)
 
@@ -48,6 +49,7 @@ class DeliveryForm(forms.Form):
 @require_http_methods(['GET', 'POST'])
 def delivery_quote(request):
     initial = {'submission_id': uuid4(), 'origin': request.GET.get('origin', '/'),
+               'calculation': request.GET.get('calculation', '')[:600],
                'grade': request.GET.get('grade'), 'volume': request.GET.get('volume')}
     form = DeliveryForm(request.POST if request.method == 'POST' else None, initial=initial)
     wants_json = request.headers.get('Accept') == 'application/json'
@@ -58,6 +60,8 @@ def delivery_quote(request):
             'Сайт: ganin-group.ru', f"Марка: {data['grade']}", f"Объём: {data['volume']} м³",
             f"Место доставки: {data['address']}", f"Бетононасос: {data['pump']}", f"Дата заливки: {date}",
         ])
+        if data['calculation']:
+            details += f"\nИсходный расчёт: {data['calculation']}"
         lead, created = Lead.objects.get_or_create(submission_id=data['submission_id'], defaults={
             'name': 'Бетон с доставкой', 'phone': data['phone'], 'page': data['origin'],
             'details': details,

@@ -8,6 +8,7 @@
   {% if form %}
   <form method="post" id="delivery-form" class="form-card" style="margin-top:24px">
     {% csrf_token %}
+    {% if form.calculation.value %}<p>Исходный расчёт: {{ form.calculation.value }}</p>{% endif %}
     {% for field in form.hidden_fields %}{{ field }}{{ field.errors }}{% endfor %}
     {% for field in form.visible_fields %}
       {% if field.name == 'agree' %}

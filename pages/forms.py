@@ -29,6 +29,17 @@ class LeadForm(forms.ModelForm):
         model = Lead
         fields = ['name', 'phone', 'company', 'details']
 
+    calculation = forms.CharField(required=False, max_length=600)
+
+    def save(self, commit=True):
+        lead = super().save(commit=False)
+        calculation = self.cleaned_data.get('calculation')
+        if calculation:
+            lead.details = f"Расчёт: {calculation}\n{lead.details}".strip()
+        if commit:
+            lead.save()
+        return lead
+
     def clean_name(self):
         name = self.cleaned_data['name'].strip()
         if len(name) < 2:

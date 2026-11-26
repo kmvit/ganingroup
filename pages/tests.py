@@ -84,6 +84,24 @@ class DeveloperSolutionCardTests(TestCase):
         self.assertEqual(custom.text, 'Текст, изменённый в админке')
 
 
+class RoadSolutionStandardTests(TestCase):
+    def test_road_card_and_quote_use_requested_standard(self):
+        page = Page.objects.create(slug='reshenie_dorozhnikam', admin_title='Дорожникам')
+        card = Card.objects.create(
+            page=page, section='grid1', title='Асфальтобетон по ГОСТ',
+            text='Смеси по ГОСТ 9128-2009 — песчаные и мелкозернистые',
+        )
+        migration = import_module('core.migrations.0016_update_road_solution_standard')
+        migration.update_road_solution_standard(apps, None)
+        card.refresh_from_db()
+        self.assertEqual(card.text,
+                         'Смеси по ГОСТ Р 58406.2-2020 — песчаные и мелкозернистые')
+        response = self.client.get(reverse('reshenie_dorozhnikam'))
+        self.assertContains(response, card.text)
+        self.assertContains(response, 'Асфальтобетонные смеси по ГОСТ Р 58406.2-2020,')
+        self.assertNotContains(response, 'ГОСТ 9128-2009')
+
+
 class ProductPageTests(TestCase):
     def test_admin_can_create_product_page(self):
         user = get_user_model().objects.create_superuser(

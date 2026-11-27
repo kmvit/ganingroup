@@ -2,8 +2,10 @@
 import json
 
 from django.contrib import messages
+from django.conf import settings
 from django.http import HttpResponse, HttpResponsePermanentRedirect, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
+from django.utils import timezone
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.safestring import mark_safe
@@ -66,6 +68,11 @@ def page_extras(slug: str) -> dict:
         }
     if slug == 'obekty':
         return {'objects': ProjectObject.objects.filter(published=True)}
+    if slug == 'laboratoriya':
+        return {
+            'laboratory_test_url': settings.SD2_LABORATORY_BASE.rstrip('/') + '/laboratoriya/ispytanie/',
+            'laboratory_protocol_url': settings.SD2_LABORATORY_BASE.rstrip('/') + '/laboratoriya/protokol/',
+        }
     if slug == 'kontakty':
         return {'departments': Department.objects.filter(published=True),
                 'map_points': MapPoint.objects.filter(published=True)}
@@ -209,7 +216,7 @@ def sitemap_xml(request):
              for p in Page.objects.exclude(product_slug__isnull=True)]
     items = ''
     for loc, mod in locs:
-        stamp = f'<lastmod>{mod.date().isoformat()}</lastmod>' if mod else ''
+        stamp = f'<lastmod>{timezone.localdate(mod).isoformat()}</lastmod>' if mod else ''
         items += f'  <url><loc>{base}/{loc}</loc>{stamp}</url>\n'
     xml = ('<?xml version="1.0" encoding="UTF-8"?>\n'
            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'

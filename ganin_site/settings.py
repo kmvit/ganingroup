@@ -198,3 +198,5 @@ LOGGING = {
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+SD2_LABORATORY_BASE = os.environ.get('SD2_LABORATORY_BASE', 'https://sd2-kmv.ru')

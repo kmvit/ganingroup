@@ -8,15 +8,16 @@ from django.urls import reverse
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_http_methods
 
-from calc.models import ConcreteGrade
+from calc.models import ConcreteGrade, ConstructionType
 from leads.models import Lead
 from .notify import notify_lead
 
 
 class DeliveryForm(forms.Form):
     grade = forms.ChoiceField(label='Марка бетона')
-    volume = forms.DecimalField(label='Объём, м³', min_value=Decimal('0.01'), max_digits=10, decimal_places=2,
+    volume = forms.DecimalField(label='Объём, м³', required=False, min_value=Decimal('0.01'), max_digits=10, decimal_places=2,
                                 widget=forms.NumberInput(attrs={'step': '0.01', 'inputmode': 'decimal'}))
+    needs_volume_help = forms.BooleanField(label='Нужна помощь с объёмом', required=False)
     address = forms.CharField(label='Населённый пункт или адрес объекта', max_length=250)
     pump = forms.ChoiceField(label='Бетононасос', choices=[('', 'Выберите вариант')] + [
         (item, item) for item in ('Нужен', 'Не нужен', 'Нужна консультация')])
@@ -35,8 +36,17 @@ class DeliveryForm(forms.Form):
         self.fields['grade'].choices = [(v, v) for v in dict.fromkeys(['Нужна помощь', *titles])]
         self.fields['origin'].choices = [(reverse(n), n) for n in ('home', 'kalkulyator', 'reshenie_chastnaya_zastroyka')]
         for field in self.visible_fields():
-            if field.name != 'agree':
+            if field.name not in ('agree', 'needs_volume_help'):
                 field.field.widget.attrs['class'] = 'f-input'
+
+    def clean(self):
+        data = super().clean()
+        if data.get('needs_volume_help'):
+            data['volume'] = None
+            data['calculation'] = ''
+        elif 'volume' in data and data['volume'] is None:
+            self.add_error('volume', 'Введите объём больше нуля или выберите помощь с расчётом.')
+        return data
 
     def clean_phone(self):
         value = self.cleaned_data['phone']
@@ -56,8 +66,9 @@ def delivery_quote(request):
     if request.method == 'POST' and form.is_valid():
         data = form.cleaned_data
         date = data['date'].strftime('%d.%m.%Y') if data['date'] else 'уточнить'
+        volume = 'Требуется расчёт' if data['needs_volume_help'] else f"{data['volume']} м³"
         details = '\n'.join([
-            'Сайт: ganin-group.ru', f"Марка: {data['grade']}", f"Объём: {data['volume']} м³",
+            'Сайт: ganin-group.ru', f"Марка: {data['grade']}", f"Объём: {volume}",
             f"Место доставки: {data['address']}", f"Бетононасос: {data['pump']}", f"Дата заливки: {date}",
         ])
         if data['calculation']:
@@ -73,4 +84,8 @@ def delivery_quote(request):
         return render(request, 'pages/delivery_quote.html', {'accepted': True})
     if wants_json and form.is_bound:
         return JsonResponse({'errors': [str(e) for errors in form.errors.values() for e in errors]}, status=400)
-    return render(request, 'pages/delivery_quote.html', {'form': form})
+    return render(request, 'pages/delivery_quote.html', {
+        'form': form,
+        'ctypes': ConstructionType.objects.filter(published=True),
+        'grades': ConcreteGrade.objects.filter(published=True),
+    })

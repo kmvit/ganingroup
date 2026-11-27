@@ -1,0 +1,197 @@
+{% load static %}
+<section style="padding-top:0">
+  <div class="wrap">
+<div class="sec-head"><h2>Шаг 1 — Тип конструкции</h2><span class="num">01 / 04</span></div>
+    <div class="calc-type">
+      {% for t in ctypes %}<button type="button"{% if t.is_default %} class="act"{% endif %}
+        data-formula="{{ t.formula }}" data-count="{{ t.use_count|yesno:'1,' }}"
+        data-la="{{ t.label_a }}" data-lb="{{ t.label_b }}" data-lc="{{ t.label_c }}"
+        data-hint="{{ t.hint }}" data-title="{{ t.title }}"><span class="pic">{{ t.pic }}</span>{{ t.title }}</button>{% endfor %}
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="grid c2" style="align-items:start">
+      <div class="form-card">
+        <span class="eyebrow">Шаг 2 — Размеры, м</span>
+        <div class="grid c3" id="c-fields" style="gap:14px;margin-top:16px">
+          <div><label class="f-label" for="c-a" id="c-a-label" style="margin-top:0">Длина</label><input id="c-a" class="f-input" inputmode="decimal" value="10" /></div>
+          <div><label class="f-label" for="c-b" id="c-b-label" style="margin-top:0">Ширина</label><input id="c-b" class="f-input" inputmode="decimal" value="8" /></div>
+          <div><label class="f-label" for="c-c" id="c-c-label" style="margin-top:0">Толщина</label><input id="c-c" class="f-input" inputmode="decimal" value="0.2" /></div>
+        </div>
+        <div id="c-count-row" style="margin-top:14px;display:none">
+          <label class="f-label" for="c-n" style="margin-top:0">Количество, шт</label>
+          <input id="c-n" class="f-input" inputmode="numeric" value="1" style="max-width:180px" />
+        </div>
+        <p id="c-hint" class="note" style="margin-top:14px;font-family:var(--font-m);font-size:11px;letter-spacing:.06em;color:var(--concrete)"></p>
+
+        <span class="eyebrow" style="margin-top:26px">Шаг 3 — Марка / класс</span>
+        <div class="opts" id="c-grades" style="display:flex;flex-wrap:wrap;gap:7px;margin-top:12px">
+          {% for g in grades %}<button type="button" class="chip{% if g.is_default %} act{% endif %}"
+            data-grade="{{ g.title }}"
+            title="{{ g.grade_class }}{% if g.note %} · {{ g.note }}{% endif %}">{{ g.title }}</button>{% endfor %}
+        </div>
+        <p style="margin-top:12px;font-size:12.5px;color:var(--muted)">+ дополнительные требования: морозостойкость, водонепроницаемость — уточнит технолог.</p>
+
+        <span class="eyebrow" style="margin-top:26px">Запас на потери</span>
+        <div class="opts" id="c-reserve" style="display:flex;flex-wrap:wrap;gap:7px;margin-top:12px">
+          <button type="button" class="chip act" data-reserve="1.05">+5%</button>
+          <button type="button" class="chip" data-reserve="1.10">+10%</button>
+        </div>
+        <p style="margin-top:10px;font-size:12.5px;color:var(--muted)">Запас на усмотрение клиента: 5% — ровная опалубка, 10% — грунт и сложная геометрия.</p>
+      </div>
+      <div>
+        <div class="calc-res">
+          <span class="eyebrow">Шаг 4 — Результат</span>
+          <div class="v" style="margin-top:14px"><span id="c-res">16,8</span><small> м³</small></div>
+          <p class="note" id="c-note">С запасом +5% · округление до 0,1 м³</p>
+          <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:18px">
+            {% if embedded_calculator %}
+            <button type="button" class="btn btn--solid" id="calc-quote">Перенести в заявку</button>
+            {% else %}
+            <a class="btn btn--solid" id="calc-quote" href="{% url 'delivery_quote' %}?origin={{ request.path|urlencode }}">Узнать цену с доставкой</a>
+            <a class="btn btn--line" href="{{ sd2.produkciya_beton }}" target="_blank" rel="noopener">Марки бетона и запрос цены ↗</a>
+            {% endif %}
+          </div>
+        </div>
+        <p style="margin-top:16px;font-family:var(--font-m);font-size:10.5px;color:var(--concrete);letter-spacing:.06em;line-height:1.8">
+          Расчёт выполняется мгновенно на странице. Точный объём и марку подтверждает технолог по проекту.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+(function () {
+  // Формулы остаются в коде — из админки приходит выбор одной из трёх
+  // и подписи полей. Так заказчик меняет названия, не трогая математику.
+  var FORMULAS = {
+    box:      function (a, b, c, n) { return a * b * c * n; },
+    cylinder: function (a, b, c, n) { return Math.PI * Math.pow(a / 2, 2) * b * n; },
+    half:     function (a, b, c, n) { return a * b * c * 0.5 * n; }
+  };
+
+  var typeBtns = [].slice.call(document.querySelectorAll('.calc-type button'));
+  var gradeBtns = [].slice.call(document.querySelectorAll('#c-grades button'));
+  var reserveBtns = [].slice.call(document.querySelectorAll('#c-reserve button'));
+  var A = document.getElementById('c-a'), B = document.getElementById('c-b'),
+      C = document.getElementById('c-c'), N = document.getElementById('c-n');
+  var labA = document.getElementById('c-a-label'), labB = document.getElementById('c-b-label'),
+      labC = document.getElementById('c-c-label');
+  var countRow = document.getElementById('c-count-row');
+  var boxC = C.parentNode;
+  var outVol = document.getElementById('c-res'), note = document.getElementById('c-note'),
+      hint = document.getElementById('c-hint');
+  var quote = document.getElementById('calc-quote');
+
+  var current = document.querySelector('.calc-type button.act') || typeBtns[0];
+  var grade = (document.querySelector('#c-grades button.act') || {}).dataset || {};
+  var reserve = 1.05;                     // запас 5–10% — на выбор клиента
+
+
+  var fmt = function (n) { return n.toFixed(1).replace('.', ','); };
+  var reservePct = function () { return Math.round((reserve - 1) * 100); };
+
+  const baseUrl = quote.href || location.href;
+  const embedded = quote.tagName === 'BUTTON';
+  const saved = new Map();
+  function applyType() {
+    var d = current.dataset;
+    labA.textContent = d.la;
+    labB.textContent = d.lb;
+    boxC.style.display = d.lc ? '' : 'none';
+    if (d.lc) labC.textContent = d.lc;
+    countRow.style.display = d.count ? '' : 'none';
+    hint.textContent = d.hint || '';
+    calc();
+  }
+
+  function calc() {
+    var d = current.dataset;
+    const fields = [A, B];
+    if (d.lc) fields.push(C);
+    const values = fields.map(el => {
+      const text = el.value.trim().replace(',', '.');
+      return /^(?:\d+(?:\.\d+)?|\.\d+)$/.test(text) ? Number(text) : NaN;
+    });
+    const count = d.count ? Number(N.value) : 1;
+    const valid = values.every(value => Number.isFinite(value) && value > 0)
+      && Number.isSafeInteger(count) && count > 0;
+    const raw = valid ? FORMULAS[d.formula](values[0], values[1], values[2], count) : 0;
+    const scaled = raw * reserve * 10;
+    const volume = Math.ceil(scaled - Number.EPSILON * scaled) / 10;
+    let summary = '';
+    if (volume > 0 && Number.isFinite(volume)) {
+      const mark = grade.grade || 'Нужна помощь';
+      const dimensions = fields.map((el, i) =>
+        [d.la, d.lb, d.lc][i] + ' ' + el.value.trim() + ' м');
+      if (d.count) dimensions.push(count + ' шт.');
+      summary = d.title + ' (' + dimensions.join(', ') + '), ' + mark + ', ' +
+        fmt(volume) + ' м³ с запасом ' + reservePct() + '%';
+      outVol.textContent = fmt(volume);
+      note.textContent = 'Без запаса: ' + raw.toLocaleString('ru-RU', {maximumFractionDigits: 3}) +
+        ' м³ · запас ' + reservePct() + '% · ' + mark;
+    } else {
+      outVol.textContent = '—';
+      note.textContent = 'Введите размеры конструкции и количество, если оно требуется.';
+    }
+    quote.dataset.calculation = summary;
+    if (embedded) {
+      quote.disabled = !summary;
+      quote.dataset.volume = summary ? volume.toFixed(1) : '';
+      quote.dataset.grade = grade.grade || 'Нужна помощь';
+      return;
+    }
+    const url = new URL(baseUrl);
+    if (summary) {
+      url.searchParams.set('volume', volume.toFixed(1));
+      url.searchParams.set('grade', grade.grade || 'Нужна помощь');
+      url.searchParams.set('calculation', summary);
+    }
+    quote.href = url.href;
+    document.querySelectorAll('[data-calculation-preview]').forEach(el => {
+      el.textContent = summary;
+      el.hidden = !summary;
+    });
+    const hidden = document.querySelector('#tkp input[name="calculation"]');
+    if (hidden) hidden.value = summary;
+  }
+
+  typeBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      typeBtns.forEach(function (b) { b.classList.remove('act'); });
+      btn.classList.add('act');
+      saved.set(current, [A.value, B.value, C.value, N.value]);
+      [A.value, B.value, C.value, N.value] = saved.get(btn) || ['', '', '', '1'];
+      current = btn;
+      applyType();
+    });
+  });
+
+  gradeBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      gradeBtns.forEach(function (b) { b.classList.remove('act'); });
+      btn.classList.add('act');
+      grade = btn.dataset;
+      calc();
+    });
+  });
+
+  reserveBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      reserveBtns.forEach(function (b) { b.classList.remove('act'); });
+      btn.classList.add('act');
+      reserve = parseFloat(btn.dataset.reserve) || 1.05;
+      calc();
+    });
+  });
+
+  [A, B, C, N].forEach(function (el) { el.addEventListener('input', calc); });
+
+  applyType();
+  document.addEventListener('DOMContentLoaded', calc);
+})();
+</script>

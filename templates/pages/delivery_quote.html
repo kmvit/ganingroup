@@ -8,20 +8,82 @@
   {% if form %}
   <form method="post" id="delivery-form" class="form-card" style="margin-top:24px">
     {% csrf_token %}
-    {% if form.calculation.value %}<p>Исходный расчёт: {{ form.calculation.value }}</p>{% endif %}
+    <p id="delivery-calculation" {% if not form.calculation.value %}hidden{% endif %}>{{ form.calculation.value|default_if_none:"" }}</p>
     {% for field in form.hidden_fields %}{{ field }}{{ field.errors }}{% endfor %}
     {% for field in form.visible_fields %}
       {% if field.name == 'agree' %}
         <label class="f-agree">{{ field }} <span>Согласен на обработку персональных данных — <a href="{% url 'consent' %}" target="_blank" rel="noopener">текст согласия</a></span></label>
+      {% elif field.name == 'needs_volume_help' %}
+        <label class="f-agree">{{ field }} <span>{{ field.label }}</span></label>
       {% else %}
         <label class="f-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}
       {% endif %}
       {{ field.errors }}
+      {% if field.name == 'volume' %}
+        <button class="btn btn--line" id="delivery-calc-open" type="button" aria-controls="delivery-calc" aria-expanded="false">Рассчитать по размерам</button>
+      {% endif %}
     {% endfor %}
     <p role="alert" id="delivery-error"></p>
     <button class="btn btn--solid" style="margin-top:18px" type="submit">Отправить заявку</button>
   </form>
+  <div id="delivery-calc" hidden>
+    <button class="btn btn--line" id="delivery-calc-close" type="button">Вернуться к заявке</button>
+    {% include "partials/concrete_calculator.html" with embedded_calculator=True %}
+  </div>
   <script>
+  (() => {
+    const form = document.getElementById('delivery-form');
+    const calculator = document.getElementById('delivery-calc');
+    const open = document.getElementById('delivery-calc-open');
+    const close = document.getElementById('delivery-calc-close');
+    const apply = document.getElementById('calc-quote');
+    const volume = form.elements.volume;
+    const grade = form.elements.grade;
+    const help = form.elements.needs_volume_help;
+    const calculation = form.elements.calculation;
+    const summary = document.getElementById('delivery-calculation');
+    function setSummary(value) {
+      calculation.value = summary.textContent = value;
+      summary.hidden = !value;
+    }
+    function syncHelp() {
+      volume.disabled = help.checked;
+      volume.required = !help.checked;
+      if (help.checked) {
+        volume.value = '';
+        setSummary('');
+      }
+    }
+    function closeCalculator() {
+      calculator.hidden = true;
+      form.hidden = false;
+      open.setAttribute('aria-expanded', 'false');
+      open.focus();
+    }
+    open.addEventListener('click', () => {
+      const gradeButton = [...calculator.querySelectorAll('[data-grade]')].find(
+        button => button.dataset.grade === grade.value);
+      gradeButton?.click();
+      form.hidden = true;
+      calculator.hidden = false;
+      open.setAttribute('aria-expanded', 'true');
+      close.focus();
+    });
+    close.addEventListener('click', closeCalculator);
+    apply.addEventListener('click', () => {
+      if (apply.disabled) return;
+      help.checked = false;
+      syncHelp();
+      volume.value = apply.dataset.volume;
+      grade.value = apply.dataset.grade;
+      setSummary(apply.dataset.calculation);
+      closeCalculator();
+    });
+    help.addEventListener('change', syncHelp);
+    volume.addEventListener('input', () => setSummary(''));
+    grade.addEventListener('change', () => setSummary(''));
+    syncHelp();
+  })();
   document.getElementById('delivery-form').addEventListener('submit', async function (event) {
     event.preventDefault();
     const button = this.querySelector('button');

@@ -116,7 +116,7 @@
   $('.gg-assistant__close').addEventListener('click', () => open(false));
   $('.gg-assistant__lead-toggle').addEventListener('click', () => {
     const preview = $('[data-calculation-preview]');
-    preview.textContent = document.querySelector('#calc-quote')?.dataset.calculation || '';
+    preview.textContent = document.querySelector('a#calc-quote')?.dataset.calculation || '';
     preview.hidden = !preview.textContent;
     root.classList.toggle('is-lead');
     $('.gg-assistant__lead-toggle').textContent = root.classList.contains('is-lead') ? '← Вернуться к вопросам' : 'Оставить заявку →';
@@ -155,7 +155,7 @@
     status.textContent = 'Отправляю заявку…';
     const data = Object.fromEntries(new FormData(form));
     data.agree = !!form.elements.agree.checked;
-    data.calculation = document.querySelector('#calc-quote')?.dataset.calculation || '';
+    data.calculation = document.querySelector('a#calc-quote')?.dataset.calculation || '';
     data.page = location.href;
     try {
       const response = await fetch(`${api}/lead/`, {method: 'POST', headers: {'Content-Type': 'application/json', 'X-Assistant-Site': site}, body: JSON.stringify(data)});
